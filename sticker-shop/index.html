@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sticker Shop</title>
+<style>
+:root{--ink:#262238;--paper:#fffdf8;--bg:#fff5e7;--pink:#ff7fa3;--yellow:#ffd769;--blue:#9edce6;--muted:#776f86;--line:#262238;--shadow:4px 4px 0 #262238;font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 8% 8%,#ffd5e1 0 75px,transparent 76px),radial-gradient(circle at 95% 15%,#d9f5f8 0 100px,transparent 101px),var(--bg);color:var(--ink)}
+button,input,select{font:inherit}.hidden{display:none!important}.top{position:sticky;top:0;z-index:10;background:#fff5e7ee;border-bottom:2px solid var(--line);backdrop-filter:blur(8px)}.topin{max-width:1160px;margin:auto;padding:13px 16px;display:flex;justify-content:space-between;align-items:center}.brand{font-weight:1000;font-size:20px}.nav{border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer}
+.wrap{max-width:1160px;margin:auto;padding:24px 14px 60px}.panel{background:var(--paper);border:2px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:18px}.hero{display:grid;grid-template-columns:1.3fr .7fr;gap:16px;margin-bottom:18px}.hero h1{margin:0 0 8px;font-size:clamp(30px,5vw,48px);line-height:1}.hero p{margin:0;color:var(--muted);line-height:1.55}.coinbox{display:grid;place-items:center;text-align:center;background:var(--yellow)}.coinbox strong{font-size:42px;display:block}.formrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}.field label{display:block;font-weight:900;margin-bottom:6px}.field input,.field select{width:100%;padding:11px 12px;border:2px solid var(--line);border-radius:12px;background:#fff}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start}.sectitle{display:flex;justify-content:space-between;align-items:end;margin-bottom:10px}.sectitle h2{margin:0}.sectitle span{font-size:12px;color:var(--muted)}.shelf{background:#efc98f;border:2px solid var(--line);border-radius:22px;padding:16px;box-shadow:var(--shadow)}.shelf:before{content:"TODAY'S STICKER SHELF";display:block;width:max-content;margin:0 auto 14px;padding:6px 12px;border-radius:999px;background:var(--ink);color:#fff;font-weight:1000;font-size:11px;letter-spacing:.1em}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.card{position:relative;aspect-ratio:.88;border:2px solid var(--line);border-radius:14px;background:#fffaf2;overflow:hidden;display:flex;flex-direction:column}.card.empty{opacity:.58;border-style:dashed;background:#ead5b2}.slot{position:absolute;top:6px;left:6px;z-index:2;background:var(--ink);color:#fff;border-radius:99px;padding:2px 6px;font-size:10px;font-weight:900}.pick{all:unset;cursor:pointer;height:100%;display:flex;flex-direction:column}.visual{flex:1;min-height:0;display:grid;place-items:center;padding:8px;background:#fff}.visual img{width:100%;height:100%;object-fit:contain}.emoji{font-size:clamp(26px,5vw,52px)}.meta{border-top:2px solid var(--line);background:#fff;padding:7px}.name{font-weight:1000;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.price{font-size:10px;color:var(--muted);font-weight:800}.empty .visual{background:transparent;color:#8e7355;font-size:12px;font-weight:900}.selected{outline:4px solid var(--pink);outline-offset:-3px}
+.cart{position:sticky;top:72px}.cart h2{margin-top:0}.cartlist{display:grid;gap:9px}.emptymsg{color:var(--muted);padding:12px 0;font-size:13px}.cartitem{border:2px solid var(--line);border-radius:12px;padding:9px;background:#fff}.carttop{display:flex;justify-content:space-between;gap:8px}.cartname{font-weight:900}.small{font-size:11px;color:var(--muted)}.qty{display:flex;gap:5px;margin-top:8px;align-items:center}.qty button,.mini{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:5px 8px;font-weight:900;cursor:pointer}.qty input{width:50px;text-align:center;border:1.5px solid var(--line);border-radius:8px;padding:5px}.remove{border:0;background:transparent;color:#c8435d;font-weight:900;cursor:pointer}.summary{border-top:2px dashed var(--line);margin-top:12px;padding-top:10px;display:grid;gap:6px}.sumrow{display:flex;justify-content:space-between}.total{font-size:18px;font-weight:1000}.neg{color:#c8435d}.check{display:flex;gap:7px;font-size:12px;color:var(--muted);line-height:1.4;margin:12px 0}.btn{width:100%;border:2px solid var(--line);border-radius:12px;padding:11px;background:var(--pink);font-weight:1000;box-shadow:3px 3px 0 var(--line);cursor:pointer}.btn:disabled{opacity:.45;box-shadow:none}.notice{margin-top:14px;border:2px dashed var(--line);border-radius:12px;padding:11px;background:#fff;font-size:12px;line-height:1.5}
+.modalbg{position:fixed;inset:0;background:#27223a99;display:grid;place-items:center;z-index:30;padding:14px}.modal{width:min(600px,100%);max-height:90vh;overflow:auto;background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:18px;box-shadow:6px 6px 0 var(--line)}.receipt{border:2px dashed var(--line);border-radius:12px;padding:12px;background:#fff}.downloads{display:grid;gap:8px;margin-top:12px}.download{display:block;text-align:center;text-decoration:none;color:inherit;border:2px solid var(--line);border-radius:10px;padding:9px;background:var(--yellow);font-weight:900}
+.adminwrap{max-width:1160px;margin:auto;padding:24px 14px 60px}.login{width:min(430px,100%);margin:50px auto}.tabs{display:flex;flex-wrap:wrap;gap:7px;margin:15px 0}.tabs button{border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer}.tabs .active{background:var(--yellow)}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}.stat{border:2px solid var(--line);border-radius:12px;padding:12px;background:#fff}.stat strong{display:block;font-size:24px}.tablewrap{overflow:auto;border:2px solid var(--line);border-radius:14px;background:#fff}table{width:100%;border-collapse:collapse;min-width:720px}th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left;font-size:12px;vertical-align:middle}th{background:#fff3c6}.thumb{width:48px;height:48px;object-fit:contain;border:1px solid #bbb;border-radius:8px;background:#fff}.adminform{display:grid;grid-template-columns:1fr 1fr;gap:11px}.wide{grid-column:1/-1}.preview{min-height:140px;border:2px dashed var(--line);border-radius:12px;background:#fff;display:grid;place-items:center;overflow:hidden}.preview img{max-width:100%;max-height:220px}.audit{display:grid;gap:7px}.audititem{background:#fff;border:1px solid #d5cfc5;border-radius:9px;padding:9px;font-size:12px}.adminhead{display:flex;justify-content:space-between;align-items:center;gap:10px}.adminhead h1{margin:0}.demo{font-size:12px;color:var(--muted);background:#fff3c6;border-radius:10px;padding:9px;margin-top:10px}
+@media(max-width:830px){.hero,.layout{grid-template-columns:1fr}.cart{position:static}.stats{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.wrap,.adminwrap{padding-left:9px;padding-right:9px}.panel{padding:14px}.formrow,.adminform{grid-template-columns:1fr}.wide{grid-column:auto}.shelf{padding:9px}.grid{gap:5px}.card{border-radius:9px}.name{font-size:9px}.price{font-size:8px}.slot{font-size:8px;top:3px;left:3px}.emoji{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="top"><div class="topin"><div class="brand">STICKER SHOP</div><button id="modeBtn" class="nav">관리자</button></div></div>
+
+<main id="shopView" class="wrap">
+<section class="hero">
+<div class="panel"><h1>오늘의 스티커를<br>골라가세요 ✦</h1><p>본인이 확인한 현재 코인을 입력하고 원하는 스티커와 수량을 선택하세요. 총 차감액과 구매 후 잔액이 자동으로 계산됩니다.</p></div>
+<div class="panel coinbox"><div><span>현재 입력 코인</span><strong id="heroCoin">0</strong><span>COIN</span></div></div>
+</section>
+<section class="panel formrow">
+<div class="field"><label>밴드 닉네임</label><input id="nickname" placeholder="닉네임 입력"></div>
+<div class="field"><label>현재 보유 코인</label><input id="coins" type="number" min="0" placeholder="예: 120"></div>
+</section>
+<div class="layout">
+<section>
+<div class="sectitle"><h2>오늘의 매대</h2><span>4 × 4 · 총 16칸</span></div>
+<div class="shelf"><div id="shelf" class="grid"></div></div>
+<div class="notice">판매중인 스티커만 보입니다. 코인 잔액은 사이트가 검증하지 않으며 사용자가 직접 입력합니다.</div>
+</section>
+<aside class="panel cart">
+<h2>구매 바구니</h2><div id="cartList" class="cartlist"></div>
+<div class="summary">
+<div class="sumrow"><span>현재 코인</span><strong id="beforeCoin">0</strong></div>
+<div class="sumrow total"><span>차감할 코인</span><strong id="costCoin">0</strong></div>
+<div class="sumrow"><span>구매 후</span><strong id="afterCoin">0</strong></div>
+</div>
+<label class="check"><input id="agree" type="checkbox"><span>입력한 코인은 제가 확인한 현재 보유량이며 구매 금액과 잔액을 확인했습니다.</span></label>
+<button id="buyBtn" class="btn" disabled>구매 확정</button>
+</aside>
+</div>
+</main>
+
+<main id="adminView" class="adminwrap hidden">
+<section id="loginPanel" class="panel login">
+<h1>관리자 로그인</h1>
+<div class="field"><label>아이디</label><input id="adminId"></div>
+<div class="field" style="margin-top:10px"><label>비밀번호</label><input id="adminPw" type="password"></div>
+<button id="loginBtn" class="btn" style="margin-top:12px">로그인</button>
+<div id="loginError" class="notice hidden"></div>
+<div class="demo">테스트 계정: <strong>owner / sticker1234</strong><br>현재 데모는 이 브라우저 내부 저장 방식입니다.</div>
+</section>
+<section id="adminPanel" class="hidden">
+<div class="adminhead"><div><h1>스티커 상점 관리</h1><div id="who" class="small"></div></div><button id="logoutBtn" class="mini">로그아웃</button></div>
+<div class="tabs">
+<button data-tab="dashboard" class="active">현황</button><button data-tab="new">신규 등록</button><button data-tab="inventory">보관함</button><button data-tab="orders">구매 기록</button><button data-tab="admins">관리자 계정</button><button data-tab="audit">변경 기록</button>
+</div>
+<section id="tab-dashboard" class="tab"><div id="stats" class="stats"></div><div class="panel"><div class="sectitle"><h2>현재 4×4 매대</h2><span>1~16번</span></div><div class="shelf"><div id="adminShelf" class="grid"></div></div></div></section>
+<section id="tab-new" class="tab hidden"><div class="panel"><h2>새 스티커 등록</h2><form id="newForm" class="adminform">
+<div class="field wide"><label>PNG 파일</label><input id="file" type="file" accept="image/png"></div><div id="preview" class="preview wide">PNG를 선택해주세요.</div>
+<div class="field"><label>스티커 이름</label><input id="stName" required></div><div class="field"><label>가격</label><input id="stPrice" type="number" min="0" required></div>
+<div class="field"><label>매대 위치</label><select id="stSlot"></select></div><div class="field"><label>판매 상태</label><select id="stActive"><option value="true">바로 판매</option><option value="false">보관만</option></select></div>
+<div class="wide"><button class="btn" type="submit">스티커 등록</button></div></form></div></section>
+<section id="tab-inventory" class="tab hidden"><div class="panel"><h2>전체 스티커 보관함</h2><div class="tablewrap"><table><thead><tr><th>이미지</th><th>이름</th><th>가격</th><th>상태</th><th>매대</th><th>관리</th></tr></thead><tbody id="inventory"></tbody></table></div></div></section>
+<section id="tab-orders" class="tab hidden"><div class="panel"><div class="sectitle"><h2>구매 기록</h2><button id="csvBtn" class="mini">CSV 저장</button></div><div class="field" style="margin-bottom:10px"><label>닉네임 검색</label><input id="orderSearch"></div><div class="tablewrap"><table><thead><tr><th>시간</th><th>닉네임</th><th>내용</th><th>입력</th><th>차감</th><th>잔액</th><th>주문번호</th></tr></thead><tbody id="orders"></tbody></table></div></div></section>
+<section id="tab-admins" class="tab hidden"><div class="panel"><h2>관리자 계정 추가</h2><form id="adminForm" class="adminform"><div class="field"><label>아이디</label><input id="newId" required></div><div class="field"><label>비밀번호</label><input id="newPw" type="password" minlength="4" required></div><div class="field"><label>권한</label><select id="newRole"><option value="admin">일반 관리자</option><option value="owner">총관리자</option></select></div><div class="field"><label>&nbsp;</label><button class="btn" type="submit">계정 추가</button></div></form><div id="adminList" class="audit" style="margin-top:14px"></div></div></section>
+<section id="tab-audit" class="tab hidden"><div class="panel"><h2>관리자 변경 기록</h2><div id="audit" class="audit"></div></div></section>
+</section>
+</main>
+
+<div id="modal" class="modalbg hidden"><div class="modal"><h2>구매 완료 ✦</h2><div id="receipt" class="receipt"></div><div id="downloads" class="downloads"></div><button id="closeModal" class="btn" style="margin-top:12px;background:var(--blue)">닫기</button></div></div>
+
+<script>
+(function(){
+var K_PRODUCTS="ss_products_v2",K_ORDERS="ss_orders_v2",K_ADMINS="ss_admins_v2",K_AUDIT="ss_audit_v2",K_SESSION="ss_session_v2";
+var starter=[
+{id:"s1",name:"샘플 별사탕",price:12,active:true,slot:1,emoji:"⭐",img:""},
+{id:"s2",name:"샘플 리본",price:15,active:true,slot:2,emoji:"🎀",img:""},
+{id:"s3",name:"샘플 고양이",price:20,active:true,slot:3,emoji:"🐈",img:""},
+{id:"s4",name:"샘플 유령",price:18,active:true,slot:5,emoji:"👻",img:""},
+{id:"s5",name:"샘플 사탕",price:8,active:true,slot:6,emoji:"🍬",img:""},
+{id:"s6",name:"샘플 하트",price:10,active:true,slot:9,emoji:"💗",img:""}
+];
+function read(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
+if(!localStorage.getItem(K_PRODUCTS))write(K_PRODUCTS,starter);
+if(!localStorage.getItem(K_ORDERS))write(K_ORDERS,[]);
+if(!localStorage.getItem(K_ADMINS))write(K_ADMINS,[{id:"owner",pw:"sticker1234",role:"owner"}]);
+if(!localStorage.getItem(K_AUDIT))write(K_AUDIT,[]);
+function el(id){return document.getElementById(id)}
+function esc(s){return String(s||"").replace(/[&<>'"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]})}
+function products(){return read(K_PRODUCTS,[])}
+function orders(){return read(K_ORDERS,[])}
+var cart={},upload="",session=read(K_SESSION,null);
+
+function route(){
+var admin=location.hash==="#admin";
+el("shopView").classList.toggle("hidden",admin);el("adminView").classList.toggle("hidden",!admin);
+el("modeBtn").textContent=admin?"사용자 상점":"관리자";
+if(admin)renderLogin();else{renderShelf();renderCart()}
+}
+el("modeBtn").onclick=function(){location.hash=location.hash==="#admin"?"":"admin"};
+window.addEventListener("hashchange",route);
+
+function coin(){var n=Math.floor(Number(el("coins").value)||0);return Math.max(0,n)}
+function total(){var p=products();return Object.keys(cart).reduce(function(s,id){var x=p.find(function(v){return v.id===id});return s+(x?x.price*cart[id]:0)},0)}
+function renderShelf(){
+var p=products(),m={};p.filter(function(x){return x.active&&x.slot>=1&&x.slot<=16}).forEach(function(x){m[x.slot]=x});
+el("shelf").innerHTML="";
+for(var i=1;i<=16;i++){var x=m[i],d=document.createElement("div");d.className="card "+(x?"":"empty")+(x&&cart[x.id]?" selected":"");d.innerHTML='<span class="slot">'+i+"</span>";
+if(!x)d.innerHTML+='<div class="visual">준비중</div><div class="meta"><div class="name">빈 매대</div><div class="price">오늘은 쉬는 자리</div></div>';
+else{var v=x.img?'<img src="'+x.img+'" alt="">':'<div class="emoji">'+(x.emoji||"✦")+"</div>";d.innerHTML+='<button class="pick" data-id="'+x.id+'"><div class="visual">'+v+'</div><div class="meta"><div class="name">'+esc(x.name)+'</div><div class="price">'+x.price+" 코인</div></div></button>"}
+el("shelf").appendChild(d)}
+Array.from(document.querySelectorAll(".pick")).forEach(function(b){b.onclick=function(){var id=b.getAttribute("data-id");cart[id]=(cart[id]||0)+1;renderShelf();renderCart()}})
+}
+function renderCart(){
+var p=products(),ids=Object.keys(cart).filter(function(id){return cart[id]>0&&p.some(function(x){return x.id===id})});el("cartList").innerHTML="";
+if(!ids.length)el("cartList").innerHTML='<div class="emptymsg">매대에서 스티커를 눌러 담아주세요.</div>';
+ids.forEach(function(id){var x=p.find(function(v){return v.id===id}),q=cart[id],d=document.createElement("div");d.className="cartitem";d.innerHTML='<div class="carttop"><div><div class="cartname">'+esc(x.name)+'</div><div class="small">'+x.price+"코인 × "+q+" = "+x.price*q+'코인</div></div><button class="remove">삭제</button></div><div class="qty"><button class="minus">−</button><input type="number" min="1" max="99" value="'+q+'"><button class="plus">+</button></div>';
+d.querySelector(".minus").onclick=function(){setQty(id,q-1)};d.querySelector(".plus").onclick=function(){setQty(id,q+1)};d.querySelector("input").onchange=function(e){setQty(id,Number(e.target.value))};d.querySelector(".remove").onclick=function(){delete cart[id];renderShelf();renderCart()};el("cartList").appendChild(d)});
+var c=coin(),t=total(),a=c-t;el("heroCoin").textContent=c;el("beforeCoin").textContent=c;el("costCoin").textContent=t;el("afterCoin").textContent=a;el("afterCoin").classList.toggle("neg",a<0);el("buyBtn").disabled=!(el("nickname").value.trim()&&ids.length&&el("agree").checked&&a>=0)
+}
+function setQty(id,q){q=Math.max(0,Math.min(99,Math.floor(Number(q)||0)));if(q)cart[id]=q;else delete cart[id];renderShelf();renderCart()}
+["nickname","coins","agree"].forEach(function(id){el(id).addEventListener("input",renderCart)});
+el("buyBtn").onclick=function(){
+var p=products(),buyer=el("nickname").value.trim(),before=coin(),cost=total(),after=before-cost;if(!buyer||after<0)return;
+var items=Object.keys(cart).map(function(id){var x=p.find(function(v){return v.id===id}),q=cart[id];return{id:id,name:x.name,price:x.price,qty:q,subtotal:x.price*q,img:x.img||""}});
+var o={id:"ORD-"+Date.now().toString(36).toUpperCase(),at:new Date().toISOString(),nickname:buyer,before:before,cost:cost,after:after,items:items};var os=orders();os.unshift(o);write(K_ORDERS,os);
+el("receipt").innerHTML="<strong>"+esc(buyer)+"</strong>님의 구매가 기록되었습니다.<br><br>주문번호: "+o.id+"<br>"+items.map(function(i){return esc(i.name)+" × "+i.qty+" — "+i.subtotal+"코인"}).join("<br>")+"<br><br><strong>"+before+" → "+after+"코인</strong>";
+el("downloads").innerHTML="";items.forEach(function(i){if(i.img){var a=document.createElement("a");a.className="download";a.href=i.img;a.download=i.name.replace(/[\\\\/:*?\"<>|]/g,"_")+".png";a.textContent=i.name+" PNG 저장";el("downloads").appendChild(a)}else{var n=document.createElement("div");n.className="notice";n.textContent=i.name+": 테스트 샘플이라 실제 PNG가 없습니다.";el("downloads").appendChild(n)}});
+el("modal").classList.remove("hidden");cart={};el("agree").checked=false;renderShelf();renderCart();renderOrders()
+};
+el("closeModal").onclick=function(){el("modal").classList.add("hidden")};
+
+function renderLogin(){session=read(K_SESSION,null);el("loginPanel").classList.toggle("hidden",!!session);el("adminPanel").classList.toggle("hidden",!session);if(session){el("who").textContent=session.id+" · "+(session.role==="owner"?"총관리자":"관리자");renderAdminAll()}}
+el("loginBtn").onclick=function(){var id=el("adminId").value.trim(),pw=el("adminPw").value,a=read(K_ADMINS,[]).find(function(x){return x.id===id&&x.pw===pw});if(!a){el("loginError").textContent="아이디 또는 비밀번호가 맞지 않습니다.";el("loginError").classList.remove("hidden");return}write(K_SESSION,{id:a.id,role:a.role});session=read(K_SESSION,null);el("loginError").classList.add("hidden");renderLogin()};
+el("logoutBtn").onclick=function(){localStorage.removeItem(K_SESSION);session=null;renderLogin()};
+Array.from(document.querySelectorAll(".tabs button")).forEach(function(b){b.onclick=function(){document.querySelectorAll(".tabs button").forEach(function(x){x.classList.toggle("active",x===b)});document.querySelectorAll(".tab").forEach(function(x){x.classList.add("hidden")});el("tab-"+b.getAttribute("data-tab")).classList.remove("hidden");renderAdminAll()}});
+function audit(action,detail){var a=read(K_AUDIT,[]);a.unshift({at:new Date().toISOString(),admin:session?session.id:"?",action:action,detail:detail||""});write(K_AUDIT,a.slice(0,500))}
+function free(except){var used={};products().filter(function(x){return x.active&&x.slot&&x.id!==except}).forEach(function(x){used[x.slot]=1});var a=[];for(var i=1;i<=16;i++)if(!used[i])a.push(i);return a}
+function renderAdminAll(){renderStats();renderAdminShelf();renderSlots();renderInventory();renderOrders();renderAdmins();renderAudit()}
+function renderStats(){var p=products(),o=orders(),units=0,coins=0;o.forEach(function(x){coins+=x.cost;x.items.forEach(function(i){units+=i.qty})});var s=[["판매중",p.filter(function(x){return x.active}).length],["전체 보관",p.length],["누적 판매수량",units],["누적 차감코인",coins]];el("stats").innerHTML=s.map(function(x){return'<div class="stat"><span>'+x[0]+'</span><strong>'+x[1]+"</strong></div>"}).join("")}
+function renderAdminShelf(){var p=products(),m={};p.filter(function(x){return x.active&&x.slot}).forEach(function(x){m[x.slot]=x});el("adminShelf").innerHTML="";for(var i=1;i<=16;i++){var x=m[i],d=document.createElement("div");d.className="card "+(x?"":"empty");d.innerHTML='<span class="slot">'+i+"</span>"+(x?'<div class="visual">'+(x.img?'<img src="'+x.img+'">':'<div class="emoji">'+(x.emoji||"✦")+"</div>")+'</div><div class="meta"><div class="name">'+esc(x.name)+'</div><div class="price">'+x.price+' 코인</div></div>':'<div class="visual">준비중</div><div class="meta"><div class="name">빈 매대</div><div class="price">'+i+"번</div></div>");el("adminShelf").appendChild(d)}}
+function renderSlots(){var f=free();el("stSlot").innerHTML='<option value="">자동 배치</option>'+f.map(function(n){return'<option value="'+n+'">'+n+"번 칸</option>"}).join("")}
+el("file").onchange=function(){var f=el("file").files[0];upload="";if(!f){el("preview").textContent="PNG를 선택해주세요.";return}if(f.type!=="image/png"){alert("PNG만 등록할 수 있습니다.");el("file").value="";return}var r=new FileReader();r.onload=function(){upload=r.result;el("preview").innerHTML='<img src="'+upload+'">';if(!el("stName").value)el("stName").value=f.name.replace(/\.png$/i,"")};r.readAsDataURL(f)};
+el("newForm").onsubmit=function(e){e.preventDefault();var name=el("stName").value.trim(),price=Math.max(0,Math.floor(Number(el("stPrice").value)||0)),active=el("stActive").value==="true",slot=Number(el("stSlot").value)||null;if(active&&!slot)slot=free()[0]||null;if(active&&!slot){alert("16칸이 모두 사용중입니다.");return}var p=products();p.push({id:"st"+Date.now().toString(36),name:name,price:price,active:active,slot:active?slot:null,img:upload,emoji:"✦"});write(K_PRODUCTS,p);audit("신규 스티커 등록",name+" / "+price+"코인");e.target.reset();upload="";el("preview").textContent="PNG를 선택해주세요.";renderAdminAll();renderShelf();alert("등록했습니다.")};
+function renderInventory(){var p=products();el("inventory").innerHTML="";p.forEach(function(x){var tr=document.createElement("tr");tr.innerHTML='<td>'+(x.img?'<img class="thumb" src="'+x.img+'">':'<div class="thumb" style="display:grid;place-items:center;font-size:22px">'+(x.emoji||"✦")+"</div>")+'</td><td><strong>'+esc(x.name)+'</strong></td><td><input class="pedit" type="number" min="0" value="'+x.price+'" style="width:74px"></td><td>'+(x.active?"판매중":"판매종료")+"</td><td>"+(x.active?x.slot+"번":"—")+'</td><td><button class="mini toggle">'+(x.active?"판매종료":"재입고")+'</button> <button class="mini save">가격저장</button> '+(x.active?'<button class="mini move">매대이동</button>':"")+"</td>";
+tr.querySelector(".toggle").onclick=function(){toggle(x.id)};tr.querySelector(".save").onclick=function(){var all=products(),y=all.find(function(v){return v.id===x.id}),old=y.price;y.price=Math.max(0,Math.floor(Number(tr.querySelector(".pedit").value)||0));write(K_PRODUCTS,all);audit("가격 변경",y.name+": "+old+" → "+y.price);renderAdminAll();renderShelf()};var mv=tr.querySelector(".move");if(mv)mv.onclick=function(){move(x.id)};el("inventory").appendChild(tr)})}
+function toggle(id){var p=products(),x=p.find(function(v){return v.id===id});if(x.active){x.active=false;x.slot=null;audit("판매 종료",x.name)}else{var s=free(id)[0];if(!s){alert("매대가 가득 찼습니다.");return}x.active=true;x.slot=s;audit("재입고",x.name+" → "+s+"번")}write(K_PRODUCTS,p);renderAdminAll();renderShelf()}
+function move(id){var p=products(),x=p.find(function(v){return v.id===id}),ans=prompt("이동할 매대 번호 1~16",x.slot);if(ans===null)return;var n=Number(ans);if(!Number.isInteger(n)||n<1||n>16){alert("1~16만 입력해주세요.");return}if(p.some(function(v){return v.id!==id&&v.active&&Number(v.slot)===n})){alert("이미 사용중인 칸입니다.");return}var old=x.slot;x.slot=n;write(K_PRODUCTS,p);audit("매대 위치 변경",x.name+": "+old+" → "+n);renderAdminAll();renderShelf()}
+function renderOrders(){var q=(el("orderSearch").value||"").trim().toLowerCase(),o=orders().filter(function(x){return !q||x.nickname.toLowerCase().indexOf(q)>=0});el("orders").innerHTML=o.map(function(x){return"<tr><td>"+new Date(x.at).toLocaleString("ko-KR")+"</td><td><strong>"+esc(x.nickname)+"</strong></td><td>"+x.items.map(function(i){return esc(i.name)+" × "+i.qty}).join("<br>")+"</td><td>"+x.before+"</td><td>"+x.cost+"</td><td>"+x.after+"</td><td>"+x.id+"</td></tr>"}).join("")||'<tr><td colspan="7">기록이 없습니다.</td></tr>'}
+el("orderSearch").oninput=renderOrders;
+el("csvBtn").onclick=function(){var rows=[["구매시간","닉네임","구매내용","입력코인","차감코인","구매후코인","주문번호"]];orders().forEach(function(x){rows.push([new Date(x.at).toLocaleString("ko-KR"),x.nickname,x.items.map(function(i){return i.name+" x"+i.qty}).join(" / "),x.before,x.cost,x.after,x.id])});function cell(v){var s=String(v);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}var csv="\ufeff"+rows.map(function(r){return r.map(cell).join(",")}).join("\n"),blob=new Blob([csv],{type:"text/csv"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="sticker-purchases.csv";a.click()};
+function renderAdmins(){el("adminList").innerHTML=read(K_ADMINS,[]).map(function(a){return'<div class="audititem"><strong>'+esc(a.id)+"</strong> · "+(a.role==="owner"?"총관리자":"관리자")+"</div>"}).join("")}
+el("adminForm").onsubmit=function(e){e.preventDefault();if(!session||session.role!=="owner"){alert("총관리자만 추가할 수 있습니다.");return}var id=el("newId").value.trim(),pw=el("newPw").value,role=el("newRole").value,a=read(K_ADMINS,[]);if(a.some(function(x){return x.id===id})){alert("이미 있는 아이디입니다.");return}a.push({id:id,pw:pw,role:role});write(K_ADMINS,a);audit("관리자 계정 추가",id+" / "+role);e.target.reset();renderAdminAll()};
+function renderAudit(){var a=read(K_AUDIT,[]);el("audit").innerHTML=a.map(function(x){return'<div class="audititem"><strong>'+new Date(x.at).toLocaleString("ko-KR")+"</strong> · "+esc(x.admin)+"<br>"+esc(x.action)+(x.detail?" — "+esc(x.detail):"")+"</div>"}).join("")||'<div class="audititem">아직 기록이 없습니다.</div>'}
+route();
+})();
+</script>
+</body>
+</html>
