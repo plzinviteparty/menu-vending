@@ -3,26 +3,115 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sticker Shop</title>
+<title>Midnight Magic Shop</title>
 <style>
 :root{--ink:#262238;--paper:#fffdf8;--bg:#fff5e7;--pink:#ff7fa3;--yellow:#ffd769;--blue:#9edce6;--muted:#776f86;--line:#262238;--shadow:4px 4px 0 #262238;font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 8% 8%,#ffd5e1 0 75px,transparent 76px),radial-gradient(circle at 95% 15%,#d9f5f8 0 100px,transparent 101px),var(--bg);color:var(--ink)}
 button,input,select{font:inherit}.hidden{display:none!important}.top{position:sticky;top:0;z-index:10;background:#fff5e7ee;border-bottom:2px solid var(--line);backdrop-filter:blur(8px)}.topin{max-width:1160px;margin:auto;padding:13px 16px;display:flex;justify-content:space-between;align-items:center}.brand{font-weight:1000;font-size:20px}.nav{border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer}
 .wrap{max-width:1160px;margin:auto;padding:24px 14px 60px}.panel{background:var(--paper);border:2px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:18px}.hero{display:grid;grid-template-columns:1.3fr .7fr;gap:16px;margin-bottom:18px}.hero h1{margin:0 0 8px;font-size:clamp(30px,5vw,48px);line-height:1}.hero p{margin:0;color:var(--muted);line-height:1.55}.coinbox{display:grid;place-items:center;text-align:center;background:var(--yellow)}.coinbox strong{font-size:42px;display:block}.formrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}.field label{display:block;font-weight:900;margin-bottom:6px}.field input,.field select{width:100%;padding:11px 12px;border:2px solid var(--line);border-radius:12px;background:#fff}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start}.sectitle{display:flex;justify-content:space-between;align-items:end;margin-bottom:10px}.sectitle h2{margin:0}.sectitle span{font-size:12px;color:var(--muted)}.shelf{background:#efc98f;border:2px solid var(--line);border-radius:22px;padding:16px;box-shadow:var(--shadow)}.shelf:before{content:"TODAY'S STICKER SHELF";display:block;width:max-content;margin:0 auto 14px;padding:6px 12px;border-radius:999px;background:var(--ink);color:#fff;font-weight:1000;font-size:11px;letter-spacing:.1em}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.card{position:relative;aspect-ratio:.88;border:2px solid var(--line);border-radius:14px;background:#fffaf2;overflow:hidden;display:flex;flex-direction:column}.card.empty{opacity:.58;border-style:dashed;background:#ead5b2}.slot{position:absolute;top:6px;left:6px;z-index:2;background:var(--ink);color:#fff;border-radius:99px;padding:2px 6px;font-size:10px;font-weight:900}.pick{all:unset;cursor:pointer;height:100%;display:flex;flex-direction:column}.visual{flex:1;min-height:0;display:grid;place-items:center;padding:8px;background:#fff}.visual img{width:100%;height:100%;object-fit:contain}.emoji{font-size:clamp(26px,5vw,52px)}.meta{border-top:2px solid var(--line);background:#fff;padding:7px}.name{font-weight:1000;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.price{font-size:10px;color:var(--muted);font-weight:800}.empty .visual{background:transparent;color:#8e7355;font-size:12px;font-weight:900}.selected{outline:4px solid var(--pink);outline-offset:-3px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start}.sectitle{display:flex;justify-content:space-between;align-items:end;margin-bottom:10px}.sectitle h2{margin:0}.sectitle span{font-size:12px;color:var(--muted)}.shelf{background:#efc98f;border:2px solid var(--line);border-radius:22px;padding:16px;box-shadow:var(--shadow)}.shelf:before{content:"MIDNIGHT STICKER SHELF";display:block;width:max-content;margin:0 auto 14px;padding:6px 12px;border-radius:999px;background:var(--ink);color:#fff;font-weight:1000;font-size:11px;letter-spacing:.1em}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.card{position:relative;aspect-ratio:.88;border:2px solid var(--line);border-radius:14px;background:#fffaf2;overflow:hidden;display:flex;flex-direction:column}.card.empty{opacity:.58;border-style:dashed;background:#ead5b2}.slot{position:absolute;top:6px;left:6px;z-index:2;background:var(--ink);color:#fff;border-radius:99px;padding:2px 6px;font-size:10px;font-weight:900}.pick{all:unset;cursor:pointer;height:100%;display:flex;flex-direction:column}.visual{flex:1;min-height:0;display:grid;place-items:center;padding:8px;background:#fff}.visual img{width:100%;height:100%;object-fit:contain}.emoji{font-size:clamp(26px,5vw,52px)}.meta{border-top:2px solid var(--line);background:#fff;padding:7px}.name{font-weight:1000;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.price{font-size:10px;color:var(--muted);font-weight:800}.empty .visual{background:transparent;color:#8e7355;font-size:12px;font-weight:900}.selected{outline:4px solid var(--pink);outline-offset:-3px}
 .cart{position:sticky;top:72px}.cart h2{margin-top:0}.cartlist{display:grid;gap:9px}.emptymsg{color:var(--muted);padding:12px 0;font-size:13px}.cartitem{border:2px solid var(--line);border-radius:12px;padding:9px;background:#fff}.carttop{display:flex;justify-content:space-between;gap:8px}.cartname{font-weight:900}.small{font-size:11px;color:var(--muted)}.qty{display:flex;gap:5px;margin-top:8px;align-items:center}.qty button,.mini{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:5px 8px;font-weight:900;cursor:pointer}.qty input{width:50px;text-align:center;border:1.5px solid var(--line);border-radius:8px;padding:5px}.remove{border:0;background:transparent;color:#c8435d;font-weight:900;cursor:pointer}.summary{border-top:2px dashed var(--line);margin-top:12px;padding-top:10px;display:grid;gap:6px}.sumrow{display:flex;justify-content:space-between}.total{font-size:18px;font-weight:1000}.neg{color:#c8435d}.check{display:flex;gap:7px;font-size:12px;color:var(--muted);line-height:1.4;margin:12px 0}.btn{width:100%;border:2px solid var(--line);border-radius:12px;padding:11px;background:var(--pink);font-weight:1000;box-shadow:3px 3px 0 var(--line);cursor:pointer}.btn:disabled{opacity:.45;box-shadow:none}.notice{margin-top:14px;border:2px dashed var(--line);border-radius:12px;padding:11px;background:#fff;font-size:12px;line-height:1.5}
 .modalbg{position:fixed;inset:0;background:#27223a99;display:grid;place-items:center;z-index:30;padding:14px}.modal{width:min(600px,100%);max-height:90vh;overflow:auto;background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:18px;box-shadow:6px 6px 0 var(--line)}.receipt{border:2px dashed var(--line);border-radius:12px;padding:12px;background:#fff}.downloads{display:grid;gap:8px;margin-top:12px}.download{display:block;text-align:center;text-decoration:none;color:inherit;border:2px solid var(--line);border-radius:10px;padding:9px;background:var(--yellow);font-weight:900}
 .adminwrap{max-width:1160px;margin:auto;padding:24px 14px 60px}.login{width:min(430px,100%);margin:50px auto}.tabs{display:flex;flex-wrap:wrap;gap:7px;margin:15px 0}.tabs button{border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer}.tabs .active{background:var(--yellow)}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}.stat{border:2px solid var(--line);border-radius:12px;padding:12px;background:#fff}.stat strong{display:block;font-size:24px}.tablewrap{overflow:auto;border:2px solid var(--line);border-radius:14px;background:#fff}table{width:100%;border-collapse:collapse;min-width:720px}th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left;font-size:12px;vertical-align:middle}th{background:#fff3c6}.thumb{width:48px;height:48px;object-fit:contain;border:1px solid #bbb;border-radius:8px;background:#fff}.adminform{display:grid;grid-template-columns:1fr 1fr;gap:11px}.wide{grid-column:1/-1}.preview{min-height:140px;border:2px dashed var(--line);border-radius:12px;background:#fff;display:grid;place-items:center;overflow:hidden}.preview img{max-width:100%;max-height:220px}.audit{display:grid;gap:7px}.audititem{background:#fff;border:1px solid #d5cfc5;border-radius:9px;padding:9px;font-size:12px}.adminhead{display:flex;justify-content:space-between;align-items:center;gap:10px}.adminhead h1{margin:0}.demo{font-size:12px;color:var(--muted);background:#fff3c6;border-radius:10px;padding:9px;margin-top:10px}
 @media(max-width:830px){.hero,.layout{grid-template-columns:1fr}.cart{position:static}.stats{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.wrap,.adminwrap{padding-left:9px;padding-right:9px}.panel{padding:14px}.formrow,.adminform{grid-template-columns:1fr}.wide{grid-column:auto}.shelf{padding:9px}.grid{gap:5px}.card{border-radius:9px}.name{font-size:9px}.price{font-size:8px}.slot{font-size:8px;top:3px;left:3px}.emoji{font-size:28px}}
+
+/* ===== Midnight Magic Shop pixel theme ===== */
+:root{--ink:#10091d;--paper:#24163d;--bg:#120a25;--pink:#ff4fa3;--yellow:#ffd45b;--blue:#5ce1e6;--muted:#c8b6df;--line:#0b0613;--purple:#7e57ff;--orange:#ff9f43;--cream:#fff2d8;--green:#79f2b0;--shadow:5px 5px 0 var(--line);font-family:"Courier New","Noto Sans KR",monospace}
+*{image-rendering:pixelated}
+body{min-height:100vh;background:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px),radial-gradient(circle at 15% 12%,rgba(255,79,163,.18),transparent 25%),radial-gradient(circle at 85% 18%,rgba(126,87,255,.16),transparent 28%),linear-gradient(180deg,#120a25 0%,#1a0e31 55%,#0d0718 100%);background-size:16px 16px,16px 16px,auto,auto,auto;color:#fff5e8}
+.top{background:#170c2bee;border-bottom:4px solid var(--line);box-shadow:0 4px 0 #000;backdrop-filter:none}
+.topin{padding:12px 14px}
+.brandbox{display:flex;flex-direction:column;gap:2px}
+.brand{font-family:"Courier New",monospace;font-size:22px;letter-spacing:1px;color:var(--yellow);text-shadow:3px 3px 0 #000}
+.brand-sub{font-size:9px;letter-spacing:2px;color:var(--blue)}
+.nav{border-radius:0;border:3px solid var(--line);background:var(--pink);color:#fff;box-shadow:3px 3px 0 var(--line);padding:9px 12px}
+.nav:active,.mini:active,.btn:active{transform:translate(3px,3px);box-shadow:none}
+.wrap,.adminwrap{position:relative;z-index:2}
+.panel{background:#24163d;border:4px solid var(--line);border-radius:0;box-shadow:var(--shadow)}
+.hero-copy{position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(255,79,163,.12),transparent 35%),#24163d}
+.hero-copy:after{content:"✦";position:absolute;right:18px;bottom:4px;font-size:84px;line-height:1;color:rgba(255,212,91,.09)}
+.eyebrow{display:inline-block;margin-bottom:10px;padding:5px 8px;border:2px solid var(--line);background:var(--orange);color:#1d102f;font-size:10px;font-weight:1000;letter-spacing:1px;box-shadow:2px 2px 0 var(--line)}
+.hero h1{color:var(--yellow);text-shadow:4px 4px 0 #000;letter-spacing:-2px}
+.hero p{color:var(--muted)}
+.coinbox{background:linear-gradient(180deg,#3a2160,#211238);color:#fff}
+.coinbox strong{color:var(--yellow);text-shadow:4px 4px 0 #000}
+.field label{color:var(--yellow)}
+.field input,.field select{border:3px solid var(--line);border-radius:0;background:var(--cream);color:#1c1230;box-shadow:3px 3px 0 var(--line)}
+.sectitle h2,.cart h2,.adminhead h1{color:var(--yellow);text-shadow:3px 3px 0 #000}
+.sectitle span,.small{color:var(--muted)}
+.shelf{position:relative;background:#57341f;border:4px solid var(--line);border-radius:0;box-shadow:var(--shadow);padding:16px}
+.shelf:before{border-radius:0;border:3px solid var(--line);background:var(--orange);color:#1a1028;box-shadow:3px 3px 0 var(--line);letter-spacing:1px}
+.grid{gap:8px}
+.card{border:4px solid var(--line);border-radius:0;background:#fff1d8;box-shadow:3px 3px 0 var(--line)}
+.card.empty{background:#9d8060;border-style:solid;opacity:.72}
+.slot{top:0;left:0;border-radius:0;padding:4px 6px;background:var(--line);color:#fff}
+.visual{background:linear-gradient(135deg,rgba(255,255,255,.6),rgba(255,255,255,.1)),#f7dfbf}
+.visual img{image-rendering:pixelated}
+.meta{border-top:4px solid var(--line);background:#fff8eb}
+.name{color:#211432}
+.price{color:#7a5573}
+.selected{outline:4px solid var(--pink);outline-offset:-4px}
+.cart{background:#211438}
+.cartitem{border:3px solid var(--line);border-radius:0;box-shadow:3px 3px 0 var(--line)}
+.qty button,.mini{border-radius:0;border:3px solid var(--line);background:var(--yellow);color:#1b1029;box-shadow:2px 2px 0 var(--line)}
+.qty input{border-radius:0;border:3px solid var(--line)}
+.summary{border-top:3px dashed var(--purple)}
+.btn{border-radius:0;border:4px solid var(--line);box-shadow:4px 4px 0 var(--line);background:var(--pink);color:#fff}
+.notice{border:3px dashed var(--purple);border-radius:0;background:#1a102d;color:var(--muted);box-shadow:3px 3px 0 var(--line)}
+.modalbg{background:#08040dcc}
+.modal{border-radius:0;background:#24163d}
+.receipt{border:3px dashed var(--line);border-radius:0;background:var(--cream);color:#1f1430}
+.download{border-radius:0;border:3px solid var(--line);background:var(--yellow);color:#1b1029;box-shadow:3px 3px 0 var(--line)}
+.login{background:linear-gradient(135deg,rgba(126,87,255,.2),transparent 35%),#24163d}
+.tabs{gap:8px}
+.tabs button{border:3px solid var(--line);border-radius:0;background:var(--cream);color:#241430;box-shadow:3px 3px 0 var(--line)}
+.tabs .active{background:var(--orange)}
+.stats{gap:10px}
+.stat{border:4px solid var(--line);border-radius:0;box-shadow:3px 3px 0 var(--line);background:#fff0cf;color:#20132f}
+.stat strong{color:#7d2c68}
+.tablewrap{border:4px solid var(--line);border-radius:0;box-shadow:3px 3px 0 var(--line)}
+table{background:#fff5df;color:#20132f}
+th{background:#f4b05e;color:#1c1029;border-bottom:3px solid var(--line)}
+th,td{border-bottom:2px solid #cfbda8}
+.thumb{border-radius:0;border:2px solid var(--line)}
+.preview{border:4px dashed var(--purple);border-radius:0;background:#170d29;box-shadow:3px 3px 0 var(--line)}
+.audititem{border:3px solid var(--line);border-radius:0;background:#fff2d8;color:#1e1230;box-shadow:3px 3px 0 var(--line)}
+.demo{border-radius:0;border:3px dashed var(--purple);background:#170d29;color:var(--muted)}
+.adminhead{padding:14px;border:4px solid var(--line);background:#24163d;box-shadow:var(--shadow)}
+.pixel-deco,.pixel-ghost,.pixel-pumpkin{position:fixed;pointer-events:none;z-index:0;image-rendering:pixelated}
+.deco-star{width:8px;height:8px;background:var(--yellow);box-shadow:8px 0 0 var(--yellow),-8px 0 0 var(--yellow),0 8px 0 var(--yellow),0 -8px 0 var(--yellow);opacity:.65}
+.s1{left:5%;top:18%}.s2{right:8%;top:32%;transform:scale(.7)}.s3{left:12%;bottom:12%;transform:scale(.55)}
+.pixel-ghost{width:8px;height:8px;background:#f8edff;box-shadow:8px 0 #f8edff,16px 0 #f8edff,-8px 8px #f8edff,0 8px #f8edff,8px 8px #f8edff,16px 8px #f8edff,24px 8px #f8edff,-8px 16px #f8edff,0 16px #1b1028,8px 16px #f8edff,16px 16px #1b1028,24px 16px #f8edff,-8px 24px #f8edff,0 24px #f8edff,8px 24px #f8edff,16px 24px #f8edff,24px 24px #f8edff,-8px 32px #f8edff,0 32px #f8edff,8px 32px #f8edff,16px 32px #f8edff,24px 32px #f8edff,-8px 40px #f8edff,0 40px #f8edff,8px 40px #f8edff,16px 40px #f8edff,24px 40px #f8edff,0 48px #f8edff,16px 48px #f8edff;opacity:.13;transform:scale(1.15)}
+.ghost-a{right:5%;top:18%}.ghost-b{left:2%;bottom:18%;transform:scale(.8);opacity:.09}
+.pixel-pumpkin{width:8px;height:8px;background:#ff9f43;box-shadow:8px 0 #ff9f43,16px 0 #ff9f43,8px -8px #73c96b,-8px 8px #ff9f43,0 8px #ff9f43,8px 8px #ff9f43,16px 8px #ff9f43,24px 8px #ff9f43,-8px 16px #ff9f43,0 16px #1c1029,8px 16px #ff9f43,16px 16px #1c1029,24px 16px #ff9f43,-8px 24px #ff9f43,0 24px #ff9f43,8px 24px #1c1029,16px 24px #ff9f43,24px 24px #ff9f43,0 32px #ff9f43,8px 32px #ff9f43,16px 32px #ff9f43;opacity:.15}
+.pumpkin-a{left:4%;top:55%;transform:scale(1.15)}
+.pumpkin-b{right:6%;bottom:8%;transform:scale(.85);opacity:.1}
+@media(max-width:830px){.pixel-ghost,.pixel-pumpkin{opacity:.06}}
+@media(max-width:560px){.brand{font-size:16px}.brand-sub{font-size:7px}.shelf{padding:9px}.grid{gap:5px}.card{border-width:3px;box-shadow:2px 2px 0 var(--line)}.meta{border-top-width:3px}}
+
 </style>
 </head>
 <body>
-<div class="top"><div class="topin"><div class="brand">STICKER SHOP</div><button id="modeBtn" class="nav">관리자</button></div></div>
+<div class="pixel-deco deco-star s1"></div>
+<div class="pixel-deco deco-star s2"></div>
+<div class="pixel-deco deco-star s3"></div>
+<div class="pixel-ghost ghost-a" aria-hidden="true"></div>
+<div class="pixel-ghost ghost-b" aria-hidden="true"></div>
+<div class="pixel-pumpkin pumpkin-a" aria-hidden="true"></div>
+<div class="pixel-pumpkin pumpkin-b" aria-hidden="true"></div>
+<div class="top"><div class="topin"><div class="brandbox">
+  <div class="brand">MIDNIGHT MAGIC SHOP</div>
+  <div class="brand-sub">HALLOWEEN STICKER MARKET</div>
+</div><button id="modeBtn" class="nav">관리자</button></div></div>
 
 <main id="shopView" class="wrap">
 <section class="hero">
-<div class="panel"><h1>오늘의 스티커를<br>골라가세요 ✦</h1><p>본인이 확인한 현재 코인을 입력하고 원하는 스티커와 수량을 선택하세요. 총 차감액과 구매 후 잔액이 자동으로 계산됩니다.</p></div>
+<div class="panel hero-copy">
+  <div class="eyebrow">★ OPEN AFTER MIDNIGHT ★</div>
+  <h1>Midnight<br>Magic Shop</h1>
+  <p>오늘의 스티커 매대에서 마음에 드는 스티커를 골라주세요.<br>보유 코인을 입력하면 차감액과 구매 후 잔액이 자동으로 계산됩니다.</p>
+</div>
 <div class="panel coinbox"><div><span>현재 입력 코인</span><strong id="heroCoin">0</strong><span>COIN</span></div></div>
 </section>
 <section class="panel formrow">
@@ -50,7 +139,7 @@ button,input,select{font:inherit}.hidden{display:none!important}.top{position:st
 
 <main id="adminView" class="adminwrap hidden">
 <section id="loginPanel" class="panel login">
-<h1>관리자 로그인</h1>
+<div class="eyebrow">STAFF ONLY</div><h1>관리자 로그인</h1>
 <div class="field"><label>아이디</label><input id="adminId"></div>
 <div class="field" style="margin-top:10px"><label>비밀번호</label><input id="adminPw" type="password"></div>
 <button id="loginBtn" class="btn" style="margin-top:12px">로그인</button>
@@ -58,7 +147,7 @@ button,input,select{font:inherit}.hidden{display:none!important}.top{position:st
 <div class="demo">테스트 계정: <strong>owner / sticker1234</strong><br>현재 데모는 이 브라우저 내부 저장 방식입니다.</div>
 </section>
 <section id="adminPanel" class="hidden">
-<div class="adminhead"><div><h1>스티커 상점 관리</h1><div id="who" class="small"></div></div><button id="logoutBtn" class="mini">로그아웃</button></div>
+<div class="adminhead"><div><h1>MIDNIGHT SHOP ADMIN</h1><div id="who" class="small"></div></div><button id="logoutBtn" class="mini">로그아웃</button></div>
 <div class="tabs">
 <button data-tab="dashboard" class="active">현황</button><button data-tab="new">신규 등록</button><button data-tab="inventory">보관함</button><button data-tab="orders">구매 기록</button><button data-tab="admins">관리자 계정</button><button data-tab="audit">변경 기록</button>
 </div>
