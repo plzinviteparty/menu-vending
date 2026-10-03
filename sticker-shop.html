@@ -90,6 +90,70 @@ th,td{border-bottom:2px solid #cfbda8}
 @media(max-width:830px){.pixel-ghost,.pixel-pumpkin{opacity:.06}}
 @media(max-width:560px){.brand{font-size:16px}.brand-sub{font-size:7px}.shelf{padding:9px}.grid{gap:5px}.card{border-width:3px;box-shadow:2px 2px 0 var(--line)}.meta{border-top-width:3px}}
 
+
+/* ===== Lucky Capsule Arcade ===== */
+.site-tabs{display:flex;gap:6px;margin-left:auto;margin-right:10px}
+.site-tab{border:3px solid var(--line);background:#fff2d8;color:#20132f;padding:8px 10px;font-weight:1000;box-shadow:2px 2px 0 var(--line);cursor:pointer;font-size:10px;letter-spacing:.4px}
+.site-tab.active{background:var(--yellow)}
+.gacha-wrap{max-width:1160px;margin:auto;padding:24px 14px 60px;position:relative;z-index:2;color:#fff}
+.gacha-hero{display:grid;grid-template-columns:1.35fr .65fr;gap:14px;margin-bottom:14px}
+.gacha-sign,.gacha-coinbox,.gacha-userbar,.arcade-floor,.machine-panel,.gacha-result{
+  border:4px solid #130c31;box-shadow:5px 5px 0 #130c31;
+}
+.gacha-sign{padding:22px;background:
+  linear-gradient(135deg,rgba(255,255,255,.09),transparent 36%),
+  #2f3cff;position:relative;overflow:hidden}
+.gacha-sign:after{content:"✦ ★ ✦";position:absolute;right:16px;bottom:8px;font-size:30px;color:#ffef66;opacity:.28}
+.gacha-kicker{display:inline-block;background:#ffef66;color:#30234e;border:3px solid #130c31;padding:5px 8px;font-size:10px;font-weight:1000;box-shadow:2px 2px 0 #130c31}
+.gacha-sign h1{margin:10px 0 8px;font-size:clamp(34px,6vw,58px);line-height:.9;letter-spacing:-3px;color:#fff;text-shadow:4px 4px 0 #130c31}
+.gacha-sign p{margin:0;color:#dffcff;line-height:1.6;font-size:13px}
+.gacha-coinbox{display:grid;place-items:center;text-align:center;background:#ff4fa3;padding:18px}
+.gacha-coinbox span{font-size:10px;font-weight:1000;color:#fff8c9;letter-spacing:1px}
+.gacha-coinbox strong{display:block;font-size:54px;color:#ffef66;text-shadow:4px 4px 0 #130c31}
+.gacha-coinbox small{font-weight:1000;color:#fff}
+.gacha-userbar{display:grid;grid-template-columns:1fr 1fr;gap:12px;background:#5ce1e6;padding:14px;margin-bottom:18px}
+.g-field label{color:#24143b}.g-field input{background:#fff;border-color:#130c31}
+.arcade-floor{background:
+  linear-gradient(90deg,rgba(255,255,255,.06) 50%,transparent 50%) 0 0/24px 24px,
+  #6f4bff;padding:16px;margin-bottom:18px}
+.arcade-head{display:flex;justify-content:space-between;align-items:end;gap:10px;margin-bottom:14px}
+.arcade-head h2{margin:2px 0 0;color:#fff;text-shadow:3px 3px 0 #130c31}
+.arcade-mini{font-size:9px;background:#ffef66;color:#25163d;padding:4px 7px;border:2px solid #130c31;font-weight:1000}
+.arcade-lights{display:flex;gap:5px}.arcade-lights i{width:11px;height:11px;border:2px solid #130c31;background:#ff4fa3;box-shadow:2px 2px 0 #130c31}.arcade-lights i:nth-child(2n){background:#5ce1e6}.arcade-lights i:nth-child(3n){background:#ffef66}
+.machine-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.g-machine{position:relative;border:4px solid #130c31;background:#f7f2ff;box-shadow:5px 5px 0 #130c31;min-height:315px;padding:12px 12px 16px;cursor:pointer;color:#26193d;transition:transform .1s}
+.g-machine:hover{transform:translateY(-3px)}.g-machine:active{transform:translate(3px,3px);box-shadow:2px 2px 0 #130c31}
+.g-machine-top{height:44px;border:3px solid #130c31;display:flex;align-items:center;justify-content:center;font-weight:1000;font-size:17px;box-shadow:2px 2px 0 #130c31}
+.g-machine:nth-child(1) .g-machine-top{background:#ff4fa3;color:#fff}
+.g-machine:nth-child(2) .g-machine-top{background:#5ce1e6}
+.g-machine:nth-child(3) .g-machine-top{background:#b8ff4f}
+.g-machine-window{margin:12px auto;width:88%;aspect-ratio:1;border:4px solid #130c31;border-radius:50%;background:#dfe8ff;display:grid;grid-template-columns:repeat(3,1fr);place-items:center;padding:14px;gap:3px;overflow:hidden;box-shadow:inset 0 0 0 6px rgba(255,255,255,.55)}
+.mini-capsule{width:22px;height:22px;border:2px solid #130c31;border-radius:50%;background:#ffef66}.mini-capsule:nth-child(2n){background:#ff4fa3}.mini-capsule:nth-child(3n){background:#5ce1e6}.mini-capsule:nth-child(4n){background:#b8ff4f}
+.g-machine-slot{width:52%;height:24px;margin:0 auto 10px;border:3px solid #130c31;background:#2e38ff}
+.g-machine-knob{width:42px;height:42px;margin:0 auto;border:4px solid #130c31;border-radius:50%;background:#ffef66;box-shadow:3px 3px 0 #130c31}
+.g-machine-info{text-align:center;margin-top:10px}.g-machine-info strong{display:block;font-size:14px}.g-machine-info span{font-size:11px;color:#6b5684}
+.machine-panel{background:#1728d9;padding:16px;margin-bottom:18px}
+.machine-detail-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.machine-detail-head>div{display:flex;align-items:center;gap:10px}
+.machine-letter{display:grid;place-items:center;width:58px;height:58px;border:4px solid #130c31;background:#ffef66;color:#24143d;font-size:30px;font-weight:1000;box-shadow:3px 3px 0 #130c31}
+.machine-name{font-size:21px;font-weight:1000;text-shadow:3px 3px 0 #130c31}.machine-price{font-size:11px;color:#dffcff}
+.g-mini{border:3px solid #130c31;background:#5ce1e6;color:#23153b;padding:8px 10px;font-weight:1000;box-shadow:2px 2px 0 #130c31;cursor:pointer}
+.machine-content{display:grid;grid-template-columns:1fr .8fr;gap:14px}
+.capsule-window,.gacha-controls{border:4px solid #130c31;background:#fff5e8;color:#27183f;padding:14px;box-shadow:3px 3px 0 #130c31}
+.capsule-title{display:inline-block;background:#ff4fa3;color:#fff;border:3px solid #130c31;padding:5px 8px;font-size:10px;font-weight:1000;margin-bottom:12px}
+.pool-preview{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pool-item{border:3px solid #130c31;background:#fff;padding:8px;text-align:center;box-shadow:2px 2px 0 #130c31}
+.pool-item .pool-art{height:62px;display:grid;place-items:center;font-size:34px;background:#eef9ff;margin-bottom:5px;overflow:hidden}.pool-art img{width:100%;height:100%;object-fit:contain}
+.pool-item strong{display:block;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pool-item small{font-size:8px;color:#745e8a}
+.gacha-balance{display:flex;justify-content:space-between;align-items:center;border-bottom:3px dashed #6f4bff;padding-bottom:10px;margin-bottom:10px}.gacha-balance strong{font-size:28px;color:#2e38ff}
+.draw-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.draw-btn{border:3px solid #130c31;background:#ffef66;color:#23153b;padding:10px 5px;box-shadow:3px 3px 0 #130c31;cursor:pointer}.draw-btn:nth-child(2){background:#5ce1e6}.draw-btn:nth-child(3){background:#ff4fa3;color:#fff}.draw-btn b{display:block;font-size:24px}.draw-btn span{display:block;font-weight:1000;font-size:10px}.draw-btn small{display:block;font-size:8px;margin-top:3px}.draw-btn:disabled{opacity:.45;box-shadow:none}
+.gacha-warning{margin-top:12px;font-size:11px;color:#7b5f8d;line-height:1.5}
+.gacha-result{background:#ff4fa3;padding:16px}.result-sign{display:inline-block;background:#ffef66;color:#24143d;border:3px solid #130c31;padding:6px 9px;font-size:11px;font-weight:1000;box-shadow:2px 2px 0 #130c31}.result-summary{margin:12px 0;background:#fff5e8;color:#281840;border:3px solid #130c31;padding:10px;font-size:12px;box-shadow:3px 3px 0 #130c31}.result-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.result-card{border:3px solid #130c31;background:#fff5e8;color:#26183c;padding:7px;box-shadow:3px 3px 0 #130c31;animation:popcapsule .22s ease both}.result-card:nth-child(2n){transform:rotate(1deg)}.result-card:nth-child(3n){transform:rotate(-1deg)}.result-art{height:74px;display:grid;place-items:center;background:#e6f9ff;font-size:38px;overflow:hidden}.result-art img{width:100%;height:100%;object-fit:contain}.result-card strong{display:block;margin-top:5px;font-size:9px;text-align:center}.result-downloads{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:10px}.result-downloads a{border:3px solid #130c31;background:#5ce1e6;color:#22143a;padding:8px;text-align:center;text-decoration:none;font-size:10px;font-weight:1000;box-shadow:2px 2px 0 #130c31}
+@keyframes popcapsule{from{opacity:0;transform:translateY(12px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
+.g-admin-stack{display:grid;gap:14px}.g-admin-panel h2{color:var(--yellow);text-shadow:3px 3px 0 #000}.g-machine-admin{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.g-admin-machine{border:3px solid var(--line);background:#fff2d8;color:#211432;padding:10px;box-shadow:3px 3px 0 var(--line)}.g-admin-machine h3{margin:0 0 8px}.g-admin-machine .field label{color:#4b305f}.g-admin-machine .admin-actions{display:flex;gap:6px;margin-top:8px}
+@media(max-width:830px){.site-tabs{order:3;width:100%;margin:8px 0 0}.topin{flex-wrap:wrap}.site-tab{flex:1}.gacha-hero,.machine-content{grid-template-columns:1fr}.machine-row{grid-template-columns:1fr 1fr}.g-machine-admin{grid-template-columns:1fr}.result-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.gacha-wrap{padding-left:9px;padding-right:9px}.gacha-userbar{grid-template-columns:1fr}.machine-row{grid-template-columns:1fr}.g-machine{min-height:250px}.pool-preview{grid-template-columns:repeat(3,1fr)}.draw-buttons{grid-template-columns:1fr}.result-grid{grid-template-columns:repeat(2,1fr)}.result-downloads{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -103,7 +167,12 @@ th,td{border-bottom:2px solid #cfbda8}
 <div class="top"><div class="topin"><div class="brandbox">
   <div class="brand">MIDNIGHT MAGIC SHOP</div>
   <div class="brand-sub">HALLOWEEN STICKER MARKET</div>
-</div><button id="modeBtn" class="nav">관리자</button></div></div>
+</div>
+<div class="site-tabs">
+  <button id="shopTabBtn" class="site-tab active">MAGIC SHOP</button>
+  <button id="gachaTabBtn" class="site-tab">GACHA ARCADE</button>
+</div>
+<button id="modeBtn" class="nav">관리자</button></div></div>
 
 <main id="shopView" class="wrap">
 <section class="hero">
@@ -137,6 +206,82 @@ th,td{border-bottom:2px solid #cfbda8}
 </div>
 </main>
 
+
+<main id="gachaView" class="gacha-wrap hidden">
+  <section class="gacha-hero">
+    <div class="gacha-sign">
+      <div class="gacha-kicker">★ CAPSULE TOY ZONE ★</div>
+      <h1>LUCKY CAPSULE<br>ARCADE</h1>
+      <p>가챠 기계를 고른 뒤 원하는 횟수만큼 돌려 주세요.<br>같은 품목이 여러 번 나올 수 있습니다.</p>
+    </div>
+    <div class="gacha-coinbox">
+      <span>CURRENT COINS</span>
+      <strong id="gHeroCoin">0</strong>
+      <small>COIN</small>
+    </div>
+  </section>
+
+  <section class="gacha-userbar">
+    <div class="field g-field">
+      <label>밴드 닉네임</label>
+      <input id="gNickname" placeholder="닉네임 입력">
+    </div>
+    <div class="field g-field">
+      <label>현재 보유 코인</label>
+      <input id="gCoins" type="number" min="0" placeholder="예: 120">
+    </div>
+  </section>
+
+  <section class="arcade-floor">
+    <div class="arcade-head">
+      <div>
+        <span class="arcade-mini">PICK YOUR MACHINE</span>
+        <h2>가챠 기계를 골라 주세요</h2>
+      </div>
+      <div class="arcade-lights"><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div id="machineRow" class="machine-row"></div>
+  </section>
+
+  <section id="machinePanel" class="machine-panel hidden">
+    <div class="machine-detail-head">
+      <div>
+        <span id="machineLetter" class="machine-letter">A</span>
+        <div>
+          <div id="machineName" class="machine-name">A MACHINE</div>
+          <div id="machinePrice" class="machine-price">1회 10 코인</div>
+        </div>
+      </div>
+      <button id="backMachines" class="g-mini">← 다른 기계 보기</button>
+    </div>
+
+    <div class="machine-content">
+      <div class="capsule-window">
+        <div class="capsule-title">IN THIS MACHINE</div>
+        <div id="poolPreview" class="pool-preview"></div>
+      </div>
+      <div class="gacha-controls">
+        <div class="gacha-balance">
+          <span>현재 코인</span><strong id="gBeforeCoin">0</strong>
+        </div>
+        <div class="draw-buttons">
+          <button class="draw-btn" data-count="1"><b>1</b><span>회 뽑기</span><small id="price1">0 COIN</small></button>
+          <button class="draw-btn" data-count="5"><b>5</b><span>회 뽑기</span><small id="price5">0 COIN</small></button>
+          <button class="draw-btn" data-count="10"><b>10</b><span>회 뽑기</span><small id="price10">0 COIN</small></button>
+        </div>
+        <div id="gachaWarning" class="gacha-warning">닉네임과 보유 코인을 입력해 주세요.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="gachaResult" class="gacha-result hidden">
+    <div class="result-sign">★ YOUR CAPSULES ★</div>
+    <div id="resultSummary" class="result-summary"></div>
+    <div id="resultGrid" class="result-grid"></div>
+    <div id="resultDownloads" class="result-downloads"></div>
+  </section>
+</main>
+
 <main id="adminView" class="adminwrap hidden">
 <section id="loginPanel" class="panel login">
 <div class="eyebrow">STAFF ONLY</div><h1>관리자 로그인</h1>
@@ -149,7 +294,7 @@ th,td{border-bottom:2px solid #cfbda8}
 <section id="adminPanel" class="hidden">
 <div class="adminhead"><div><h1>MIDNIGHT SHOP ADMIN</h1><div id="who" class="small"></div></div><button id="logoutBtn" class="mini">로그아웃</button></div>
 <div class="tabs">
-<button data-tab="dashboard" class="active">현황</button><button data-tab="new">신규 등록</button><button data-tab="inventory">보관함</button><button data-tab="orders">구매 기록</button><button data-tab="admins">관리자 계정</button><button data-tab="audit">변경 기록</button>
+<button data-tab="dashboard" class="active">현황</button><button data-tab="new">신규 등록</button><button data-tab="inventory">보관함</button><button data-tab="orders">구매 기록</button><button data-tab="gacha">가챠 기계</button><button data-tab="gachaorders">가챠 기록</button><button data-tab="admins">관리자 계정</button><button data-tab="audit">변경 기록</button>
 </div>
 <section id="tab-dashboard" class="tab"><div id="stats" class="stats"></div><div class="panel"><div class="sectitle"><h2>현재 4×4 매대</h2><span>1~16번</span></div><div class="shelf"><div id="adminShelf" class="grid"></div></div></div></section>
 <section id="tab-new" class="tab hidden"><div class="panel"><h2>새 스티커 등록</h2><form id="newForm" class="adminform">
@@ -160,6 +305,42 @@ th,td{border-bottom:2px solid #cfbda8}
 <section id="tab-inventory" class="tab hidden"><div class="panel"><h2>전체 스티커 보관함</h2><div class="tablewrap"><table><thead><tr><th>이미지</th><th>이름</th><th>가격</th><th>상태</th><th>매대</th><th>관리</th></tr></thead><tbody id="inventory"></tbody></table></div></div></section>
 <section id="tab-orders" class="tab hidden"><div class="panel"><div class="sectitle"><h2>구매 기록</h2><button id="csvBtn" class="mini">CSV 저장</button></div><div class="field" style="margin-bottom:10px"><label>닉네임 검색</label><input id="orderSearch"></div><div class="tablewrap"><table><thead><tr><th>시간</th><th>닉네임</th><th>내용</th><th>입력</th><th>차감</th><th>잔액</th><th>주문번호</th></tr></thead><tbody id="orders"></tbody></table></div></div></section>
 <section id="tab-admins" class="tab hidden"><div class="panel"><h2>관리자 계정 추가</h2><form id="adminForm" class="adminform"><div class="field"><label>아이디</label><input id="newId" required></div><div class="field"><label>비밀번호</label><input id="newPw" type="password" minlength="4" required></div><div class="field"><label>권한</label><select id="newRole"><option value="admin">일반 관리자</option><option value="owner">총관리자</option></select></div><div class="field"><label>&nbsp;</label><button class="btn" type="submit">계정 추가</button></div></form><div id="adminList" class="audit" style="margin-top:14px"></div></div></section>
+
+<section id="tab-gacha" class="tab hidden">
+  <div class="g-admin-stack">
+    <div class="panel g-admin-panel">
+      <div class="sectitle"><h2>가챠 기계 관리</h2><span>기계별 가격·이름·운영 상태</span></div>
+      <div id="gMachineAdmin" class="g-machine-admin"></div>
+    </div>
+    <div class="panel g-admin-panel">
+      <h2>가챠 품목 등록</h2>
+      <form id="gItemForm" class="adminform">
+        <div class="field"><label>가챠 기계</label><select id="gItemMachine"></select></div>
+        <div class="field"><label>품목 이름</label><input id="gItemName" required></div>
+        <div class="field"><label>등장 가중치</label><input id="gItemWeight" type="number" min="1" value="1" required></div>
+        <div class="field"><label>PNG 파일</label><input id="gItemFile" type="file" accept="image/png"></div>
+        <div id="gItemPreview" class="preview wide">PNG가 없으면 샘플 아이콘으로 표시됩니다.</div>
+        <div class="wide"><button class="btn" type="submit">가챠 품목 등록</button></div>
+      </form>
+    </div>
+    <div class="panel g-admin-panel">
+      <h2>가챠 품목 목록</h2>
+      <div class="tablewrap">
+        <table><thead><tr><th>기계</th><th>이미지</th><th>품목명</th><th>가중치</th><th>상태</th><th>관리</th></tr></thead><tbody id="gItemTable"></tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="tab-gachaorders" class="tab hidden">
+  <div class="panel">
+    <div class="sectitle"><h2>가챠 기록</h2><span>중복 포함 실제 추첨 결과</span></div>
+    <div class="tablewrap">
+      <table><thead><tr><th>시간</th><th>닉네임</th><th>기계</th><th>횟수</th><th>결과</th><th>입력</th><th>차감</th><th>잔액</th></tr></thead><tbody id="gachaOrders"></tbody></table>
+    </div>
+  </div>
+</section>
+
 <section id="tab-audit" class="tab hidden"><div class="panel"><h2>관리자 변경 기록</h2><div id="audit" class="audit"></div></div></section>
 </section>
 </main>
@@ -169,6 +350,7 @@ th,td{border-bottom:2px solid #cfbda8}
 <script>
 (function(){
 var K_PRODUCTS="ss_products_v2",K_ORDERS="ss_orders_v2",K_ADMINS="ss_admins_v2",K_AUDIT="ss_audit_v2",K_SESSION="ss_session_v2";
+var K_GMACHINES="ss_gmachines_v1",K_GITEMS="ss_gitems_v1",K_GORDERS="ss_gorders_v1";
 var starter=[
 {id:"s1",name:"샘플 별사탕",price:12,active:true,slot:1,emoji:"⭐",img:""},
 {id:"s2",name:"샘플 리본",price:15,active:true,slot:2,emoji:"🎀",img:""},
@@ -177,12 +359,34 @@ var starter=[
 {id:"s5",name:"샘플 사탕",price:8,active:true,slot:6,emoji:"🍬",img:""},
 {id:"s6",name:"샘플 하트",price:10,active:true,slot:9,emoji:"💗",img:""}
 ];
+var gStarterMachines=[
+{id:"A",name:"Candy Pop",price:10,active:true},
+{id:"B",name:"Soda Star",price:15,active:true},
+{id:"C",name:"Neon Lucky",price:20,active:true}
+];
+var gStarterItems=[
+{id:"ga1",machine:"A",name:"체리 캔디",weight:1,active:true,emoji:"🍒",img:""},
+{id:"ga2",machine:"A",name:"별사탕",weight:1,active:true,emoji:"⭐",img:""},
+{id:"ga3",machine:"A",name:"리본 캡슐",weight:1,active:true,emoji:"🎀",img:""},
+{id:"ga4",machine:"A",name:"러브 팝",weight:1,active:true,emoji:"💗",img:""},
+{id:"gb1",machine:"B",name:"소다 구름",weight:1,active:true,emoji:"☁️",img:""},
+{id:"gb2",machine:"B",name:"블루 스타",weight:1,active:true,emoji:"💎",img:""},
+{id:"gb3",machine:"B",name:"민트 캔디",weight:1,active:true,emoji:"🍬",img:""},
+{id:"gb4",machine:"B",name:"달빛 캡슐",weight:1,active:true,emoji:"🌙",img:""},
+{id:"gc1",machine:"C",name:"럭키 고스트",weight:1,active:true,emoji:"👻",img:""},
+{id:"gc2",machine:"C",name:"펌킨 팝",weight:1,active:true,emoji:"🎃",img:""},
+{id:"gc3",machine:"C",name:"매직 키",weight:1,active:true,emoji:"🗝️",img:""},
+{id:"gc4",machine:"C",name:"스파클 하트",weight:1,active:true,emoji:"💖",img:""}
+];
 function read(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
 if(!localStorage.getItem(K_PRODUCTS))write(K_PRODUCTS,starter);
 if(!localStorage.getItem(K_ORDERS))write(K_ORDERS,[]);
 if(!localStorage.getItem(K_ADMINS))write(K_ADMINS,[{id:"owner",pw:"sticker1234",role:"owner"}]);
 if(!localStorage.getItem(K_AUDIT))write(K_AUDIT,[]);
+if(!localStorage.getItem(K_GMACHINES))write(K_GMACHINES,gStarterMachines);
+if(!localStorage.getItem(K_GITEMS))write(K_GITEMS,gStarterItems);
+if(!localStorage.getItem(K_GORDERS))write(K_GORDERS,[]);
 function el(id){return document.getElementById(id)}
 function esc(s){return String(s||"").replace(/[&<>'"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]})}
 function products(){return read(K_PRODUCTS,[])}
@@ -190,11 +394,21 @@ function orders(){return read(K_ORDERS,[])}
 var cart={},upload="",session=read(K_SESSION,null);
 
 function route(){
-var admin=location.hash==="#admin";
-el("shopView").classList.toggle("hidden",admin);el("adminView").classList.toggle("hidden",!admin);
-el("modeBtn").textContent=admin?"사용자 상점":"관리자";
-if(admin)renderLogin();else{renderShelf();renderCart()}
+var hash=location.hash,admin=hash==="#admin",gacha=hash==="#gacha";
+el("shopView").classList.toggle("hidden",admin||gacha);
+el("gachaView").classList.toggle("hidden",!gacha);
+el("adminView").classList.toggle("hidden",!admin);
+el("shopTabBtn").classList.toggle("active",!admin&&!gacha);
+el("gachaTabBtn").classList.toggle("active",gacha);
+el("shopTabBtn").classList.toggle("hidden",admin);
+el("gachaTabBtn").classList.toggle("hidden",admin);
+el("modeBtn").textContent=admin?"사용자 화면":"관리자";
+if(admin)renderLogin();
+else if(gacha){syncGachaInputs();renderMachines();renderGachaBalance();}
+else{renderShelf();renderCart();}
 }
+el("shopTabBtn").onclick=function(){location.hash=""};
+el("gachaTabBtn").onclick=function(){location.hash="gacha"};
 el("modeBtn").onclick=function(){location.hash=location.hash==="#admin"?"":"admin"};
 window.addEventListener("hashchange",route);
 
@@ -234,7 +448,7 @@ el("logoutBtn").onclick=function(){localStorage.removeItem(K_SESSION);session=nu
 Array.from(document.querySelectorAll(".tabs button")).forEach(function(b){b.onclick=function(){document.querySelectorAll(".tabs button").forEach(function(x){x.classList.toggle("active",x===b)});document.querySelectorAll(".tab").forEach(function(x){x.classList.add("hidden")});el("tab-"+b.getAttribute("data-tab")).classList.remove("hidden");renderAdminAll()}});
 function audit(action,detail){var a=read(K_AUDIT,[]);a.unshift({at:new Date().toISOString(),admin:session?session.id:"?",action:action,detail:detail||""});write(K_AUDIT,a.slice(0,500))}
 function free(except){var used={};products().filter(function(x){return x.active&&x.slot&&x.id!==except}).forEach(function(x){used[x.slot]=1});var a=[];for(var i=1;i<=16;i++)if(!used[i])a.push(i);return a}
-function renderAdminAll(){renderStats();renderAdminShelf();renderSlots();renderInventory();renderOrders();renderAdmins();renderAudit()}
+function renderAdminAll(){renderStats();renderAdminShelf();renderSlots();renderInventory();renderOrders();renderGachaAdmin();renderGachaOrders();renderAdmins();renderAudit()}
 function renderStats(){var p=products(),o=orders(),units=0,coins=0;o.forEach(function(x){coins+=x.cost;x.items.forEach(function(i){units+=i.qty})});var s=[["판매 중",p.filter(function(x){return x.active}).length],["전체 보관",p.length],["누적 판매수량",units],["누적 차감코인",coins]];el("stats").innerHTML=s.map(function(x){return'<div class="stat"><span>'+x[0]+'</span><strong>'+x[1]+"</strong></div>"}).join("")}
 function renderAdminShelf(){var p=products(),m={};p.filter(function(x){return x.active&&x.slot}).forEach(function(x){m[x.slot]=x});el("adminShelf").innerHTML="";for(var i=1;i<=16;i++){var x=m[i],d=document.createElement("div");d.className="card "+(x?"":"empty");d.innerHTML='<span class="slot">'+i+"</span>"+(x?'<div class="visual">'+(x.img?'<img src="'+x.img+'">':'<div class="emoji">'+(x.emoji||"✦")+"</div>")+'</div><div class="meta"><div class="name">'+esc(x.name)+'</div><div class="price">'+x.price+' 코인</div></div>':'<div class="visual">준비중</div><div class="meta"><div class="name">빈 매대</div><div class="price">'+i+"번</div></div>");el("adminShelf").appendChild(d)}}
 function renderSlots(){var f=free();el("stSlot").innerHTML='<option value="">자동 배치</option>'+f.map(function(n){return'<option value="'+n+'">'+n+"번 칸</option>"}).join("")}
@@ -250,6 +464,97 @@ el("csvBtn").onclick=function(){var rows=[["구매시간","닉네임","구매내
 function renderAdmins(){el("adminList").innerHTML=read(K_ADMINS,[]).map(function(a){return'<div class="audititem"><strong>'+esc(a.id)+"</strong> · "+(a.role==="owner"?"총관리자":"관리자")+"</div>"}).join("")}
 el("adminForm").onsubmit=function(e){e.preventDefault();if(!session||session.role!=="owner"){alert("총관리자만 추가할 수 있습니다.");return}var id=el("newId").value.trim(),pw=el("newPw").value,role=el("newRole").value,a=read(K_ADMINS,[]);if(a.some(function(x){return x.id===id})){alert("이미 있는 아이디입니다.");return}a.push({id:id,pw:pw,role:role});write(K_ADMINS,a);audit("관리자 계정 추가",id+" / "+role);e.target.reset();renderAdminAll()};
 function renderAudit(){var a=read(K_AUDIT,[]);el("audit").innerHTML=a.map(function(x){return'<div class="audititem"><strong>'+new Date(x.at).toLocaleString("ko-KR")+"</strong> · "+esc(x.admin)+"<br>"+esc(x.action)+(x.detail?" — "+esc(x.detail):"")+"</div>"}).join("")||'<div class="audititem">아직 기록이 없습니다.</div>'}
+
+function gMachines(){return read(K_GMACHINES,[])}
+function gItems(){return read(K_GITEMS,[])}
+function gOrders(){return read(K_GORDERS,[])}
+var selectedMachine=null,gUpload="";
+
+function syncGachaInputs(){
+  if(!el("gNickname").value&&el("nickname").value)el("gNickname").value=el("nickname").value;
+  if(!el("gCoins").value&&el("coins").value)el("gCoins").value=el("coins").value;
+  renderGachaBalance();
+}
+function gCoin(){return Math.max(0,Math.floor(Number(el("gCoins").value)||0))}
+function renderGachaBalance(){
+  var c=gCoin();el("gHeroCoin").textContent=c;el("gBeforeCoin").textContent=c;
+  if(el("coins").value!==String(c))el("coins").value=c||"";
+  if(el("gNickname").value&&el("nickname").value!==el("gNickname").value)el("nickname").value=el("gNickname").value;
+  updateDrawButtons();
+}
+el("gNickname").addEventListener("input",renderGachaBalance);
+el("gCoins").addEventListener("input",renderGachaBalance);
+
+function renderMachines(){
+  var ms=gMachines().filter(function(m){return m.active});
+  el("machineRow").innerHTML="";
+  ms.forEach(function(m,idx){
+    var d=document.createElement("button");d.className="g-machine";d.type="button";d.setAttribute("data-id",m.id);
+    d.innerHTML='<div class="g-machine-top">'+esc(m.id)+' MACHINE</div><div class="g-machine-window">'+Array.from({length:9}).map(function(){return'<span class="mini-capsule"></span>'}).join("")+'</div><div class="g-machine-slot"></div><div class="g-machine-knob"></div><div class="g-machine-info"><strong>'+esc(m.name)+'</strong><span>1회 '+m.price+' 코인</span></div>';
+    d.onclick=function(){selectMachine(m.id)};el("machineRow").appendChild(d);
+  });
+}
+function selectMachine(id){
+  selectedMachine=id;
+  var m=gMachines().find(function(x){return x.id===id});if(!m)return;
+  el("machineLetter").textContent=m.id;el("machineName").textContent=m.name.toUpperCase();el("machinePrice").textContent="1회 "+m.price+" 코인";
+  el("price1").textContent=m.price+" COIN";el("price5").textContent=m.price*5+" COIN";el("price10").textContent=m.price*10+" COIN";
+  var pool=gItems().filter(function(x){return x.machine===id&&x.active});
+  el("poolPreview").innerHTML=pool.map(function(x){return'<div class="pool-item"><div class="pool-art">'+(x.img?'<img src="'+x.img+'">':esc(x.emoji||"✦"))+'</div><strong>'+esc(x.name)+'</strong><small>가중치 '+x.weight+'</small></div>'}).join("")||'<div class="gacha-warning">등록된 품목이 없습니다.</div>';
+  el("machinePanel").classList.remove("hidden");el("gachaResult").classList.add("hidden");renderGachaBalance();el("machinePanel").scrollIntoView({behavior:"smooth",block:"start"});
+}
+el("backMachines").onclick=function(){selectedMachine=null;el("machinePanel").classList.add("hidden");el("gachaResult").classList.add("hidden");el("machineRow").scrollIntoView({behavior:"smooth"})};
+
+function updateDrawButtons(){
+  var m=gMachines().find(function(x){return x.id===selectedMachine}),nick=el("gNickname").value.trim(),bal=gCoin(),pool=gItems().filter(function(x){return x.machine===selectedMachine&&x.active});
+  document.querySelectorAll(".draw-btn").forEach(function(b){var n=Number(b.getAttribute("data-count"));b.disabled=!(m&&nick&&pool.length&&bal>=m.price*n)});
+  if(!selectedMachine)el("gachaWarning").textContent="가챠 기계를 먼저 골라 주세요.";
+  else if(!nick)el("gachaWarning").textContent="밴드 닉네임을 입력해 주세요.";
+  else if(!pool.length)el("gachaWarning").textContent="이 기계에는 현재 뽑을 수 있는 품목이 없습니다.";
+  else el("gachaWarning").textContent="중복 허용 · 각 회차는 독립적으로 추첨됩니다.";
+}
+function weightedPick(pool){
+  var total=pool.reduce(function(s,x){return s+Math.max(1,Number(x.weight)||1)},0),r=Math.random()*total;
+  for(var i=0;i<pool.length;i++){r-=Math.max(1,Number(pool[i].weight)||1);if(r<0)return pool[i]}
+  return pool[pool.length-1];
+}
+document.querySelectorAll(".draw-btn").forEach(function(b){b.onclick=function(){
+  var count=Number(b.getAttribute("data-count")),m=gMachines().find(function(x){return x.id===selectedMachine}),pool=gItems().filter(function(x){return x.machine===selectedMachine&&x.active}),before=gCoin();
+  if(!m||!pool.length||before<m.price*count||!el("gNickname").value.trim())return;
+  var results=[];for(var i=0;i<count;i++)results.push(weightedPick(pool));
+  var cost=m.price*count,after=before-cost,o={at:new Date().toISOString(),nickname:el("gNickname").value.trim(),machine:m.id,machineName:m.name,count:count,before:before,cost:cost,after:after,results:results.map(function(x){return{id:x.id,name:x.name,img:x.img||"",emoji:x.emoji||"✦"}})};
+  var os=gOrders();os.unshift(o);write(K_GORDERS,os);el("gCoins").value=after;el("coins").value=after;showGachaResults(o);renderGachaBalance();renderGachaOrders();
+}};
+function showGachaResults(o){
+  var counts={};o.results.forEach(function(x){counts[x.name]=(counts[x.name]||0)+1});
+  el("resultSummary").innerHTML='<strong>'+esc(o.nickname)+'</strong> · '+esc(o.machine)+' MACHINE · '+o.count+'회 뽑기<br>'+Object.keys(counts).map(function(k){return esc(k)+' × '+counts[k]}).join(" / ")+'<br><strong>'+o.before+' → '+o.after+' 코인</strong>';
+  el("resultGrid").innerHTML=o.results.map(function(x,i){return'<div class="result-card" style="animation-delay:'+(i*.035)+'s"><div class="result-art">'+(x.img?'<img src="'+x.img+'">':esc(x.emoji))+'</div><strong>'+esc(x.name)+'</strong></div>'}).join("");
+  var unique={};o.results.forEach(function(x){if(x.img)unique[x.id]=x});
+  el("resultDownloads").innerHTML=Object.keys(unique).map(function(k){var x=unique[k];return'<a href="'+x.img+'" download="'+x.name.replace(/[\\\\/:*?"<>|]/g,"_")+'.png">'+esc(x.name)+' PNG 저장</a>'}).join("");
+  el("gachaResult").classList.remove("hidden");el("gachaResult").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function renderGachaAdmin(){
+  if(!el("gMachineAdmin"))return;
+  var ms=gMachines();
+  el("gMachineAdmin").innerHTML="";
+  ms.forEach(function(m){
+    var d=document.createElement("div");d.className="g-admin-machine";d.innerHTML='<h3>'+esc(m.id)+' MACHINE</h3><div class="field"><label>기계 이름</label><input class="gm-name" value="'+esc(m.name)+'"></div><div class="field"><label>1회 가격</label><input class="gm-price" type="number" min="0" value="'+m.price+'"></div><div class="admin-actions"><button class="mini gm-save">저장</button><button class="mini gm-toggle">'+(m.active?"운영 종료":"운영 재개")+'</button></div>';
+    d.querySelector(".gm-save").onclick=function(){var all=gMachines(),x=all.find(function(v){return v.id===m.id}),old=x.name+" / "+x.price;x.name=d.querySelector(".gm-name").value.trim()||x.name;x.price=Math.max(0,Math.floor(Number(d.querySelector(".gm-price").value)||0));write(K_GMACHINES,all);audit("가챠 기계 수정",m.id+": "+old+" → "+x.name+" / "+x.price);renderGachaAdmin();renderMachines()};
+    d.querySelector(".gm-toggle").onclick=function(){var all=gMachines(),x=all.find(function(v){return v.id===m.id});x.active=!x.active;write(K_GMACHINES,all);audit("가챠 기계 상태 변경",m.id+": "+(x.active?"운영 중":"운영 종료"));renderGachaAdmin();renderMachines()};
+    el("gMachineAdmin").appendChild(d);
+  });
+  el("gItemMachine").innerHTML=ms.map(function(m){return'<option value="'+m.id+'">'+m.id+' MACHINE · '+esc(m.name)+'</option>'}).join("");
+  var items=gItems();el("gItemTable").innerHTML=items.map(function(x){return'<tr><td>'+esc(x.machine)+'</td><td>'+(x.img?'<img class="thumb" src="'+x.img+'">':'<div class="thumb" style="display:grid;place-items:center;font-size:22px">'+esc(x.emoji||"✦")+'</div>')+'</td><td>'+esc(x.name)+'</td><td>'+x.weight+'</td><td>'+(x.active?"포함":"제외")+'</td><td><button class="mini gitem-toggle" data-id="'+x.id+'">'+(x.active?"풀에서 제외":"다시 포함")+'</button></td></tr>'}).join("")||'<tr><td colspan="6">품목이 없습니다.</td></tr>';
+  Array.from(document.querySelectorAll(".gitem-toggle")).forEach(function(b){b.onclick=function(){var all=gItems(),x=all.find(function(v){return v.id===b.getAttribute("data-id")});x.active=!x.active;write(K_GITEMS,all);audit("가챠 품목 상태 변경",x.name+": "+(x.active?"포함":"제외"));renderGachaAdmin();if(selectedMachine)selectMachine(selectedMachine)}});
+}
+el("gItemFile").onchange=function(){var f=el("gItemFile").files[0];gUpload="";if(!f){el("gItemPreview").textContent="PNG가 없으면 샘플 아이콘으로 표시됩니다.";return}if(f.type!=="image/png"){alert("PNG만 등록할 수 있습니다.");el("gItemFile").value="";return}var r=new FileReader();r.onload=function(){gUpload=r.result;el("gItemPreview").innerHTML='<img src="'+gUpload+'">';if(!el("gItemName").value)el("gItemName").value=f.name.replace(/\.png$/i,"")};r.readAsDataURL(f)};
+el("gItemForm").onsubmit=function(e){e.preventDefault();var all=gItems(),name=el("gItemName").value.trim();all.push({id:"gi"+Date.now().toString(36),machine:el("gItemMachine").value,name:name,weight:Math.max(1,Math.floor(Number(el("gItemWeight").value)||1)),active:true,img:gUpload,emoji:"✦"});write(K_GITEMS,all);audit("가챠 품목 등록",el("gItemMachine").value+" / "+name);gUpload="";e.target.reset();el("gItemWeight").value=1;el("gItemPreview").textContent="PNG가 없으면 샘플 아이콘으로 표시됩니다.";renderGachaAdmin();if(selectedMachine)selectMachine(selectedMachine)};
+function renderGachaOrders(){
+  if(!el("gachaOrders"))return;
+  var o=gOrders();el("gachaOrders").innerHTML=o.map(function(x){var counts={};x.results.forEach(function(r){counts[r.name]=(counts[r.name]||0)+1});return'<tr><td>'+new Date(x.at).toLocaleString("ko-KR")+'</td><td><strong>'+esc(x.nickname)+'</strong></td><td>'+esc(x.machine)+' · '+esc(x.machineName)+'</td><td>'+x.count+'</td><td>'+Object.keys(counts).map(function(k){return esc(k)+' × '+counts[k]}).join("<br>")+'</td><td>'+x.before+'</td><td>'+x.cost+'</td><td>'+x.after+'</td></tr>'}).join("")||'<tr><td colspan="8">가챠 기록이 없습니다.</td></tr>';
+}
+
 route();
 })();
 </script>
