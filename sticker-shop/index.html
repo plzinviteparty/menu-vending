@@ -524,7 +524,7 @@ document.querySelectorAll(".draw-btn").forEach(function(b){b.onclick=function(){
   var results=[];for(var i=0;i<count;i++)results.push(weightedPick(pool));
   var cost=m.price*count,after=before-cost,o={at:new Date().toISOString(),nickname:el("gNickname").value.trim(),machine:m.id,machineName:m.name,count:count,before:before,cost:cost,after:after,results:results.map(function(x){return{id:x.id,name:x.name,img:x.img||"",emoji:x.emoji||"✦"}})};
   var os=gOrders();os.unshift(o);write(K_GORDERS,os);el("gCoins").value=after;el("coins").value=after;showGachaResults(o);renderGachaBalance();renderGachaOrders();
-}};
+}});
 function showGachaResults(o){
   var counts={};o.results.forEach(function(x){counts[x.name]=(counts[x.name]||0)+1});
   el("resultSummary").innerHTML='<strong>'+esc(o.nickname)+'</strong> · '+esc(o.machine)+' MACHINE · '+o.count+'회 뽑기<br>'+Object.keys(counts).map(function(k){return esc(k)+' × '+counts[k]}).join(" / ")+'<br><strong>'+o.before+' → '+o.after+' 코인</strong>';
