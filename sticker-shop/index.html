@@ -595,7 +595,15 @@ function renderGachaAdmin(){
     el("gMachineAdmin").appendChild(d);
   });
   el("gItemMachine").innerHTML=ms.map(function(m){return'<option value="'+m.id+'">'+m.id+' MACHINE · '+esc(m.name)+'</option>'}).join("");
-  var items=gItems();el("gItemTable").innerHTML=items.map(function(x){return'<tr><td>'+esc(x.machine)+'</td><td>'+(x.img?'<img class="thumb" src="'+x.img+'">':'<div class="thumb" style="display:grid;place-items:center;font-size:22px">'+esc(x.emoji||"✦")+'</div>')+'</td><td>'+esc(x.name)+'</td><td>'+x.weight+'</td><td>'+(x.active?"포함":"제외")+'</td><td><button class="mini gitem-toggle" data-id="'+x.id+'">'+(x.active?"풀에서 제외":"다시 포함")+'</button> <button class="mini gitem-delete" style="background:#ff7b7b" data-id="'+esc(x.id)+'">영구 삭제</button></td></tr>'}).join("")||'<tr><td colspan="6">품목이 없습니다.</td></tr>';
+  var items=gItems();el("gItemTable").innerHTML=items.map(function(x){return'<tr><td>'+esc(x.machine)+'</td><td>'+(x.img?'<img class="thumb" src="'+x.img+'">':'<div class="thumb" style="display:grid;place-items:center;font-size:22px">'+esc(x.emoji||"✦")+'</div>')+'</td><td>'+esc(x.name)+'</td><td><input class="gitem-weight" type="number" min="1" step="1" value="'+x.weight+'" aria-label="'+esc(x.name)+' 등장 가중치" style="width:72px"> <button class="mini gitem-weight-save" data-id="'+esc(x.id)+'">저장</button></td><td>'+(x.active?"포함":"제외")+'</td><td><button class="mini gitem-toggle" data-id="'+x.id+'">'+(x.active?"풀에서 제외":"다시 포함")+'</button> <button class="mini gitem-delete" style="background:#ff7b7b" data-id="'+esc(x.id)+'">영구 삭제</button></td></tr>'}).join("")||'<tr><td colspan="6">품목이 없습니다.</td></tr>';
+Array.from(el("gItemTable").querySelectorAll(".gitem-weight-save")).forEach(function(b){b.onclick=function(){
+var input=b.closest("tr").querySelector(".gitem-weight"),weight=Number(input.value);
+if(!Number.isSafeInteger(weight)||weight<1){alert("가중치는 1 이상의 정수로 입력해 주세요.");input.focus();return}
+var all=gItems(),x=all.find(function(v){return v.id===b.getAttribute("data-id")});if(!x)return;
+var before=x.weight;x.weight=weight;write(K_GITEMS,all);audit("가챠 가중치 수정",x.machine+" / "+x.name+": "+before+" → "+weight);
+b.textContent="저장됨 ✓";input.oninput=function(){b.textContent="저장"};
+if(selectedMachine===x.machine)selectMachine(selectedMachine);
+}});
   Array.from(document.querySelectorAll(".gitem-toggle")).forEach(function(b){b.onclick=function(){var all=gItems(),x=all.find(function(v){return v.id===b.getAttribute("data-id")});x.active=!x.active;write(K_GITEMS,all);audit("가챠 품목 상태 변경",x.name+": "+(x.active?"포함":"제외"));renderGachaAdmin();if(selectedMachine)selectMachine(selectedMachine)}});
 Array.from(document.querySelectorAll(".gitem-delete")).forEach(function(b){b.onclick=function(){
 var all=gItems(),x=all.find(function(v){return v.id===b.getAttribute("data-id")});if(!x)return;
