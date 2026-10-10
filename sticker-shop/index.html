@@ -550,7 +550,7 @@ function selectMachine(id){
   el("machineLetter").textContent=m.id;el("machineName").textContent=m.name.toUpperCase();el("machinePrice").textContent="1회 "+m.price+" 코인";
   el("price1").textContent=m.price+" COIN";el("price5").textContent=m.price*5+" COIN";el("price10").textContent=m.price*10+" COIN";
   var pool=gItems().filter(function(x){return x.machine===id&&x.active});
-  el("poolPreview").innerHTML=pool.map(function(x){return'<div class="pool-item"><div class="pool-art">'+(x.img?'<img src="'+x.img+'">':esc(x.emoji||"✦"))+'</div><strong>'+esc(x.name)+'</strong><small>가중치 '+x.weight+'</small></div>'}).join("")||'<div class="gacha-warning">등록된 품목이 없습니다.</div>';
+  el("poolPreview").innerHTML=pool.map(function(x){return'<div class="pool-item"><div class="pool-art">'+(x.img?'<img src="'+x.img+'">':esc(x.emoji||"✦"))+'</div><strong>'+esc(x.name)+'</strong></div>'}).join("")||'<div class="gacha-warning">등록된 품목이 없습니다.</div>';
   el("machinePanel").classList.remove("hidden");el("gachaResult").classList.add("hidden");renderGachaBalance();el("machinePanel").scrollIntoView({behavior:"smooth",block:"start"});
 }
 el("backMachines").onclick=function(){selectedMachine=null;el("machinePanel").classList.add("hidden");el("gachaResult").classList.add("hidden");el("machineRow").scrollIntoView({behavior:"smooth"})};
