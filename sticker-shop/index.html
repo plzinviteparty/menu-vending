@@ -173,7 +173,7 @@ th,td{border-bottom:2px solid #cfbda8}
 body.sticker-preview-open{overflow:hidden}
 </style>
 </head>
-<body>
+<body><div id="sharedStatus" role="status" style="padding:8px 14px;background:#24163d;font-size:12px">공유 저장 연결 중…</div>
 <div class="pixel-deco deco-star s1"></div>
 <div class="pixel-deco deco-star s2"></div>
 <div class="pixel-deco deco-star s3"></div>
@@ -300,6 +300,13 @@ body.sticker-preview-open{overflow:hidden}
 </main>
 
 <main id="adminView" class="adminwrap hidden">
+<div id="legacyMigration" class="panel hidden" style="max-width:600px;margin:20px auto">
+<h2>기존 PC 자료 이전</h2><p>스티커를 등록했던 PC와 같은 브라우저에서 진행해 주세요. 이전하면 모든 사용자에게 동일한 품목이 표시됩니다.</p>
+<p id="legacyCounts"></p><div class="field"><label>일회용 이전 코드</label><input id="legacyCode" type="password" autocomplete="off"></div>
+<div class="field" style="margin-top:12px"><label>총관리자 새 비밀번호 (8자 이상)</label><input id="legacyPassword" type="password" autocomplete="new-password" minlength="8"></div>
+<button id="legacyTransfer" class="btn" style="margin-top:12px">이 PC의 자료를 공용 저장소로 이전</button>
+<button id="legacyBackup" class="mini" style="margin-top:12px">기존 자료 백업 저장</button>
+</div>
 <section id="loginPanel" class="panel login">
 <div class="eyebrow">STAFF ONLY</div><h1>관리자 로그인</h1>
 <div class="field"><label>아이디</label><input id="adminId"></div>
@@ -401,20 +408,45 @@ var gStarterItems=[
 {id:"gc3",machine:"C",name:"매직 키",weight:1,active:true,emoji:"🗝️",img:""},
 {id:"gc4",machine:"C",name:"스파클 하트",weight:1,active:true,emoji:"💖",img:""}
 ];
-function read(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
-function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
-if(!localStorage.getItem(K_PRODUCTS))write(K_PRODUCTS,starter);
-if(!localStorage.getItem(K_ORDERS))write(K_ORDERS,[]);
-if(!localStorage.getItem(K_ADMINS))write(K_ADMINS,[{id:"owner",pw:"sticker1234",role:"owner"}]);
-if(!localStorage.getItem(K_AUDIT))write(K_AUDIT,[]);
-if(!localStorage.getItem(K_GMACHINES))write(K_GMACHINES,gStarterMachines);
-if(!localStorage.getItem(K_GITEMS))write(K_GITEMS,gStarterItems);
-if(!localStorage.getItem(K_GORDERS))write(K_GORDERS,[]);
+var SHOP_API="https://midnight-shop-storage.hp8bkn2krr.chatgpt.site";
+var sharedKeys=[K_PRODUCTS,K_GMACHINES,K_GITEMS,K_ADMINS,K_ORDERS,K_GORDERS,K_AUDIT],sharedState={},sharedReady=false,sharedInitialized=false,pendingSaves=0,saveQueue=Promise.resolve(),legacyData={};
+function localRead(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+sharedKeys.forEach(function(k){legacyData[k]=localRead(k,[]);sharedState[k]=[]});
+if(!legacyData[K_ADMINS].length)legacyData[K_ADMINS]=[{id:"owner",pw:"sticker1234",role:"owner"}];
+if(!legacyData[K_GMACHINES].length)legacyData[K_GMACHINES]=gStarterMachines;
+function copy(v){return JSON.parse(JSON.stringify(v))}
+function read(k,d){if(sharedKeys.indexOf(k)>=0)return copy(sharedState[k]||d);return localRead(k,d)}
+function syncStatus(message,error){el("sharedStatus").textContent=message;el("sharedStatus").style.color=error?"#ff9ebc":"#fff2d8"}
+async function shopRequest(path,body){
+var s=localRead("ss_server_session",null),headers={"Content-Type":"application/json"};if(s&&s.token)headers.Authorization="Bearer "+s.token;
+var res=await fetch(SHOP_API+path,{method:body?"POST":"GET",headers:headers,body:body?JSON.stringify(body):undefined,cache:"no-store"});
+var data=await res.json();if(!res.ok)throw Error(data.error||"공유 저장 서버에 연결하지 못했습니다.");return data;
+}
+function write(k,v){
+if(sharedKeys.indexOf(k)<0){localStorage.setItem(k,JSON.stringify(v));return Promise.resolve(true)}
+if(!sharedReady||!sharedInitialized){syncStatus("공유 저장 준비가 끝나지 않았습니다.",true);return Promise.resolve(false)}
+var before=copy(sharedState[k]||[]),after=copy(v),body,path;
+if(k===K_ORDERS||k===K_GORDERS||k===K_AUDIT){
+var added=after.filter(function(x){return !before.some(function(y){return JSON.stringify(x)===JSON.stringify(y)})});
+if(!added.length)return Promise.resolve(true);
+path=k===K_AUDIT?"/api/audit":"/api/record";body={key:k,record:added[0]};if(!body.record.id)body.record.id=crypto.randomUUID();
+}else{path="/api/patch";body={key:k,before:before,after:after}}
+sharedState[k]=after;pendingSaves++;renderCart();updateDrawButtons();syncStatus("공유 저장 중…");
+var task=saveQueue.then(async function(){try{await shopRequest(path,body);return true}catch(e){sharedState[k]=before;syncStatus("저장 실패: "+e.message,true);alert("저장하지 못했습니다. "+e.message);return false}finally{pendingSaves--;if(!pendingSaves){renderCart();updateDrawButtons()}}});
+saveQueue=task;task.then(function(ok){if(ok&&!pendingSaves)syncStatus("공유 저장 완료 · 모든 기기에 적용됩니다.")});return task;
+}
+async function refreshShared(admin){
+if(pendingSaves)return;var data=await shopRequest(admin?"/api/admin":"/api/state");
+Object.keys(data.state).forEach(function(k){sharedState[k]=data.state[k]});sharedInitialized=data.initialized;sharedReady=true;
+el("legacyMigration").classList.toggle("hidden",sharedInitialized);
+syncStatus(sharedInitialized?"공유 저장 연결됨":"품목 준비 중 · 관리자 PC에서 기존 자료를 이전해 주세요.");
+route();
+}
 function el(id){return document.getElementById(id)}
 function esc(s){return String(s||"").replace(/[&<>'"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]})}
 function products(){return read(K_PRODUCTS,[])}
 function orders(){return read(K_ORDERS,[])}
-var cart={},upload="",session=read(K_SESSION,null);
+var cart={},upload="",session=localRead("ss_server_session",null);
 
 function route(){
 var hash=location.hash,admin=hash==="#admin",gacha=hash==="#gacha";
@@ -468,23 +500,23 @@ var p=products(),ids=Object.keys(cart).filter(function(id){return cart[id]>0&&p.
 if(!ids.length)el("cartList").innerHTML='<div class="emptymsg">사진을 눌러 크게 보고, 담기 버튼으로 골라 주세요.</div>';
 ids.forEach(function(id){var x=p.find(function(v){return v.id===id}),q=cart[id],d=document.createElement("div");d.className="cartitem";d.innerHTML='<div class="carttop"><div><div class="cartname">'+esc(x.name)+'</div><div class="small">'+x.price+"코인 × "+q+" = "+x.price*q+'코인</div></div><button class="remove">삭제</button></div><div class="qty"><button class="minus">−</button><input type="number" min="1" max="99" value="'+q+'"><button class="plus">+</button></div>';
 d.querySelector(".minus").onclick=function(){setQty(id,q-1)};d.querySelector(".plus").onclick=function(){setQty(id,q+1)};d.querySelector("input").onchange=function(e){setQty(id,Number(e.target.value))};d.querySelector(".remove").onclick=function(){delete cart[id];renderShelf();renderCart()};el("cartList").appendChild(d)});
-var c=coin(),t=total(),a=c-t;el("heroCoin").textContent=c;el("beforeCoin").textContent=c;el("costCoin").textContent=t;el("afterCoin").textContent=a;el("afterCoin").classList.toggle("neg",a<0);el("buyBtn").disabled=!(el("nickname").value.trim()&&ids.length&&el("agree").checked&&a>=0)
+var c=coin(),t=total(),a=c-t;el("heroCoin").textContent=c;el("beforeCoin").textContent=c;el("costCoin").textContent=t;el("afterCoin").textContent=a;el("afterCoin").classList.toggle("neg",a<0);el("buyBtn").disabled=!sharedReady||!sharedInitialized||pendingSaves>0||!(el("nickname").value.trim()&&ids.length&&el("agree").checked&&a>=0)
 }
 function setQty(id,q){q=Math.max(0,Math.min(99,Math.floor(Number(q)||0)));if(q)cart[id]=q;else delete cart[id];renderShelf();renderCart()}
 ["nickname","coins","agree"].forEach(function(id){el(id).addEventListener("input",renderCart)});
-el("buyBtn").onclick=function(){
+el("buyBtn").onclick=async function(){if(pendingSaves||!sharedReady||!sharedInitialized)return;
 var p=products(),buyer=el("nickname").value.trim(),before=coin(),cost=total(),after=before-cost;if(!buyer||after<0)return;
 var items=Object.keys(cart).map(function(id){var x=p.find(function(v){return v.id===id}),q=cart[id];return{id:id,name:x.name,price:x.price,qty:q,subtotal:x.price*q,img:x.img||""}});
-var o={id:"ORD-"+Date.now().toString(36).toUpperCase(),at:new Date().toISOString(),nickname:buyer,before:before,cost:cost,after:after,items:items};var os=orders();os.unshift(o);write(K_ORDERS,os);
+var o={id:"ORD-"+Date.now().toString(36).toUpperCase(),at:new Date().toISOString(),nickname:buyer,before:before,cost:cost,after:after,items:items};var os=orders();os.unshift(o);if(!await write(K_ORDERS,os))return;
 el("receipt").innerHTML="<strong>"+esc(buyer)+"</strong>님의 구매가 기록되었습니다.<br><br>주문번호: "+o.id+"<br>"+items.map(function(i){return esc(i.name)+" × "+i.qty+" — "+i.subtotal+"코인"}).join("<br>")+"<br><br><strong>"+before+" → "+after+"코인</strong>";
 el("downloads").innerHTML="";items.forEach(function(i){if(i.img){var a=document.createElement("a");a.className="download";a.href=i.img;a.download=i.name.replace(/[\\\\/:*?\"<>|]/g,"_")+".png";a.textContent=i.name+" PNG 저장";el("downloads").appendChild(a)}else{var n=document.createElement("div");n.className="notice";n.textContent=i.name+": 테스트 샘플이라 실제 PNG가 없습니다.";el("downloads").appendChild(n)}});
 el("modal").classList.remove("hidden");cart={};el("agree").checked=false;renderShelf();renderCart();renderOrders()
 };
 el("closeModal").onclick=function(){el("modal").classList.add("hidden")};
 
-function renderLogin(){session=read(K_SESSION,null);el("loginPanel").classList.toggle("hidden",!!session);el("adminPanel").classList.toggle("hidden",!session);if(session){el("who").textContent=session.id+" · "+(session.role==="owner"?"총관리자":"관리자");renderAdminAll()}}
-el("loginBtn").onclick=function(){var id=el("adminId").value.trim(),pw=el("adminPw").value,a=read(K_ADMINS,[]).find(function(x){return x.id===id&&x.pw===pw});if(!a){el("loginError").textContent="아이디 또는 비밀번호가 맞지 않습니다.";el("loginError").classList.remove("hidden");return}write(K_SESSION,{id:a.id,role:a.role});session=read(K_SESSION,null);el("loginError").classList.add("hidden");renderLogin()};
-el("logoutBtn").onclick=function(){localStorage.removeItem(K_SESSION);session=null;renderLogin()};
+function renderLogin(){session=localRead("ss_server_session",null);el("loginPanel").classList.toggle("hidden",!!session);el("adminPanel").classList.toggle("hidden",!session);if(session){el("who").textContent=session.id+" · "+(session.role==="owner"?"총관리자":"관리자");renderAdminAll()}}
+el("loginBtn").onclick=async function(){try{if(!sharedInitialized)throw Error("먼저 기존 자료를 공용 저장소로 이전해 주세요.");var a=await shopRequest("/api/login",{id:el("adminId").value.trim(),pw:el("adminPw").value});localStorage.setItem("ss_server_session",JSON.stringify(a));session=a;await refreshShared(true);el("loginError").classList.add("hidden");renderLogin()}catch(e){el("loginError").textContent=e.message;el("loginError").classList.remove("hidden")}};
+el("logoutBtn").onclick=function(){localStorage.removeItem("ss_server_session");session=null;sharedState[K_ADMINS]=[];sharedState[K_ORDERS]=[];sharedState[K_GORDERS]=[];sharedState[K_AUDIT]=[];renderLogin()};
 Array.from(document.querySelectorAll(".tabs button")).forEach(function(b){b.onclick=function(){document.querySelectorAll(".tabs button").forEach(function(x){x.classList.toggle("active",x===b)});document.querySelectorAll(".tab").forEach(function(x){x.classList.add("hidden")});el("tab-"+b.getAttribute("data-tab")).classList.remove("hidden");renderAdminAll()}});
 function audit(action,detail){var a=read(K_AUDIT,[]);a.unshift({at:new Date().toISOString(),admin:session?session.id:"?",action:action,detail:detail||""});write(K_AUDIT,a.slice(0,500))}
 function free(except){var used={};products().filter(function(x){return x.active&&x.slot&&x.id!==except}).forEach(function(x){used[x.slot]=1});var a=[];for(var i=1;i<=16;i++)if(!used[i])a.push(i);return a}
@@ -557,7 +589,7 @@ el("backMachines").onclick=function(){selectedMachine=null;el("machinePanel").cl
 
 function updateDrawButtons(){
   var m=gMachines().find(function(x){return x.id===selectedMachine}),nick=el("gNickname").value.trim(),bal=gCoin(),pool=gItems().filter(function(x){return x.machine===selectedMachine&&x.active});
-  document.querySelectorAll(".draw-btn").forEach(function(b){var n=Number(b.getAttribute("data-count"));b.disabled=!(m&&nick&&pool.length&&bal>=m.price*n)});
+  document.querySelectorAll(".draw-btn").forEach(function(b){var n=Number(b.getAttribute("data-count"));b.disabled=!sharedReady||!sharedInitialized||pendingSaves>0||!(m&&nick&&pool.length&&bal>=m.price*n)});
   if(!selectedMachine)el("gachaWarning").textContent="가챠 기계를 먼저 골라 주세요.";
   else if(!nick)el("gachaWarning").textContent="밴드 닉네임을 입력해 주세요.";
   else if(!pool.length)el("gachaWarning").textContent="이 기계에는 현재 뽑을 수 있는 품목이 없습니다.";
@@ -568,12 +600,12 @@ function weightedPick(pool){
   for(var i=0;i<pool.length;i++){r-=Math.max(1,Number(pool[i].weight)||1);if(r<0)return pool[i]}
   return pool[pool.length-1];
 }
-document.querySelectorAll(".draw-btn").forEach(function(b){b.onclick=function(){
+document.querySelectorAll(".draw-btn").forEach(function(b){b.onclick=async function(){if(pendingSaves||!sharedReady||!sharedInitialized)return;
   var count=Number(b.getAttribute("data-count")),m=gMachines().find(function(x){return x.id===selectedMachine}),pool=gItems().filter(function(x){return x.machine===selectedMachine&&x.active}),before=gCoin();
   if(!m||!pool.length||before<m.price*count||!el("gNickname").value.trim())return;
   var results=[];for(var i=0;i<count;i++)results.push(weightedPick(pool));
   var cost=m.price*count,after=before-cost,o={at:new Date().toISOString(),nickname:el("gNickname").value.trim(),machine:m.id,machineName:m.name,count:count,before:before,cost:cost,after:after,results:results.map(function(x){return{id:x.id,name:x.name,img:x.img||"",emoji:x.emoji||"✦"}})};
-  var os=gOrders();os.unshift(o);write(K_GORDERS,os);el("gCoins").value=after;el("coins").value=after;showGachaResults(o);renderGachaBalance();renderGachaOrders();
+  o.id=crypto.randomUUID();var os=gOrders();os.unshift(o);if(!await write(K_GORDERS,os))return;el("gCoins").value=after;el("coins").value=after;showGachaResults(o);renderGachaBalance();renderGachaOrders();
 }});
 function showGachaResults(o){
   var counts={};o.results.forEach(function(x){counts[x.name]=(counts[x.name]||0)+1});
@@ -619,7 +651,29 @@ function renderGachaOrders(){
   var o=gOrders();el("gachaOrders").innerHTML=o.map(function(x){var counts={};x.results.forEach(function(r){counts[r.name]=(counts[r.name]||0)+1});return'<tr><td>'+new Date(x.at).toLocaleString("ko-KR")+'</td><td><strong>'+esc(x.nickname)+'</strong></td><td>'+esc(x.machine)+' · '+esc(x.machineName)+'</td><td>'+x.count+'</td><td>'+Object.keys(counts).map(function(k){return esc(k)+' × '+counts[k]}).join("<br>")+'</td><td>'+x.before+'</td><td>'+x.cost+'</td><td>'+x.after+'</td></tr>'}).join("")||'<tr><td colspan="8">가챠 기록이 없습니다.</td></tr>';
 }
 
-route();
+
+el("legacyCounts").textContent="일반 품목 "+legacyData[K_PRODUCTS].length+"개 / 가챠 품목 "+legacyData[K_GITEMS].length+"개";
+el("legacyBackup").onclick=function(){var blob=new Blob([JSON.stringify(legacyData)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="midnight-shop-backup.json";a.click();setTimeout(function(){URL.revokeObjectURL(url)},1000)};
+el("legacyTransfer").onclick=async function(){
+var b=this;b.disabled=true;try{
+if(el("legacyPassword").value.length<8)throw Error("총관리자 새 비밀번호를 8자 이상 입력해 주세요.");
+if(!legacyData[K_PRODUCTS].some(function(x){return x.img})&&!legacyData[K_GITEMS].some(function(x){return x.img}))throw Error("이 브라우저에 등록된 실제 이미지가 없습니다. 스티커를 올렸던 PC에서 진행해 주세요.");
+var state={},records={};[K_PRODUCTS,K_GMACHINES,K_GITEMS,K_ADMINS].forEach(function(k){state[k]=copy(legacyData[k])});
+var owner=state[K_ADMINS].find(function(x){return x.role==="owner"});if(!owner)throw Error("기존 총관리자 계정을 찾지 못했습니다.");owner.pw=el("legacyPassword").value;
+[K_ORDERS,K_GORDERS,K_AUDIT].forEach(function(k){records[k]=copy(legacyData[k])});
+localStorage.setItem("ss_before_shared_migration",JSON.stringify(legacyData));
+await shopRequest("/api/bootstrap",{code:el("legacyCode").value.trim(),state:state,records:records});
+el("adminId").value=owner.id;el("adminPw").value=owner.pw;await refreshShared(false);await el("loginBtn").onclick();alert("자료 이전 완료. 이제 모바일과 다른 사용자에게도 같은 품목이 보입니다.");
+}catch(e){alert(e.message);syncStatus(e.message,true)}finally{b.disabled=false}
+};
+async function startShared(){
+try{await refreshShared(false);if(localRead("ss_server_session",null))try{await refreshShared(true)}catch(e){localStorage.removeItem("ss_server_session");session=null;renderLogin()}
+}catch(e){sharedReady=false;sharedInitialized=false;syncStatus("공유 저장 연결 실패 · 새로고침해 주세요.",true);route()}
+}
+route();startShared();
+setInterval(function(){if(sharedReady&&!pendingSaves&&!document.hidden&&location.hash!=="#admin")refreshShared(false).catch(function(){syncStatus("연결이 끊겼습니다. 새로고침해 주세요.",true);sharedReady=false;renderCart();updateDrawButtons()})},15000);
+document.addEventListener("visibilitychange",function(){if(!document.hidden&&!pendingSaves)startShared()});
+
 })();
 </script>
 </body>
