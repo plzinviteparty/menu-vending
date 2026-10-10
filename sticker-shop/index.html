@@ -156,6 +156,21 @@ th,td{border-bottom:2px solid #cfbda8}
 
 
 .g-machine-window{position:relative}.g-machine-thumbnail{position:absolute;inset:8%;width:84%;height:84%;object-fit:contain;pointer-events:none;image-rendering:auto;z-index:1}
+
+/* Shelf original-image preview */
+.card .shelf-preview{flex:1;min-height:0;height:auto;width:100%}
+.shelf-add{width:100%;text-align:left;font:inherit;cursor:pointer;border:0;border-top:4px solid var(--line)}
+#stickerPreview{width:min(960px,96vw);max-height:94dvh;padding:14px;border:4px solid var(--line);background:#24163d;color:#fff5e8;box-shadow:var(--shadow)}
+#stickerPreview::backdrop{background:#08040ddd}
+.sticker-preview-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.sticker-preview-head h2{margin:0;font-size:18px;overflow-wrap:anywhere}
+.sticker-preview-stage{height:min(66dvh,700px);overflow:auto;background:#fff2d8;text-align:center}
+#stickerPreviewImage{display:block;width:100%;height:100%;object-fit:contain;image-rendering:auto}
+#stickerPreviewImage.zoomed{width:200%;height:200%;max-width:none}
+#stickerPreviewEmoji{display:grid;place-items:center;height:100%;font-size:100px}
+.sticker-preview-actions{display:flex;gap:8px;margin-top:12px}
+.sticker-preview-actions .btn{width:auto;flex:1}
+body.sticker-preview-open{overflow:hidden}
 </style>
 </head>
 <body>
@@ -349,6 +364,12 @@ th,td{border-bottom:2px solid #cfbda8}
 
 <div id="modal" class="modalbg hidden"><div class="modal"><h2>구매 완료 ✦</h2><div id="receipt" class="receipt"></div><div id="downloads" class="downloads"></div><button id="closeModal" class="btn" style="margin-top:12px;background:var(--blue)">닫기</button></div></div>
 
+<dialog id="stickerPreview" aria-labelledby="stickerPreviewTitle">
+<div class="sticker-preview-head"><h2 id="stickerPreviewTitle"></h2><button id="stickerPreviewClose" class="mini" aria-label="미리보기 닫기">닫기 ✕</button></div>
+<div class="sticker-preview-stage"><img id="stickerPreviewImage" alt=""><div id="stickerPreviewEmoji" class="hidden"></div></div>
+<div class="small" style="margin-top:8px">등록된 원본 이미지 미리보기 · 확대 후 밀어서 살펴보세요.</div>
+<div class="sticker-preview-actions"><button id="stickerPreviewZoom" class="mini" aria-pressed="false">2배 확대</button><button id="stickerPreviewAdd" class="btn">장바구니 담기 +</button></div>
+</dialog>
 <script>
 (function(){
 var K_PRODUCTS="ss_products_v2",K_ORDERS="ss_orders_v2",K_ADMINS="ss_admins_v2",K_AUDIT="ss_audit_v2",K_SESSION="ss_session_v2";
@@ -416,18 +437,35 @@ window.addEventListener("hashchange",route);
 
 function coin(){var n=Math.floor(Number(el("coins").value)||0);return Math.max(0,n)}
 function total(){var p=products();return Object.keys(cart).reduce(function(s,id){var x=p.find(function(v){return v.id===id});return s+(x?x.price*cart[id]:0)},0)}
+var previewProductId=null,previewOpener=null;
+function openStickerPreview(id){
+var x=products().find(function(v){return v.id===id});if(!x)return;
+previewProductId=id;previewOpener=document.activeElement;
+el("stickerPreviewTitle").textContent=x.name+" · "+x.price+" 코인";
+var img=el("stickerPreviewImage");img.classList.remove("zoomed");img.classList.toggle("hidden",!x.img);img.src=x.img||"";img.alt=x.name;
+el("stickerPreviewEmoji").textContent=x.emoji||"✦";el("stickerPreviewEmoji").classList.toggle("hidden",!!x.img);
+el("stickerPreviewZoom").disabled=!x.img;el("stickerPreviewZoom").textContent="2배 확대";el("stickerPreviewZoom").setAttribute("aria-pressed","false");
+el("stickerPreviewAdd").textContent="장바구니 담기 +";document.body.classList.add("sticker-preview-open");el("stickerPreview").showModal();
+var stage=el("stickerPreview").querySelector(".sticker-preview-stage");stage.scrollTop=0;stage.scrollLeft=0;
+}
+el("stickerPreviewClose").onclick=function(){el("stickerPreview").close()};
+el("stickerPreview").addEventListener("click",function(e){if(e.target===this){var r=this.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)this.close()}});
+el("stickerPreview").addEventListener("close",function(){document.body.classList.remove("sticker-preview-open");el("stickerPreviewImage").removeAttribute("src");if(previewOpener&&previewOpener.isConnected)previewOpener.focus()});
+el("stickerPreviewZoom").onclick=function(){var zoom=el("stickerPreviewImage").classList.toggle("zoomed");this.textContent=zoom?"화면에 맞추기":"2배 확대";this.setAttribute("aria-pressed",String(zoom))};
+el("stickerPreviewAdd").onclick=function(){if(!previewProductId)return;cart[previewProductId]=(cart[previewProductId]||0)+1;renderShelf();renderCart();this.textContent="담았어요 ✓ ("+cart[previewProductId]+")"};
 function renderShelf(){
 var p=products(),m={};p.filter(function(x){return x.active&&x.slot>=1&&x.slot<=16}).forEach(function(x){m[x.slot]=x});
 el("shelf").innerHTML="";
 for(var i=1;i<=16;i++){var x=m[i],d=document.createElement("div");d.className="card "+(x?"":"empty")+(x&&cart[x.id]?" selected":"");d.innerHTML='<span class="slot">'+i+"</span>";
 if(!x)d.innerHTML+='<div class="visual">준비중</div><div class="meta"><div class="name">빈 매대</div><div class="price">오늘은 쉬는 자리</div></div>';
-else{var v=x.img?'<img src="'+x.img+'" alt="">':'<div class="emoji">'+(x.emoji||"✦")+"</div>";d.innerHTML+='<button class="pick" data-id="'+x.id+'"><div class="visual">'+v+'</div><div class="meta"><div class="name">'+esc(x.name)+'</div><div class="price">'+x.price+" 코인</div></div></button>"}
+else{var v=x.img?'<img src="'+x.img+'" alt="'+esc(x.name)+'">':'<div class="emoji">'+esc(x.emoji||"✦")+"</div>";d.innerHTML+='<button class="pick shelf-preview" data-id="'+x.id+'" aria-label="'+esc(x.name)+' 크게 보기"><div class="visual">'+v+'</div></button><button class="meta shelf-add" data-id="'+x.id+'"><div class="name">'+esc(x.name)+'</div><div class="price">'+x.price+' 코인 · 담기 +</div></button>'}
 el("shelf").appendChild(d)}
-Array.from(document.querySelectorAll(".pick")).forEach(function(b){b.onclick=function(){var id=b.getAttribute("data-id");cart[id]=(cart[id]||0)+1;renderShelf();renderCart()}})
+Array.from(el("shelf").querySelectorAll(".shelf-preview")).forEach(function(b){b.onclick=function(){openStickerPreview(b.getAttribute("data-id"))}});
+Array.from(el("shelf").querySelectorAll(".shelf-add")).forEach(function(b){b.onclick=function(){var id=b.getAttribute("data-id");cart[id]=(cart[id]||0)+1;renderShelf();renderCart()}})
 }
 function renderCart(){
 var p=products(),ids=Object.keys(cart).filter(function(id){return cart[id]>0&&p.some(function(x){return x.id===id})});el("cartList").innerHTML="";
-if(!ids.length)el("cartList").innerHTML='<div class="emptymsg">매대에서 스티커를 눌러 담아 주세요.</div>';
+if(!ids.length)el("cartList").innerHTML='<div class="emptymsg">사진을 눌러 크게 보고, 담기 버튼으로 골라 주세요.</div>';
 ids.forEach(function(id){var x=p.find(function(v){return v.id===id}),q=cart[id],d=document.createElement("div");d.className="cartitem";d.innerHTML='<div class="carttop"><div><div class="cartname">'+esc(x.name)+'</div><div class="small">'+x.price+"코인 × "+q+" = "+x.price*q+'코인</div></div><button class="remove">삭제</button></div><div class="qty"><button class="minus">−</button><input type="number" min="1" max="99" value="'+q+'"><button class="plus">+</button></div>';
 d.querySelector(".minus").onclick=function(){setQty(id,q-1)};d.querySelector(".plus").onclick=function(){setQty(id,q+1)};d.querySelector("input").onchange=function(e){setQty(id,Number(e.target.value))};d.querySelector(".remove").onclick=function(){delete cart[id];renderShelf();renderCart()};el("cartList").appendChild(d)});
 var c=coin(),t=total(),a=c-t;el("heroCoin").textContent=c;el("beforeCoin").textContent=c;el("costCoin").textContent=t;el("afterCoin").textContent=a;el("afterCoin").classList.toggle("neg",a<0);el("buyBtn").disabled=!(el("nickname").value.trim()&&ids.length&&el("agree").checked&&a>=0)
