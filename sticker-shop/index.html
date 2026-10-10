@@ -661,7 +661,7 @@ if(!legacyData[K_PRODUCTS].some(function(x){return x.img})&&!legacyData[K_GITEMS
 var state={},records={};[K_PRODUCTS,K_GMACHINES,K_GITEMS,K_ADMINS].forEach(function(k){state[k]=copy(legacyData[k])});
 var owner=state[K_ADMINS].find(function(x){return x.role==="owner"});if(!owner)throw Error("기존 총관리자 계정을 찾지 못했습니다.");owner.pw=el("legacyPassword").value;
 [K_ORDERS,K_GORDERS,K_AUDIT].forEach(function(k){records[k]=copy(legacyData[k])});
-localStorage.setItem("ss_before_shared_migration",JSON.stringify(legacyData));
+// Original local records remain untouched; avoid duplicating large images in browser storage.
 await shopRequest("/api/bootstrap",{code:el("legacyCode").value.trim(),state:state,records:records});
 el("adminId").value=owner.id;el("adminPw").value=owner.pw;await refreshShared(false);await el("loginBtn").onclick();alert("자료 이전 완료. 이제 모바일과 다른 사용자에게도 같은 품목이 보입니다.");
 }catch(e){alert(e.message);syncStatus(e.message,true)}finally{b.disabled=false}
