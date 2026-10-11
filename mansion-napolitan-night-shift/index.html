@@ -33,6 +33,7 @@ button{font:inherit}.hidden{display:none!important}
 .start-card{border:1px solid #4e514a;background:#0d0f0e;padding:18px;box-shadow:var(--shadow)}
 .start-card h2{font-size:15px;margin:0 0 12px;color:#c4b991}
 .start-card ul{padding-left:18px;color:#8f958c;font-size:12px;line-height:1.75}
+.name-field{margin-top:14px}.name-field label{display:block;color:#9da398;font-size:10px;letter-spacing:1px;margin-bottom:6px}.name-field input{width:100%;min-height:44px;border:1px solid #575c54;background:#0b0d0c;color:#e1e5dc;padding:10px 11px;font:inherit;font-size:16px;outline:none}.name-field input:focus{border-color:#9b895f;box-shadow:0 0 0 1px #9b895f}.name-field .error{display:none;margin-top:6px;color:#c67c78;font-size:10px}.name-field.invalid .error{display:block}.name-field.invalid input{border-color:#8f3d3d}
 .start-actions{display:grid;gap:8px;margin-top:14px}
 .btn{border:1px solid #64675f;background:#222621;color:#e3e6df;padding:11px 12px;cursor:pointer;font-weight:700;min-height:44px}
 .btn:hover{background:#2b3029}.btn.primary{background:#514633;border-color:#88785a;color:#f2e5c7}.btn.danger{background:#3d1919;border-color:#7c3434}.btn.ghost{background:#121512;color:#aeb3a8}
@@ -176,6 +177,11 @@ button{font:inherit}.hidden{display:none!important}
       <li>수칙서는 언제든 열 수 있지만, 읽는 동안에도 시간은 흐릅니다.</li>
       <li>수칙 위반이 3회 누적되면 귀가할 수 없습니다.</li>
     </ul>
+    <div id="nameField" class="name-field">
+      <label for="workerNameInput">근무자 이름</label>
+      <input id="workerNameInput" maxlength="16" autocomplete="off" placeholder="이름을 입력해 주세요">
+      <div class="error">근무자 이름을 입력해 주세요.</div>
+    </div>
     <div class="start-actions">
       <button id="preRuleBtn" class="btn ghost" type="button">야간 근무자 수칙 읽기</button>
       <button id="startBtn" class="btn primary" type="button">00:00 근무 시작</button>
@@ -586,7 +592,7 @@ function checkPreviousShift(){
 function checkLedger(){
  state.ledgerChecked=true;
  var memory=state.previous&&state.previous.result==="bad"?" 명부 맨 아래에는 이전 근무자 '"+state.previous.worker+"'가 직원으로 추가되어 있다.":"";
- setMsg((state.womanListed?"직원 명부 마지막 줄에 희미한 글씨가 있다. '한세라 / 야간 객실 담당'.":"직원 명부 어디에도 현관의 여성과 일치하는 이름은 없다.")+memory);
+ setMsg((state.womanListed?"직원 명부 마지막 줄에 희미한 글씨가 있다. '■■■ / 야간 객실 담당'.":"직원 명부 어디에도 현관의 여성과 일치하는 이름은 없다.")+memory);
  sfxPaper();
  var t=taskState("ledger");if(t&&!t.done&&!t.failed&&state.time>=t.at)finishTask(t,"직원 명부 최종 확인 완료")
 }
@@ -662,9 +668,12 @@ function tick(now){
 }
 
 function startGame(){
+ var workerName=$("workerNameInput").value.replace(/\s+/g," ").trim().slice(0,16);
+ if(!workerName){$("nameField").classList.add("invalid");$("workerNameInput").focus();return}
+ $("nameField").classList.remove("invalid");
  initAudio();startAmbient();
- var prev=loadPreviousShift(),shiftNo=prev&&prev.count?prev.count+1:1;
- state={running:true,time:0,room:"office",strikes:0,tasks:taskDefs.map(function(x){return Object.assign({done:false,failed:false},x)}),events:[],triggered:{},phone:null,fakeRule:false,ruleMutation:null,ledgerChecked:false,womanListed:Math.random()<.5,breakerOff:false,lastHour:0,pausedAction:false,workerName:"야간 근무자 #"+shiftNo,previous:prev,visits:{office:1},roomVariants:{},fakeAnomaly:null,nextFakeAt:48+Math.random()*22,pendingScare:null,handCount:0,handSequenceStarted:false,handEscapeDeadline:0,watcherRoom:null,watcherUntil:0};
+ var prev=loadPreviousShift();
+ state={running:true,time:0,room:"office",strikes:0,tasks:taskDefs.map(function(x){return Object.assign({done:false,failed:false},x)}),events:[],triggered:{},phone:null,fakeRule:false,ruleMutation:null,ledgerChecked:false,womanListed:Math.random()<.5,breakerOff:false,lastHour:0,pausedAction:false,workerName:workerName,previous:prev,visits:{office:1},roomVariants:{},fakeAnomaly:null,nextFakeAt:48+Math.random()*22,pendingScare:null,handCount:0,handSequenceStarted:false,handEscapeDeadline:0,watcherRoom:null,watcherUntil:0};
  titleScreen.classList.add("hidden");gameScreen.classList.remove("hidden");rulebook.classList.add("hidden");$("endingOverlay").classList.add("hidden");logEl.innerHTML="";
  renderStrikes();renderTasks();renderScene();log("00:00 야간 근무 시작");lastTick=performance.now();timer=requestAnimationFrame(tick)
 }
@@ -722,6 +731,8 @@ $("preRuleBtn").addEventListener("click",function(){renderRules();rulebook.class
 $("closeRuleBtn").addEventListener("click",closeRules);
 $("ruleBtn").addEventListener("click",openRules);
 $("startBtn").addEventListener("click",startGame);
+$("workerNameInput").addEventListener("input",function(){if(this.value.trim())$("nameField").classList.remove("invalid")});
+$("workerNameInput").addEventListener("keydown",function(e){if(e.key==="Enter")startGame()});
 $("restartBtn").addEventListener("click",function(){location.reload()});
 soundBtn.addEventListener("click",function(){soundOn=!soundOn;initAudio();master.gain.setTargetAtTime(soundOn?.55:0,audio.currentTime,.02);soundBtn.textContent=soundOn?"SOUND ON":"SOUND OFF";if(soundOn&&state&&state.running)startAmbient();else stopAmbient()});
 renderRules();
