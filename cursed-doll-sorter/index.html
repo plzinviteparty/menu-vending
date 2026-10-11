@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Cursed Doll Sorting Shop</title>
+<style>
+:root{
+  --bg:#120d1d;--bg2:#1e1230;--ink:#120a18;--cream:#fff0d2;--paper:#f8dcb2;
+  --wine:#7f294d;--pink:#d9507e;--violet:#7650ba;--green:#9fce62;--yellow:#f4cb58;
+  --red:#e85b66;--cyan:#78c8c4;--line:#160c20;--muted:#c8b5cf;--shadow:5px 5px 0 var(--line);
+  font-family:"Courier New","Noto Sans KR",monospace
+}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--cream)}
+body{
+  background:
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px),
+    radial-gradient(circle at 12% 12%,rgba(217,80,126,.17),transparent 24%),
+    radial-gradient(circle at 85% 24%,rgba(118,80,186,.15),transparent 26%),
+    linear-gradient(180deg,var(--bg2),var(--bg));
+  background-size:16px 16px,16px 16px,auto,auto,auto;
+}
+button,input{font:inherit}.hidden{display:none!important}
+.wrap{max-width:1100px;margin:auto;padding:18px 12px 54px}
+.pixel-box{border:4px solid var(--line);box-shadow:var(--shadow);background:#29183b}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}
+.titlebox{padding:16px 18px;flex:1;background:linear-gradient(135deg,rgba(217,80,126,.2),transparent 35%),#29183b}
+.kicker{display:inline-block;background:var(--green);color:#23142b;border:3px solid var(--line);padding:4px 7px;font-size:10px;font-weight:1000;box-shadow:2px 2px 0 var(--line)}
+h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--yellow);text-shadow:4px 4px 0 #000}
+.subtitle{margin:0;color:var(--muted);font-size:12px;line-height:1.55}
+.bestbox{min-width:180px;padding:13px;text-align:center;background:var(--wine)}
+.bestbox span{display:block;font-size:9px;letter-spacing:1px}.bestbox strong{display:block;font-size:34px;color:var(--yellow);text-shadow:3px 3px 0 #000;margin-top:4px}
+.start-panel{display:grid;grid-template-columns:1fr .8fr;gap:12px;margin-bottom:14px}
+.start-card{padding:15px}.start-card h2{margin:0 0 9px;color:var(--yellow);text-shadow:2px 2px 0 #000}
+.rules{margin:0;padding-left:18px;color:var(--muted);font-size:12px;line-height:1.65}
+.field label{display:block;color:var(--yellow);font-weight:1000;font-size:12px;margin-bottom:6px}
+.field input{width:100%;border:3px solid var(--line);background:var(--cream);color:#25162f;padding:11px 12px;box-shadow:3px 3px 0 var(--line);font-size:16px;outline:none}
+.btn{border:4px solid var(--line);background:var(--pink);color:white;font-weight:1000;padding:11px 14px;box-shadow:4px 4px 0 var(--line);cursor:pointer}
+.btn:active{transform:translate(4px,4px);box-shadow:none}
+.start-btn{width:100%;margin-top:12px;background:var(--green);color:#24142b}
+.stats{display:grid;grid-template-columns:1.1fr .8fr .8fr .8fr;gap:8px;margin-bottom:10px}
+.stat{border:3px solid var(--line);background:#fff0d2;color:#25152f;padding:8px 10px;box-shadow:3px 3px 0 var(--line)}
+.stat span{display:block;font-size:9px;color:#735c79;font-weight:900}.stat strong{display:block;font-size:21px;margin-top:2px}
+.lives{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
+.heart{width:18px;height:18px;background:var(--red);border:2px solid var(--line);position:relative;transform:rotate(45deg);margin:3px}
+.heart:before,.heart:after{content:"";position:absolute;width:14px;height:14px;background:var(--red);border:2px solid var(--line);border-bottom:0;border-right:0}
+.heart:before{left:-8px;top:0;transform:rotate(-45deg)}
+.heart:after{left:0;top:-8px;transform:rotate(-45deg)}
+.heart.lost,.heart.lost:before,.heart.lost:after{background:#63576b}
+.order-wrap{margin-bottom:10px;display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:stretch}
+.order-tag{display:grid;place-items:center;background:var(--yellow);color:#25152f;border:4px solid var(--line);box-shadow:3px 3px 0 var(--line);padding:10px;font-size:11px;font-weight:1000;min-width:98px}
+.order-card{border:4px solid var(--line);background:#fff0d2;color:#281731;padding:12px 14px;box-shadow:3px 3px 0 var(--line);font-weight:1000;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.order-card small{font-size:9px;color:#7b627f;font-weight:700}
+.game-shell{position:relative;border:5px solid var(--line);background:#3e2945;box-shadow:var(--shadow);overflow:hidden}
+.back-wall{height:72px;background:
+  linear-gradient(90deg,#312039 0 49%,#41294a 49% 51%,#312039 51% 100%);
+  background-size:72px 72px;border-bottom:4px solid var(--line);position:relative}
+.back-wall:before{content:"CURSED GOODS · SORT CAREFULLY";position:absolute;left:14px;top:15px;color:#ad91b5;font-size:10px;letter-spacing:1px}
+.shelf-deco{position:absolute;right:18px;top:14px;display:flex;gap:8px}
+.jar{width:22px;height:31px;border:3px solid var(--line);background:#78c8c4;box-shadow:inset 0 7px #c9f3e8}.jar:nth-child(2){background:#d9507e}.jar:nth-child(3){background:#9fce62}
+.belt{height:260px;position:relative;background:
+  linear-gradient(180deg,#654455 0 22%,#281a2d 22% 30%,#6c596a 30% 70%,#281a2d 70% 78%,#4c3445 78%);
+  overflow:hidden;touch-action:manipulation}
+.belt:after{content:"";position:absolute;left:0;right:0;top:50%;height:14px;background:repeating-linear-gradient(90deg,#1a111d 0 24px,#6d5b70 24px 38px);transform:translateY(-50%);opacity:.75}
+.item{position:absolute;width:64px;height:64px;border:0;background:transparent;padding:0;cursor:pointer;z-index:3;touch-action:manipulation}
+.item canvas{width:64px;height:64px;image-rendering:pixelated;filter:drop-shadow(4px 4px 0 rgba(0,0,0,.35))}
+.item.good{animation:goodPop .18s ease forwards}.item.bad{animation:badShake .25s linear}
+@keyframes goodPop{to{transform:scale(.15) rotate(12deg);opacity:0}}
+@keyframes badShake{25%{margin-left:-5px}50%{margin-left:6px}75%{margin-left:-4px}}
+.crate-row{display:flex;justify-content:space-between;align-items:center;background:#21162b;border-top:4px solid var(--line);padding:10px 12px;gap:10px}
+.crate{border:3px solid var(--line);background:#8c5d37;color:#fff2d8;padding:8px 12px;box-shadow:3px 3px 0 #0b0710;font-size:10px;font-weight:1000}
+.hint{font-size:10px;color:#cbb8d0;text-align:right;line-height:1.4}
+.flash{position:absolute;inset:0;z-index:10;display:grid;place-items:center;background:rgba(17,8,25,.86);text-align:center;padding:20px}
+.flash strong{display:block;font-size:clamp(24px,6vw,46px);color:var(--yellow);text-shadow:4px 4px 0 #000}
+.flash span{display:block;margin-top:8px;color:#fff0d2;font-size:12px}
+.float-score{position:absolute;z-index:8;font-weight:1000;font-size:16px;pointer-events:none;text-shadow:2px 2px 0 #000;animation:floatUp .65s ease forwards}
+@keyframes floatUp{to{transform:translateY(-42px);opacity:0}}
+.bottom-grid{display:grid;grid-template-columns:1fr .9fr;gap:12px;margin-top:14px}
+.leader{padding:14px}.leader h2,.tips h2{margin:0 0 9px;color:var(--yellow);text-shadow:2px 2px 0 #000}
+.rank-list{display:grid;gap:6px}.rank{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;border:2px solid var(--line);background:#fff0d2;color:#281731;padding:7px 8px;font-size:11px}.rank b{color:var(--wine)}
+.tips{padding:14px}.tips p{margin:0;color:var(--muted);font-size:11px;line-height:1.6}
+.gameover{position:absolute;inset:0;z-index:20;display:grid;place-items:center;background:rgba(12,6,18,.9);padding:16px}
+.over-card{width:min(430px,100%);border:4px solid var(--line);background:#2b193c;box-shadow:6px 6px 0 #000;padding:18px;text-align:center}.over-card h2{margin:0;color:var(--yellow);font-size:30px;text-shadow:3px 3px 0 #000}.over-score{font-size:48px;font-weight:1000;color:var(--green);text-shadow:4px 4px 0 #000;margin:8px 0}.over-meta{font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:12px}
+.over-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.secondary{background:var(--violet)}
+@media(max-width:760px){.top,.start-panel,.bottom-grid{grid-template-columns:1fr;display:grid}.bestbox{min-width:0}.stats{grid-template-columns:1fr 1fr}.machine{}}
+@media(max-width:520px){.wrap{padding-left:8px;padding-right:8px}.titlebox{padding:13px}.start-panel{grid-template-columns:1fr}.order-wrap{grid-template-columns:1fr}.order-tag{min-width:0}.belt{height:300px}.item{width:58px;height:58px}.item canvas{width:58px;height:58px}.back-wall{height:58px}.hint{font-size:9px}.over-actions{grid-template-columns:1fr}.stats{gap:5px}.stat{padding:7px}.stat strong{font-size:18px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="top">
+    <div class="pixel-box titlebox">
+      <span class="kicker">ENDLESS PIXEL SORTING GAME</span>
+      <h1>CURSED DOLL<br>SORTING SHOP</h1>
+      <p class="subtitle">저주받은 물건들이 컨베이어를 타고 흘러옵니다.<br>주문서에 맞는 것만 골라 상자에 넣어 주세요.</p>
+    </div>
+    <div class="pixel-box bestbox">
+      <span>MY BEST SCORE</span>
+      <strong id="myBest">0</strong>
+      <span id="bestName">—</span>
+    </div>
+  </section>
+
+  <section id="startPanel" class="start-panel">
+    <div class="pixel-box start-card">
+      <h2>게임 규칙</h2>
+      <ul class="rules">
+        <li>주문서 조건에 맞는 물건만 눌러 분류합니다.</li>
+        <li>맞는 물건을 흘려보내거나 틀린 물건을 누르면 실수 1회입니다.</li>
+        <li>실수는 총 5회까지이며 회복은 없습니다.</li>
+        <li>정답은 +100점부터 시작하고 콤보가 높을수록 보너스가 붙습니다.</li>
+        <li>시간이 지날수록 속도와 주문 난도가 계속 올라갑니다.</li>
+      </ul>
+    </div>
+    <div class="pixel-box start-card">
+      <div class="field">
+        <label>밴드 닉네임</label>
+        <input id="nickname" maxlength="24" autocomplete="off" placeholder="닉네임 입력">
+      </div>
+      <button id="startBtn" class="btn start-btn" type="button">정리점 오픈</button>
+      <p style="margin:10px 0 0;color:var(--muted);font-size:10px;line-height:1.5">현재 랭킹은 이 기기에 저장되는 테스트 기록입니다.</p>
+    </div>
+  </section>
+
+  <section id="gameArea" class="hidden">
+    <div class="stats">
+      <div class="stat"><span>MISTAKES</span><div id="lives" class="lives"></div></div>
+      <div class="stat"><span>SCORE</span><strong id="score">0</strong></div>
+      <div class="stat"><span>COMBO</span><strong id="combo">0</strong></div>
+      <div class="stat"><span>LEVEL / TIME</span><strong><span id="level">1</span> · <span id="time">0:00</span></strong></div>
+    </div>
+
+    <div class="order-wrap">
+      <div class="order-tag">TODAY'S ORDER</div>
+      <div class="order-card">
+        <span id="orderText">주문서를 준비하는 중...</span>
+        <small id="orderSub">조건에 맞는 물건만 눌러 주세요.</small>
+      </div>
+    </div>
+
+    <div id="gameShell" class="game-shell">
+      <div class="back-wall"><div class="shelf-deco"><i class="jar"></i><i class="jar"></i><i class="jar"></i></div></div>
+      <div id="belt" class="belt" aria-label="컨베이어 벨트"></div>
+      <div class="crate-row">
+        <div class="crate">[ PACKING BOX ]</div>
+        <div class="hint">맞는 물건은 터치/클릭<br>나머지는 그냥 흘려보내기</div>
+      </div>
+      <div id="ruleFlash" class="flash hidden"><div><strong>NEW ORDER!</strong><span id="flashRule"></span></div></div>
+      <div id="gameOver" class="gameover hidden">
+        <div class="over-card">
+          <h2>SHOP CLOSED</h2>
+          <div id="finalScore" class="over-score">0</div>
+          <div id="finalMeta" class="over-meta"></div>
+          <div class="over-actions">
+            <button id="retryBtn" class="btn" type="button">다시 하기</button>
+            <button id="quitBtn" class="btn secondary" type="button">기록 보기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bottom-grid">
+    <div class="pixel-box leader">
+      <h2>이 기기 최고점</h2>
+      <div id="rankList" class="rank-list"></div>
+    </div>
+    <div class="pixel-box tips">
+      <h2>정리점 메모</h2>
+      <p>주문서는 일정 시간마다 바뀌며 바뀌는 순간 컨베이어가 한 번 비워집니다. 후반에는 색상·종류·표식이 섞인 조건이 등장합니다. 같은 닉네임으로 다시 플레이하면 가장 높은 점수만 남습니다.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  var root=document;
+  var belt=root.getElementById("belt");
+  var gameArea=root.getElementById("gameArea");
+  var startPanel=root.getElementById("startPanel");
+  var startBtn=root.getElementById("startBtn");
+  var nickInput=root.getElementById("nickname");
+  var livesEl=root.getElementById("lives");
+  var scoreEl=root.getElementById("score");
+  var comboEl=root.getElementById("combo");
+  var levelEl=root.getElementById("level");
+  var timeEl=root.getElementById("time");
+  var orderText=root.getElementById("orderText");
+  var orderSub=root.getElementById("orderSub");
+  var ruleFlash=root.getElementById("ruleFlash");
+  var flashRule=root.getElementById("flashRule");
+  var gameOverEl=root.getElementById("gameOver");
+  var finalScore=root.getElementById("finalScore");
+  var finalMeta=root.getElementById("finalMeta");
+  var rankList=root.getElementById("rankList");
+  var myBest=root.getElementById("myBest");
+  var bestName=root.getElementById("bestName");
+  var retryBtn=root.getElementById("retryBtn");
+  var quitBtn=root.getElementById("quitBtn");
+
+  var COLORS={
+    pink:{name:"분홍",hex:"#d9507e"},
+    blue:{name:"파랑",hex:"#6fa6d9"},
+    green:{name:"초록",hex:"#91bf5d"},
+    yellow:{name:"노랑",hex:"#e8c151"},
+    purple:{name:"보라",hex:"#8a66ba"}
+  };
+  var TYPES={
+    doll:{name:"인형"},candle:{name:"양초"},eye:{name:"눈알"},candy:{name:"사탕"},
+    coffin:{name:"관"},talisman:{name:"부적"},bone:{name:"뼈"}
+  };
+  var TRAITS={
+    ribbon:{name:"리본"},crack:{name:"금 간"},red:{name:"붉은 표식"},plain:{name:"표식 없는"}
+  };
+
+  var state=null;
+  var raf=0,lastFrame=0,spawnTimer=0,transitionTimer=0;
+  var active=[];
+  var idSeq=0;
+  var STORAGE="cursed_doll_sorting_scores_v1";
+
+  function safeRead(){
+    try{return JSON.parse(localStorage.getItem(STORAGE)||"[]")}catch(e){return[]}
+  }
+  function safeWrite(v){
+    try{localStorage.setItem(STORAGE,JSON.stringify(v))}catch(e){}
+  }
+  function normalizeName(s){return String(s||"").replace(/\s+/g," ").trim().slice(0,24)}
+  function fmtTime(sec){
+    sec=Math.max(0,Math.floor(sec));var m=Math.floor(sec/60),s=sec%60;
+    return m+":"+(s<10?"0":"")+s;
+  }
+  function levelFor(t){
+    if(t<30)return 1;if(t<65)return 2;if(t<105)return 3;if(t<155)return 4;return 5;
+  }
+  function speedFor(t){return Math.min(.34,.115+t*.00145)}
+  function intervalFor(t){return Math.max(.48,1.18-t*.0048)}
+  function comboPoints(c){
+    if(c>=25)return 220;if(c>=15)return 180;if(c>=8)return 145;if(c>=4)return 120;return 100;
+  }
+  function drawLives(){
+    livesEl.innerHTML="";
+    for(var i=0;i<5;i++){var h=document.createElement("i");h.className="heart"+(i>=state.lives?" lost":"");livesEl.appendChild(h)}
+  }
+  function updateHUD(){
+    scoreEl.textContent=state.score;
+    comboEl.textContent=state.combo;
+    levelEl.textContent=levelFor(state.elapsed);
+    timeEl.textContent=fmtTime(state.elapsed);
+    drawLives();
+  }
+
+  function randomKey(obj){var ks=Object.keys(obj);return ks[Math.floor(Math.random()*ks.length)]}
+  function randomItem(){
+    return {type:randomKey(TYPES),color:randomKey(COLORS),trait:randomKey(TRAITS)};
+  }
+  function buildRule(){
+    var lv=levelFor(state.elapsed),kind,r={};
+    if(lv===1){
+      kind=Math.random()<.58?"type":"color";
+    }else if(lv===2){
+      kind=["type","color","typeColor","trait"][Math.floor(Math.random()*4)];
+    }else if(lv===3){
+      kind=["typeColor","trait","typeTrait","colorNotType"][Math.floor(Math.random()*4)];
+    }else{
+      kind=["typeColor","typeTrait","colorNotType","typeNotTrait","colorTrait"][Math.floor(Math.random()*5)];
+    }
+    r.kind=kind;
+    if(kind.indexOf("type")>=0||kind==="colorNotType")r.type=randomKey(TYPES);
+    if(kind.indexOf("Color")>=0||kind.indexOf("color")===0)r.color=randomKey(COLORS);
+    if(kind.indexOf("Trait")>=0||kind==="trait"||kind==="typeNotTrait")r.trait=randomKey(TRAITS);
+    r.text=ruleText(r);
+    return r;
+  }
+  function ruleText(r){
+    if(r.kind==="type")return TYPES[r.type].name+"만 상자에 넣어 주세요.";
+    if(r.kind==="color")return COLORS[r.color].name+"색 물건만 상자에 넣어 주세요.";
+    if(r.kind==="typeColor")return COLORS[r.color].name+"색 "+TYPES[r.type].name+"만 넣어 주세요.";
+    if(r.kind==="trait")return TRAITS[r.trait].name+" 물건만 넣어 주세요.";
+    if(r.kind==="typeTrait")return TRAITS[r.trait].name+" "+TYPES[r.type].name+"만 넣어 주세요.";
+    if(r.kind==="colorNotType")return COLORS[r.color].name+"색이지만 "+TYPES[r.type].name+"은 아닌 것만 넣어 주세요.";
+    if(r.kind==="typeNotTrait")return TYPES[r.type].name+" 중 "+TRAITS[r.trait].name+" 것은 제외해 주세요.";
+    if(r.kind==="colorTrait")return COLORS[r.color].name+"색이며 "+TRAITS[r.trait].name+" 물건만 넣어 주세요.";
+    return "조건에 맞는 물건만 넣어 주세요.";
+  }
+  function matches(item,r){
+    if(r.kind==="type")return item.type===r.type;
+    if(r.kind==="color")return item.color===r.color;
+    if(r.kind==="typeColor")return item.type===r.type&&item.color===r.color;
+    if(r.kind==="trait")return item.trait===r.trait;
+    if(r.kind==="typeTrait")return item.type===r.type&&item.trait===r.trait;
+    if(r.kind==="colorNotType")return item.color===r.color&&item.type!==r.type;
+    if(r.kind==="typeNotTrait")return item.type===r.type&&item.trait!==r.trait;
+    if(r.kind==="colorTrait")return item.color===r.color&&item.trait===r.trait;
+    return false;
+  }
+
+  function setRule(first){
+    clearActive(false);
+    state.rule=buildRule();
+    state.nextRuleAt=state.elapsed+(levelFor(state.elapsed)>=4?18:22);
+    orderText.textContent=state.rule.text;
+    orderSub.textContent="LEVEL "+levelFor(state.elapsed)+" · 주문이 바뀔 때 컨베이어가 비워집니다.";
+    flashRule.textContent=state.rule.text;
+    if(!first){
+      state.paused=true;
+      ruleFlash.classList.remove("hidden");
+      window.setTimeout(function(){
+        ruleFlash.classList.add("hidden");
+        if(state&&state.running){state.paused=false;lastFrame=performance.now()}
+      },1050);
+    }
+  }
+
+  function makeCanvas(item){
+    var cv=document.createElement("canvas");cv.width=32;cv.height=32;
+    var g=cv.getContext("2d");g.imageSmoothingEnabled=false;
+    var c=COLORS[item.color].hex,d="#1a1020",l="#fff0d2",r="#d94b55";
+    function px(x,y,w,h,col){g.fillStyle=col;g.fillRect(x,y,w,h)}
+    if(item.type==="doll"){
+      px(10,3,12,9,c);px(8,10,16,12,c);px(5,13,4,10,c);px(23,13,4,10,c);px(9,22,5,8,c);px(18,22,5,8,c);
+      px(12,7,3,3,d);px(18,7,3,3,d);px(14,12,4,2,d);
+    }else if(item.type==="candle"){
+      px(12,6,9,22,c);px(10,8,13,4,l);px(15,1,4,6,"#f09d45");px(16,0,2,3,"#fff09b");px(9,27,15,3,d);
+    }else if(item.type==="eye"){
+      px(5,11,22,12,l);px(8,8,16,3,l);px(8,23,16,3,l);px(11,12,10,10,c);px(14,14,5,6,d);px(16,15,2,2,"#fff");
+    }else if(item.type==="candy"){
+      px(5,12,5,8,c);px(10,9,12,14,c);px(22,12,5,8,c);px(2,10,4,12,l);px(26,10,4,12,l);px(13,11,2,10,l);px(18,11,2,10,l);
+    }else if(item.type==="coffin"){
+      px(11,2,10,3,c);px(7,5,18,7,c);px(5,12,22,12,c);px(9,24,14,6,c);px(10,5,2,21,d);px(20,5,2,21,d);px(14,11,4,10,l);px(11,14,10,4,l);
+    }else if(item.type==="talisman"){
+      px(7,3,18,27,"#e7c94b");px(9,5,14,23,"#f5dd62");px(15,7,2,18,r);px(11,10,10,2,r);px(10,20,12,2,r);
+    }else{
+      px(5,13,22,6,l);px(2,10,6,5,l);px(2,18,6,5,l);px(24,10,6,5,l);px(24,18,6,5,l);px(12,11,8,10,c);
+    }
+    if(item.trait==="ribbon"){px(4,3,6,5,"#ff84b5");px(10,5,5,3,"#ff84b5");px(2,5,4,3,"#ff84b5")}
+    if(item.trait==="crack"){px(15,4,2,6,d);px(13,9,3,2,d);px(16,10,2,5,d)}
+    if(item.trait==="red"){px(25,4,4,4,r);px(26,5,2,2,"#fff")}
+    if(item.trait==="plain"){px(3,27,4,2,"#7e687f")}
+    return cv;
+  }
+
+  function spawnItem(){
+    if(!state.running||state.paused||active.length>=8)return;
+    var data=randomItem();
+    var b=belt.getBoundingClientRect();
+    var item={id:++idSeq,data:data,x:-72,y:34+Math.random()*Math.max(80,b.height-116),done:false,should:matches(data,state.rule)};
+    var btn=document.createElement("button");btn.type="button";btn.className="item";btn.setAttribute("aria-label",COLORS[data.color].name+" "+TYPES[data.type].name+" "+TRAITS[data.trait]);
+    btn.appendChild(makeCanvas(data));btn.style.left=item.x+"px";btn.style.top=item.y+"px";
+    btn.addEventListener("click",function(){classify(item)});
+    item.el=btn;belt.appendChild(btn);active.push(item);
+  }
+  function classify(item){
+    if(!state.running||state.paused||item.done)return;
+    item.done=true;
+    if(item.should){
+      state.correct++;state.combo++;state.bestCombo=Math.max(state.bestCombo,state.combo);
+      var pts=comboPoints(state.combo);state.score+=pts;floatText(item,"+"+pts,"#9fce62");item.el.classList.add("good");
+      window.setTimeout(function(){removeItem(item)},170);
+    }else{
+      mistake(item,"잘못 분류함");
+    }
+    updateHUD();
+  }
+  function mistake(item,reason){
+    if(!state.running)return;
+    state.mistakes++;state.lives--;state.score=Math.max(0,state.score-100);state.combo=0;
+    if(item&&item.el){item.done=true;item.el.classList.add("bad");floatText(item,"-100","#e85b66");window.setTimeout(function(){removeItem(item)},240)}
+    updateHUD();
+    if(state.lives<=0)endGame(reason);
+  }
+  function floatText(item,text,color){
+    var f=document.createElement("div");f.className="float-score";f.textContent=text;f.style.color=color;f.style.left=(item.x+18)+"px";f.style.top=item.y+"px";belt.appendChild(f);window.setTimeout(function(){if(f.parentNode)f.remove()},700)
+  }
+  function removeItem(item){
+    var i=active.indexOf(item);if(i>=0)active.splice(i,1);if(item.el&&item.el.parentNode)item.el.remove()
+  }
+  function clearActive(countMiss){
+    var copy=active.slice();
+    copy.forEach(function(it){if(countMiss&&it.should&&!it.done&&state&&state.running)mistake(null,"필수 물건 놓침");removeItem(it)})
+  }
+
+  function frame(now){
+    if(!state||!state.running)return;
+    if(!lastFrame)lastFrame=now;
+    var dt=Math.min(.05,(now-lastFrame)/1000);lastFrame=now;
+    if(!state.paused){
+      state.elapsed+=(now-state.lastClock)/1000;
+      state.lastClock=now;
+      spawnTimer-=dt;
+      if(spawnTimer<=0){spawnItem();spawnTimer=intervalFor(state.elapsed)*(0.78+Math.random()*.45)}
+      var w=belt.clientWidth,speed=w*speedFor(state.elapsed);
+      for(var i=active.length-1;i>=0;i--){
+        var it=active[i];if(it.done)continue;it.x+=speed*dt;it.el.style.left=Math.round(it.x)+"px";
+        if(it.x>w+8){
+          var miss=it.should;removeItem(it);
+          if(miss){mistake(null,"필수 물건 놓침");if(!state.running)break}
+        }
+      }
+      if(state.elapsed>=state.nextRuleAt&&state.running)setRule(false);
+      updateHUD();
+    }else{
+      state.lastClock=now;
+    }
+    raf=requestAnimationFrame(frame);
+  }
+
+  function startGame(){
+    var n=normalizeName(nickInput.value);
+    if(!n){nickInput.focus();return}
+    stopLoop();
+    state={name:n,score:0,combo:0,bestCombo:0,lives:5,mistakes:0,correct:0,elapsed:0,nextRuleAt:22,rule:null,running:true,paused:false,lastClock:performance.now()};
+    active=[];belt.querySelectorAll(".item,.float-score").forEach(function(x){x.remove()});
+    startPanel.classList.add("hidden");gameArea.classList.remove("hidden");gameOverEl.classList.add("hidden");
+    setRule(true);updateHUD();spawnTimer=.35;lastFrame=performance.now();state.lastClock=lastFrame;raf=requestAnimationFrame(frame);
+    window.setTimeout(function(){gameArea.scrollIntoView({behavior:"smooth",block:"start"})},50);
+  }
+  function stopLoop(){if(raf)cancelAnimationFrame(raf);raf=0;lastFrame=0;if(transitionTimer)clearTimeout(transitionTimer)}
+  function endGame(reason){
+    if(!state||!state.running)return;
+    state.running=false;stopLoop();clearActive(false);
+    var total=state.correct+state.mistakes,acc=total?Math.round(state.correct/total*100):0;
+    saveScore(state.name,state.score,state.bestCombo,acc,state.elapsed);
+    finalScore.textContent=state.score;
+    finalMeta.innerHTML="닉네임: <strong>"+escapeHTML(state.name)+"</strong><br>최고 콤보 "+state.bestCombo+" · 정확도 "+acc+"% · 버틴 시간 "+fmtTime(state.elapsed)+"<br>마지막 실수: "+escapeHTML(reason||"실수 5회");
+    gameOverEl.classList.remove("hidden");renderRanks();renderBest();
+  }
+  function saveScore(name,score,bestCombo,accuracy,time){
+    var rows=safeRead(),key=name.replace(/\s+/g,"").toLowerCase(),found=rows.find(function(x){return x.key===key});
+    var rec={key:key,name:name,score:score,bestCombo:bestCombo,accuracy:accuracy,time:Math.floor(time),at:Date.now()};
+    if(!found){rows.push(rec)}else if(score>found.score){Object.assign(found,rec)}
+    rows.sort(function(a,b){return b.score-a.score||b.bestCombo-a.bestCombo});safeWrite(rows.slice(0,30));
+  }
+  function escapeHTML(s){return String(s).replace(/[&<>"']/g,function(ch){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]})}
+  function renderRanks(){
+    var rows=safeRead().slice(0,10);rankList.innerHTML="";
+    if(!rows.length){rankList.innerHTML='<div style="color:var(--muted);font-size:11px">아직 기록이 없습니다.</div>';return}
+    rows.forEach(function(r,i){var d=document.createElement("div");d.className="rank";d.innerHTML="<b>"+(i+1)+"</b><span>"+escapeHTML(r.name)+"</span><strong>"+r.score+"</strong>";rankList.appendChild(d)})
+  }
+  function renderBest(){
+    var n=normalizeName(nickInput.value),key=n.replace(/\s+/g,"").toLowerCase(),rows=safeRead(),r=rows.find(function(x){return x.key===key});
+    myBest.textContent=r?r.score:0;bestName.textContent=r?r.name:(n||"—");
+  }
+
+  startBtn.addEventListener("click",startGame);
+  retryBtn.addEventListener("click",function(){gameOverEl.classList.add("hidden");startGame()});
+  quitBtn.addEventListener("click",function(){gameOverEl.classList.add("hidden");gameArea.classList.add("hidden");startPanel.classList.remove("hidden");renderRanks();renderBest();window.scrollTo({top:0,behavior:"smooth"})});
+  nickInput.addEventListener("input",renderBest);
+  nickInput.addEventListener("keydown",function(e){if(e.key==="Enter")startGame()});
+  window.addEventListener("resize",function(){if(state&&state.running){active.forEach(function(it){it.y=Math.min(it.y,Math.max(30,belt.clientHeight-72));it.el.style.top=it.y+"px"})}});
+  renderRanks();renderBest();
+})();
+</script>
+</body>
+</html>
