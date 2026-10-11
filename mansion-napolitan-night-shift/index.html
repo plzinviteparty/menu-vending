@@ -115,15 +115,15 @@ button{font:inherit}.hidden{display:none!important}
 .window-watcher:before{content:"";position:absolute;width:44px;height:48px;left:4px;top:-34px;border-radius:50%;background:#030403}
 .window-watcher:after{content:"";position:absolute;width:5px;height:4px;left:12px;top:-15px;background:#c7c4b6;box-shadow:22px 1px #c7c4b6}
 .hand-zone{position:absolute;inset:0;z-index:11;pointer-events:none}
-.blood-hand{position:absolute;width:72px;height:84px;opacity:.92;filter:drop-shadow(0 2px 2px #240405)}
-.blood-hand .palm{position:absolute;left:20px;top:30px;width:38px;height:42px;background:#6e1118;border-radius:45% 45% 35% 35%;transform:rotate(-10deg)}
-.blood-hand i{position:absolute;width:10px;background:#6e1118;border-radius:8px 8px 5px 5px;transform-origin:bottom}
-.blood-hand i:nth-child(2){height:39px;left:15px;top:4px;transform:rotate(-18deg)}
-.blood-hand i:nth-child(3){height:46px;left:28px;top:0}
-.blood-hand i:nth-child(4){height:43px;left:41px;top:3px;transform:rotate(7deg)}
-.blood-hand i:nth-child(5){height:34px;left:53px;top:10px;transform:rotate(16deg)}
-.blood-hand i:nth-child(6){height:28px;left:8px;top:29px;transform:rotate(-45deg)}
-.blood-hand.h1{left:14%;top:22%;transform:rotate(-12deg)}.blood-hand.h2{left:47%;top:12%;transform:rotate(9deg)}.blood-hand.h3{right:12%;top:31%;transform:rotate(-7deg)}
+.blood-hand{position:absolute;width:118px;height:142px;opacity:.94;filter:drop-shadow(0 1px 1px rgba(255,255,255,.18)) drop-shadow(0 4px 8px rgba(0,0,0,.55));pointer-events:none}
+.blood-hand svg{width:100%;height:100%;overflow:visible}
+.blood-hand .ghostprint{fill:#edf1ea;opacity:.78}
+.blood-hand .ghostprint-soft{fill:#cfd7d0;opacity:.46}
+.blood-hand .ghostprint-line{fill:none;stroke:#ffffff;stroke-width:2.2;stroke-linecap:round;opacity:.28}
+.blood-hand .ghostprint-drip{fill:#e9eee8;opacity:.66}
+.blood-hand.h1{left:10%;top:16%;transform:rotate(-13deg) scale(.93)}
+.blood-hand.h2{left:43%;top:8%;transform:rotate(7deg) scale(1.02)}
+.blood-hand.h3{right:8%;top:24%;transform:rotate(-6deg) scale(.88)}
 .hand-warning{position:absolute;z-index:25;top:12px;right:14px;border:1px solid #782323;background:rgba(30,3,5,.92);color:#d5a3a0;padding:7px 9px;font-size:10px;letter-spacing:.6px}
 .jumpscare{position:absolute;inset:0;z-index:60;background:#020302;display:grid;place-items:center;overflow:hidden;animation:jsFlash .18s 4}
 .jumpscare .face{width:min(76%,520px);aspect-ratio:1/1.05;background:#050605;border-radius:46% 46% 50% 50%;position:relative;transform:scale(1.15);filter:contrast(1.8)}
@@ -279,7 +279,7 @@ var baseRules=[
 "흰 드레스를 입은 여성이 현관에 서 있다면 직원 명부를 먼저 확인하십시오. 명부에 이름이 있는 경우에만 문을 열어도 됩니다.",
 "새벽 3시 이후 수칙서에 11번 항목이 나타날 수 있습니다. 본 수칙서는 10번에서 끝납니다. 11번 항목을 따르지 마십시오.",
 "지하 보일러실의 전등이 세 번 깜빡인 경우 차단기를 반드시 OFF로 내리십시오. 다시 켜지 마십시오.",
-"벽에 피 묻은 손바닥이 연속으로 세 번 찍히면 즉시 그 구역을 벗어나십시오. 네 번째 손바닥을 확인하려 하지 마십시오."
+"벽에 흰 손바닥이 연속으로 세 번 찍히면 즉시 그 구역을 벗어나십시오. 네 번째 손바닥을 확인하려 하지 마십시오."
 ];
 
 var taskDefs=[
@@ -368,9 +368,35 @@ function triggerPendingScare(){
  setTimeout(function(){if(state&&state.running){showJumpscare();log("뒤늦게 무언가 따라붙었다.",true)}},650)
 }
 function watcherHere(room){return !!(state&&state.watcherRoom===room&&state.time<state.watcherUntil)}
+function handSVG(){
+ return '<svg viewBox="0 0 160 190" aria-hidden="true">'+
+ '<g class="ghostprint">'+
+ '<path d="M44 79 C36 76 31 69 27 62 C22 54 14 52 10 58 C6 64 11 72 17 79 C24 88 32 97 40 104 C43 107 45 110 46 114 L47 136 C48 149 54 158 66 164 C78 170 99 168 111 161 C122 154 126 143 127 130 L128 95 C129 87 125 80 118 77 C111 74 106 79 104 87 L101 111 C100 116 97 118 94 115 C91 112 92 106 92 101 L93 38 C93 26 87 20 80 21 C72 22 69 29 69 40 L69 101 C69 107 66 110 62 108 C59 106 59 101 59 96 L58 49 C58 38 52 32 45 33 C37 34 34 42 35 52 L38 96 C39 102 36 105 32 102 C29 99 29 94 28 89 L25 69 C24 59 19 53 12 54 C5 56 4 64 8 73 C15 87 27 103 42 116 Z" fill-rule="evenodd"/>'+
+ '<path d="M95 93 C95 82 97 72 99 62 L102 36 C103 27 109 22 115 24 C122 26 124 34 122 44 L117 75 C116 84 116 94 117 101 C118 108 115 113 110 113 C104 113 101 107 102 99 Z"/>'+
+ '<path d="M120 103 C121 94 124 86 127 78 L132 58 C134 50 140 46 145 49 C151 52 151 60 148 68 L141 87 C139 94 137 101 136 108 C135 114 131 118 126 116 C122 115 119 110 120 103 Z"/>'+
+ '<path d="M52 34 C51 22 55 14 62 12 C70 10 76 17 76 29 L75 76 C75 84 72 89 67 89 C61 89 58 83 58 75 Z"/>'+
+ '<path d="M79 24 C79 11 85 4 93 5 C101 6 105 14 104 27 L101 72 C100 81 97 86 91 86 C85 86 82 80 83 71 Z"/>'+
+ '<path d="M106 34 C106 22 112 15 120 16 C127 17 131 25 129 37 L124 74 C123 83 119 88 113 87 C107 86 104 80 105 71 Z"/>'+
+ '<path d="M129 48 C131 38 137 33 144 36 C151 39 153 46 149 56 L140 82 C137 90 133 94 128 92 C123 90 122 84 125 76 Z"/>'+
+ '</g>'+
+ '<path class="ghostprint-soft" d="M49 115 C58 104 68 98 80 99 C92 99 103 106 112 117 C108 137 97 149 80 152 C63 151 52 139 49 115 Z"/>'+
+ '<path d="M61 108 C67 100 74 96 82 97 C91 98 98 103 103 111 C99 124 91 130 81 131 C70 130 63 123 61 108 Z" fill="#0d0f0e" opacity=".98"/>'+
+ '<g class="ghostprint-line">'+
+ '<path d="M48 121 C57 116 62 115 67 117"/><path d="M96 119 C103 117 108 118 112 121"/>'+
+ '<path d="M44 58 C49 55 53 55 57 57"/><path d="M80 29 C87 26 94 27 100 30"/>'+
+ '<path d="M106 45 C112 42 119 43 125 46"/><path d="M130 62 C135 59 141 61 145 64"/>'+
+ '</g>'+
+ '<g class="ghostprint-drip">'+
+ '<path d="M51 148 C55 147 58 150 57 155 L55 174 C54 180 48 180 47 174 L48 155 C48 151 49 149 51 148 Z"/>'+
+ '<path d="M71 160 C74 159 77 161 77 165 L76 179 C75 184 70 184 69 179 L69 165 C69 162 70 161 71 160 Z"/>'+
+ '<path d="M111 151 C114 150 117 152 117 156 L116 169 C115 174 110 174 109 169 L109 156 C109 153 110 152 111 151 Z"/>'+
+ '<circle cx="44" cy="165" r="3"/><circle cx="84" cy="180" r="2.6"/><circle cx="121" cy="144" r="2.3"/>'+
+ '</g>'+
+ '</svg>'
+}
 function handMarkup(){
  var n=state&&state.handCount?state.handCount:0,html='<div class="hand-zone">';
- for(var i=1;i<=n;i++)html+='<div class="blood-hand h'+i+'"><span class="palm"></span><i></i><i></i><i></i><i></i><i></i></div>';
+ for(var i=1;i<=n;i++)html+='<div class="blood-hand h'+i+'">'+handSVG()+'</div>';
  if(n>=3)html+='<div class="hand-warning">즉시 이 구역을 벗어나십시오.</div>';
  return html+'</div>'
 }
@@ -387,7 +413,7 @@ function startHandSequence(){
    if(!state||!state.running||!eventActive("bloodHands"))return;
    state.handCount=n;sfxHandSlam();if(state.room==="service"){renderScene();scene.classList.remove("shake");void scene.offsetWidth;scene.classList.add("shake")}
    if(n===3){
-     log("직원 통로 벽에 세 번째 피 묻은 손바닥이 찍힘",true);
+     log("직원 통로 벽에 세 번째 흰 손바닥이 찍힘",true);
      state.handEscapeDeadline=state.time+7;
    }
  },delay))}
@@ -464,7 +490,7 @@ function updateMessage(){
  if(state.room==="second"&&eventActive("knock")){setMsg("204호 안쪽에서 세 번, 일정한 간격으로 노크 소리가 난다.");return}
  if(state.room==="west"&&eventActive("mirror")){setMsg("거울에 복도는 비치는데, 당신의 모습만 없다.");return}
  if(state.room==="basement"&&eventActive("flicker")){setMsg("전등이 정확히 세 번 깜빡였다. 차단기에서 낮은 진동음이 난다.");return}
- if(state.room==="service"&&eventActive("bloodHands")){setMsg(state.handCount>=3?"세 번째 피 묻은 손바닥이 벽을 때렸다. 당장 이곳을 벗어나야 한다.":"벽 너머에서 무거운 것이 두드리는 소리가 난다.");return}
+ if(state.room==="service"&&eventActive("bloodHands")){setMsg(state.handCount>=3?"세 번째 흰 손바닥이 벽을 때렸다. 당장 이곳을 벗어나야 한다.":"벽 너머에서 무거운 것이 두드리는 소리가 난다.");return}
  if(state.room==="lobby"&&eventActive("carpet")){setMsg("현관으로 이어지는 카펫이 붉다. 분명 근무 시작 때는 회색이었다.");return}
  if(state.room==="lobby"&&eventActive("woman")){setMsg("흰 드레스의 여성이 현관 바깥에 서 있다. 노크는 하지 않는다.");return}
  if(state.room==="office"&&eventActive("lastShadow")){setMsg("문 바로 바깥에서 젖은 발소리가 멈췄다.");return}
@@ -623,7 +649,7 @@ function triggerEvent(def){
  if(def.id==="knock")log("2층 방향에서 세 번의 노크 소리가 남",true),sfxKnock();
  if(def.id==="mirror")log("서쪽 복도 전등이 잠깐 꺼졌다 켜짐",true);
  if(def.id==="flicker")log("지하 쪽 전등이 세 번 깜빡임",true),sfxFlicker();
- if(def.id==="bloodHands"){log("직원 통로에서 젖은 손으로 벽을 치는 듯한 소리가 남",true);if(state.room==="service")startHandSequence()}
+ if(def.id==="bloodHands"){log("직원 통로에서 젖은 손으로 벽을 세게 치는 듯한 소리가 남",true);if(state.room==="service")startHandSequence()}
  if(def.id==="carpet")log("현관 쪽에서 천이 끌리는 소리가 남",true);
  if(def.id==="woman")log("현관문 바깥에 누군가 서 있음",true),sfxKnock();
  if(def.id==="lastShadow")log("경비실 문 밖에서 젖은 발소리가 멈춤",true),sfxWhisper();
