@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>저택의 나폴리탄 괴담 속에서 살아남기</title>
+<style>
+:root{
+  --bg:#080909;--panel:#111311;--panel2:#171a17;--paper:#d7ceb3;--ink:#151611;
+  --line:#2b2f29;--dim:#8c9286;--text:#d9ddd3;--amber:#c59a52;--danger:#8f2d2d;
+  --green:#64745d;--cold:#66727b;--black:#030403;--shadow:6px 6px 0 #020302;
+  font-family:"Courier New","Noto Sans KR",monospace
+}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text)}
+body{
+ background:
+ linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+ linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px),
+ radial-gradient(circle at 50% -20%,#22271f 0,transparent 44%),
+ #080909;
+ background-size:20px 20px,20px 20px,auto,auto
+}
+button{font:inherit}.hidden{display:none!important}
+.app{max-width:1180px;margin:auto;padding:14px 10px 48px}
+.shell{border:1px solid #3a3e38;background:#0d0f0e;box-shadow:0 0 0 5px #050605,0 16px 40px rgba(0,0,0,.5)}
+.title-screen{padding:26px;min-height:560px;display:grid;grid-template-columns:1.2fr .8fr;gap:22px;align-items:center;background:
+ linear-gradient(90deg,rgba(0,0,0,.3),rgba(0,0,0,.78)),
+ repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.015) 3px 4px),
+ #171914}
+.title-copy small{display:inline-block;color:#b2ab96;border:1px solid #5f5b4e;padding:5px 7px;letter-spacing:2px;font-size:10px}
+.title-copy h1{font-size:clamp(34px,6vw,70px);line-height:1.02;margin:18px 0;color:#d7ceb3;letter-spacing:-3px;text-shadow:4px 4px 0 #000}
+.title-copy p{color:#999d93;line-height:1.8;font-size:13px;max-width:640px}
+.start-card{border:1px solid #4e514a;background:#0d0f0e;padding:18px;box-shadow:var(--shadow)}
+.start-card h2{font-size:15px;margin:0 0 12px;color:#c4b991}
+.start-card ul{padding-left:18px;color:#8f958c;font-size:12px;line-height:1.75}
+.start-actions{display:grid;gap:8px;margin-top:14px}
+.btn{border:1px solid #64675f;background:#222621;color:#e3e6df;padding:11px 12px;cursor:pointer;font-weight:700;min-height:44px}
+.btn:hover{background:#2b3029}.btn.primary{background:#514633;border-color:#88785a;color:#f2e5c7}.btn.danger{background:#3d1919;border-color:#7c3434}.btn.ghost{background:#121512;color:#aeb3a8}
+.game{position:relative}
+.hud{display:grid;grid-template-columns:1fr auto auto auto;gap:1px;background:#2b2e29;border-bottom:1px solid #343832}
+.hud>div{background:#101210;padding:10px 12px;min-width:0}.hud span{display:block;color:#6f766d;font-size:9px;letter-spacing:1.2px}.hud strong{display:block;margin-top:3px;font-size:16px;color:#d5d9d1;white-space:nowrap}
+.strikes{display:flex;gap:5px;margin-top:5px}.strike{width:11px;height:11px;border:1px solid #6f302f;background:#742828}.strike.off{background:#1c1d1b;border-color:#3f423d}
+.game-grid{display:grid;grid-template-columns:1fr 300px;min-height:640px}
+.scene-col{min-width:0;background:#080a09}
+.scene{position:relative;min-height:480px;overflow:hidden;border-bottom:1px solid #2a2e29;background:#111}
+.scene:after{content:"";pointer-events:none;position:absolute;inset:0;background:
+ repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 1px,transparent 1px 4px),
+ radial-gradient(circle at 50% 40%,transparent 0 38%,rgba(0,0,0,.62) 100%);z-index:20}
+.scene-inner{position:absolute;inset:0;overflow:hidden}
+.room-label{position:absolute;left:14px;top:12px;z-index:22;color:#a9afa4;font-size:10px;letter-spacing:2px;background:rgba(0,0,0,.6);padding:5px 7px;border-left:2px solid #6b7068}
+.room-art{position:absolute;inset:0;background:#171a17}
+.floor{position:absolute;left:0;right:0;bottom:0;height:31%;background:linear-gradient(#1c1a17,#0d0d0c)}
+.wall{position:absolute;inset:0 0 30% 0;background:linear-gradient(90deg,#171915,#20231d 50%,#151713)}
+.wall:before{content:"";position:absolute;left:0;right:0;top:58%;height:3px;background:#0c0d0b;box-shadow:0 7px #282a25}
+.door{position:absolute;width:25%;height:62%;bottom:27%;background:linear-gradient(90deg,#1b1915,#30291f 52%,#171511);border:5px solid #0d0c0a;box-shadow:inset 0 0 0 2px #454034}
+.door:after{content:"";position:absolute;width:7px;height:7px;border-radius:50%;background:#83704b;right:13%;top:52%;box-shadow:0 0 8px #c5a66a}
+.window{position:absolute;width:26%;height:33%;top:15%;background:#060908;border:8px solid #20231d;box-shadow:inset 0 0 0 2px #3e433b}
+.window:before,.window:after{content:"";position:absolute;background:#272c27}.window:before{width:3px;top:0;bottom:0;left:50%}.window:after{height:3px;left:0;right:0;top:50%}
+.desk{position:absolute;width:42%;height:18%;left:28%;bottom:17%;background:#29251e;border:5px solid #100f0c;box-shadow:inset 0 4px #4b4234}
+.desk:before{content:"";position:absolute;width:8%;height:110%;left:8%;top:100%;background:#171510;box-shadow:260px 0 #171510}
+.phone{position:absolute;width:52px;height:25px;background:#252622;border:3px solid #090a09;border-radius:12px 12px 3px 3px;left:42%;bottom:35%;z-index:3}.phone.ringing{animation:ring .2s infinite alternate;box-shadow:0 0 18px rgba(167,63,50,.6)}
+@keyframes ring{to{transform:rotate(3deg) translateX(2px)}}
+.clockface{position:absolute;right:9%;top:12%;width:70px;height:70px;border:5px solid #151713;border-radius:50%;background:#c5c0a9;box-shadow:0 0 0 2px #575b51}.clockface:before{content:"";position:absolute;left:32px;top:14px;width:3px;height:21px;background:#252821;transform-origin:bottom;transform:rotate(18deg)}.clockface:after{content:"";position:absolute;left:33px;top:31px;width:18px;height:3px;background:#252821;transform-origin:left;transform:rotate(30deg)}
+.stairs{position:absolute;left:18%;bottom:18%;width:48%;height:46%;transform:skewY(-18deg);background:repeating-linear-gradient(0deg,#25241f 0 11px,#0c0d0b 11px 15px);border-left:8px solid #0b0c0a;border-right:8px solid #0b0c0a}
+.cabinet{position:absolute;width:21%;height:48%;right:9%;bottom:25%;background:#24231d;border:5px solid #10110e;box-shadow:inset 0 0 0 2px #4b4b3f}.cabinet:before{content:"";position:absolute;left:50%;top:0;bottom:0;width:3px;background:#0e0f0d}
+.counter{position:absolute;left:8%;right:8%;height:25%;bottom:22%;background:#2b2a22;border:5px solid #10110e;box-shadow:inset 0 4px #464438}
+.mirror{position:absolute;width:25%;height:48%;left:38%;top:12%;background:#252b2b;border:9px solid #1b1714;box-shadow:inset 0 0 20px #050606}.mirror .reflection{position:absolute;left:41%;top:20%;width:18%;height:46%;background:#343c39;border-radius:40% 40% 20% 20%;opacity:.62}.mirror.empty .reflection{display:none}
+.cctv{position:absolute;display:grid;grid-template-columns:1fr 1fr;gap:6px;width:50%;left:25%;top:18%}.monitor{aspect-ratio:1.25;background:#111;border:7px solid #222821;position:relative;overflow:hidden}.monitor:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,#263027 0 2px,#131713 2px 4px);opacity:.75}.monitor b{position:absolute;left:5px;top:4px;z-index:2;color:#8d9b88;font-size:9px}
+.boiler{position:absolute;width:38%;height:55%;left:31%;bottom:18%;background:#31342e;border:7px solid #11130f;border-radius:8px}.boiler:before{content:"";position:absolute;width:36%;aspect-ratio:1;border:5px solid #111;border-radius:50%;left:30%;top:12%;background:#737568}.boiler:after{content:"";position:absolute;width:12px;height:70%;right:10%;top:15%;background:#6d2d27;border:3px solid #131512}
+.pipe{position:absolute;height:18px;background:#343833;border:4px solid #111;left:0;right:54%;top:24%;box-shadow:0 62px #343833}
+.entity{position:absolute;z-index:12;filter:drop-shadow(0 0 12px #000)}
+.child{left:45%;bottom:24%;width:54px;height:118px;background:#050606;border-radius:26px 26px 5px 5px}.child:before{content:"";position:absolute;width:44px;height:44px;border-radius:50%;left:5px;top:-29px;background:#050606}.child:after{content:"";position:absolute;width:5px;height:5px;background:#ddd9c6;left:14px;top:-10px;box-shadow:22px 0 #ddd9c6}
+.woman{right:22%;bottom:23%;width:74px;height:180px;background:linear-gradient(#b8b8ac 0 18%,#d2d0bf 18% 100%);clip-path:polygon(28% 0,72% 0,82% 18%,100% 100%,0 100%,18% 18%);opacity:.85}.woman:before{content:"";position:absolute;width:38px;height:44px;border-radius:50%;background:#b6afa0;left:18px;top:-30px;box-shadow:0 -9px 0 7px #111}
+.red-carpet{position:absolute;left:18%;right:18%;bottom:0;height:36%;background:linear-gradient(90deg,#4a1113,#791b1e 50%,#421012);clip-path:polygon(30% 0,70% 0,100% 100%,0 100%);z-index:2}
+.shadow-face{position:absolute;right:8%;top:12%;width:120px;height:150px;background:#030403;border-radius:50% 45% 50% 45%;opacity:.72}.shadow-face:before{content:"";position:absolute;width:12px;height:8px;background:#b8b3a1;left:25px;top:54px;box-shadow:52px 3px #b8b3a1}
+.scene-message{position:absolute;left:16px;right:16px;bottom:14px;z-index:25;background:rgba(4,5,4,.91);border:1px solid #454942;padding:10px 12px;color:#c9cec4;font-size:12px;line-height:1.55;min-height:44px}
+.actions{padding:10px;display:flex;flex-wrap:wrap;gap:7px;background:#0e100f}.action-btn{border:1px solid #4a4e47;background:#191c19;color:#cbd0c6;padding:9px 11px;cursor:pointer;min-height:42px}.action-btn:hover{background:#252923}.action-btn.warn{border-color:#754344;color:#d8aaa6;background:#241515}
+.sidebar{border-left:1px solid #292d28;background:#0d0f0e;padding:12px;display:flex;flex-direction:column;gap:10px}
+.sidebox{border:1px solid #30342f;background:#121412;padding:10px}.sidebox h3{font-size:10px;color:#898f86;letter-spacing:1.4px;margin:0 0 8px}.task{border-left:2px solid #6f735f;padding:7px 8px;margin:6px 0;background:#171917;font-size:11px;line-height:1.45}.task.done{opacity:.42;text-decoration:line-through}.task.urgent{border-color:#8b3b38;color:#d1b0aa}
+.nav{display:grid;grid-template-columns:1fr 1fr;gap:6px}.nav button{border:1px solid #3d413b;background:#171a17;color:#b8beb4;padding:9px 6px;min-height:42px;cursor:pointer}.nav button:disabled{opacity:.25}.tools{display:grid;grid-template-columns:1fr 1fr;gap:6px}.tools .btn{padding:9px 7px;font-size:10px}
+.log{height:132px;overflow:auto;color:#747b73;font-size:10px;line-height:1.55}.log p{margin:0 0 5px}.log p.hot{color:#b98b80}
+.rulebook{position:absolute;inset:0;z-index:80;background:rgba(0,0,0,.92);display:grid;place-items:center;padding:16px}.book{width:min(720px,100%);max-height:92%;overflow:auto;background:#cfc5aa;color:#171812;border:10px solid #201b14;box-shadow:0 0 0 1px #6e6554,0 24px 80px #000;padding:22px}.book h2{margin:0 0 4px;font-size:20px}.book .warning{font-size:10px;color:#6b342d;margin-bottom:15px}.rules{margin:0;padding-left:22px;font-family:"Noto Serif KR",serif;font-size:13px;line-height:1.7}.rules li{margin-bottom:8px}.rules .fake{color:#7b2323;font-weight:700}.bookfoot{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:16px;border-top:1px solid #807762;padding-top:12px;font-size:10px;color:#625c50}
+.overlay{position:absolute;inset:0;z-index:100;background:rgba(0,0,0,.94);display:grid;place-items:center;padding:16px}.ending{width:min(600px,100%);border:1px solid #4b5049;background:#101210;padding:24px;box-shadow:0 20px 80px #000}.ending small{letter-spacing:2px;color:#737a70}.ending h2{font-size:30px;margin:10px 0;color:#d2ccb6}.ending p{font-size:12px;line-height:1.75;color:#9da39a}.ending .grade{font-size:48px;color:#a79168;margin:12px 0}
+.flash{animation:flash .18s 3}@keyframes flash{50%{filter:brightness(2.8) contrast(1.4)}}
+.shake{animation:shake .35s 1}@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+@media(max-width:820px){.title-screen{grid-template-columns:1fr;min-height:0}.game-grid{grid-template-columns:1fr}.sidebar{border-left:0;border-top:1px solid #292d28}.scene{min-height:430px}.hud{grid-template-columns:1fr 1fr}.hud>div:nth-child(1){grid-column:1/-1}.log{height:100px}}
+@media(max-width:520px){.app{padding:6px}.title-screen{padding:18px}.title-copy h1{font-size:37px}.scene{min-height:390px}.hud{font-size:11px}.scene-message{font-size:11px}.sidebar{padding:8px}.book{padding:16px;border-width:6px}.rules{font-size:12px}.door{width:31%}.cctv{width:66%;left:17%}.woman{right:14%}}
+</style>
+</head>
+<body>
+<main class="app">
+<div class="shell">
+<section id="titleScreen" class="title-screen">
+  <div class="title-copy">
+    <small>NIGHT SHIFT / 00:00 — 06:00</small>
+    <h1>저택의 나폴리탄<br>괴담 속에서 살아남기</h1>
+    <p>외곽의 오래된 저택에서 야간 관리 아르바이트를 맡았다. 업무는 단순하다. 문을 확인하고, 가스를 잠그고, CCTV를 확인하고, 아침까지 버티는 것. 다만 책상 위에는 이전 근무자가 남긴 수칙서가 한 권 놓여 있다.</p>
+  </div>
+  <aside class="start-card">
+    <h2>근무 전 확인</h2>
+    <ul>
+      <li>근무 시간은 00:00부터 06:00까지입니다.</li>
+      <li>업무는 제한 시간 안에 처리해야 합니다.</li>
+      <li>이상현상을 발견하면 수칙에 맞게 대응하십시오.</li>
+      <li>수칙서는 언제든 열 수 있지만, 읽는 동안에도 시간은 흐릅니다.</li>
+      <li>수칙 위반이 3회 누적되면 귀가할 수 없습니다.</li>
+    </ul>
+    <div class="start-actions">
+      <button id="preRuleBtn" class="btn ghost" type="button">야간 근무자 수칙 읽기</button>
+      <button id="startBtn" class="btn primary" type="button">00:00 근무 시작</button>
+    </div>
+  </aside>
+</section>
+
+<section id="gameScreen" class="game hidden">
+  <div class="hud">
+    <div><span>TIME</span><strong id="clock">00:00</strong></div>
+    <div><span>LOCATION</span><strong id="hudRoom">경비실</strong></div>
+    <div><span>RULE VIOLATIONS</span><div id="strikes" class="strikes"></div></div>
+    <div><span>SHIFT</span><strong id="shiftPct">0%</strong></div>
+  </div>
+  <div class="game-grid">
+    <div class="scene-col">
+      <div id="scene" class="scene">
+        <div id="sceneInner" class="scene-inner"></div>
+        <div id="roomLabel" class="room-label">SECURITY OFFICE</div>
+        <div id="sceneMessage" class="scene-message">근무를 시작합니다.</div>
+      </div>
+      <div id="actions" class="actions"></div>
+    </div>
+    <aside class="sidebar">
+      <div class="sidebox">
+        <h3>CURRENT DUTIES</h3>
+        <div id="tasks"></div>
+      </div>
+      <div class="sidebox">
+        <h3>MOVE</h3>
+        <div id="nav" class="nav"></div>
+      </div>
+      <div class="sidebox">
+        <h3>TOOLS</h3>
+        <div class="tools">
+          <button id="ruleBtn" class="btn ghost" type="button">수칙서</button>
+          <button id="soundBtn" class="btn ghost" type="button">SOUND ON</button>
+        </div>
+      </div>
+      <div class="sidebox">
+        <h3>NIGHT LOG</h3>
+        <div id="log" class="log"></div>
+      </div>
+    </aside>
+  </div>
+
+  <div id="rulebook" class="rulebook hidden">
+    <div class="book">
+      <h2>야간 근무자 수칙</h2>
+      <div class="warning">※ 근무 중 수칙서를 펼치는 동안에도 시간은 흐릅니다.</div>
+      <ol id="rulesList" class="rules"></ol>
+      <div class="bookfoot">
+        <span id="bookNote">인쇄 상태가 좋지 않습니다.</span>
+        <button id="closeRuleBtn" class="btn" type="button">수칙서 덮기</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="endingOverlay" class="overlay hidden">
+    <div class="ending">
+      <small id="endingCode">SHIFT RESULT</small>
+      <h2 id="endingTitle">근무 종료</h2>
+      <div id="endingGrade" class="grade">A</div>
+      <p id="endingText"></p>
+      <button id="restartBtn" class="btn primary" type="button">처음부터 다시</button>
+    </div>
+  </div>
+</section>
+</div>
+</main>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var titleScreen=$("titleScreen"),gameScreen=$("gameScreen"),scene=$("scene"),sceneInner=$("sceneInner"),sceneMessage=$("sceneMessage"),actions=$("actions"),nav=$("nav"),tasksEl=$("tasks"),logEl=$("log"),clockEl=$("clock"),hudRoom=$("hudRoom"),strikesEl=$("strikes"),shiftPct=$("shiftPct"),rulebook=$("rulebook"),rulesList=$("rulesList"),bookNote=$("bookNote"),soundBtn=$("soundBtn");
+
+var rooms={
+ office:{name:"경비실",label:"SECURITY OFFICE",adj:["lobby","west"]},
+ lobby:{name:"현관 홀",label:"ENTRANCE HALL",adj:["office","kitchen","second"]},
+ kitchen:{name:"주방",label:"KITCHEN",adj:["lobby"]},
+ second:{name:"2층 복도",label:"SECOND FLOOR",adj:["lobby"]},
+ west:{name:"서쪽 복도",label:"WEST CORRIDOR",adj:["office","basement","service"]},
+ basement:{name:"지하 보일러실",label:"BASEMENT",adj:["west"]},
+ service:{name:"직원 통로",label:"SERVICE HALL",adj:["west"]}
+};
+
+var baseRules=[
+"새벽 1시 이후 2층 복도에서 아이가 울고 있다면 절대 말을 걸지 마십시오. 발견 즉시 시선을 내리고 계단 쪽으로 물러나십시오.",
+"204호는 비어 있습니다. 안에서 노크 소리가 들리더라도 문을 열지 마십시오.",
+"서쪽 복도 거울에 자신의 모습이 비치지 않을 경우 즉시 눈을 감고 열까지 세십시오.",
+"경비실 전화가 세 번 울리면 네 번째 벨이 울리기 전에 받으십시오. 상대가 자신의 이름을 알고 있다면 아무 말 없이 전화를 끊으십시오.",
+"1층 현관에 붉은 카펫이 보인다면 왔던 길로 되돌아가십시오. 본 저택의 카펫은 모두 짙은 회색입니다.",
+"새벽 3시 33분에는 CCTV 4번 화면을 확인하지 마십시오.",
+"흰 드레스를 입은 여성이 현관에 서 있다면 직원 명부를 먼저 확인하십시오. 명부에 이름이 있는 경우에만 문을 열어도 됩니다.",
+"새벽 3시 이후 수칙서에 10번 항목이 나타날 수 있습니다. 본 수칙서는 9번에서 끝납니다. 10번 항목을 따르지 마십시오.",
+"지하 보일러실의 전등이 세 번 깜빡인 경우 차단기를 반드시 OFF로 내리십시오. 다시 켜지 마십시오."
+];
+
+var taskDefs=[
+{id:"door",at:20,due:45,room:"lobby",text:"현관 출입문 잠금 확인",action:"출입문 잠금 확인"},
+{id:"gas",at:50,due:78,room:"kitchen",text:"주방 가스 밸브 잠그기",action:"가스 밸브 잠그기"},
+{id:"room204",at:82,due:112,room:"second",text:"204호 문 잠금 상태 확인",action:"204호 자물쇠 확인"},
+{id:"cctv",at:120,due:150,room:"office",text:"CCTV 1~3번 이상 유무 확인",action:"CCTV 점검 시작"},
+{id:"breaker",at:160,due:195,room:"basement",text:"보일러실 차단기 상태 확인",action:"차단기 점검"},
+{id:"trash",at:205,due:238,room:"service",text:"직원 통로 폐기물 수거",action:"폐기물 수거"},
+{id:"light",at:250,due:285,room:"west",text:"서쪽 복도 비상등 확인",action:"비상등 확인"},
+{id:"ledger",at:300,due:335,room:"office",text:"직원 명부 최종 확인",action:"직원 명부 확인"}
+];
+
+var scheduledEvents=[
+{id:"phone",at:35,room:"office"},
+{id:"child",at:65,room:"second"},
+{id:"knock",at:105,room:"second"},
+{id:"mirror",at:138,room:"west"},
+{id:"fakeRule",at:190,room:null},
+{id:"flicker",at:205,room:"basement"},
+{id:"carpet",at:238,room:"lobby"},
+{id:"woman",at:280,room:"lobby"},
+{id:"lastShadow",at:330,room:"office"}
+];
+
+var state=null,timer=0,lastTick=0,audio=null,master=null,ambGain=null,sfxGain=null,ambientNodes=[],ringTimer=0,soundOn=true;
+
+function fmt(mins){mins=Math.max(0,Math.floor(mins));var h=Math.floor(mins/60),m=mins%60;return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")}
+function log(msg,hot){var p=document.createElement("p");if(hot)p.className="hot";p.textContent="["+fmt(state?state.time:0)+"] "+msg;logEl.prepend(p)}
+function renderStrikes(){strikesEl.innerHTML="";for(var i=0;i<3;i++){var s=document.createElement("i");s.className="strike"+(i>=state.strikes?" off":"");strikesEl.appendChild(s)}}
+function taskState(id){return state.tasks.find(function(t){return t.id===id})}
+function activeTaskIn(room){return state.tasks.find(function(t){return t.room===room&&!t.done&&!t.failed&&state.time>=t.at&&state.time<=t.due})}
+function addAction(label,fn,cls){var b=document.createElement("button");b.type="button";b.className="action-btn"+(cls?" "+cls:"");b.textContent=label;b.addEventListener("click",fn);actions.appendChild(b)}
+function setMsg(msg){sceneMessage.textContent=msg}
+function clearRing(){if(ringTimer){clearInterval(ringTimer);ringTimer=0}}
+function violate(reason,severe){
+ if(!state||!state.running)return;
+ state.strikes+=severe?2:1;
+ log("수칙 위반: "+reason,true);sfxBad();scene.classList.remove("shake");void scene.offsetWidth;scene.classList.add("shake");renderStrikes();
+ if(state.strikes>=3){endGame("bad",reason)}
+}
+function finishTask(t,msg){t.done=true;log(msg||("업무 완료: "+t.text));sfxGood();renderTasks();renderScene()}
+
+function roomMarkup(room){
+ var base='<div class="room-art"><div class="wall"></div><div class="floor"></div>';
+ if(room==="office")return base+'<div class="desk"></div><div class="phone'+(state.phone&&state.phone.ringing?' ringing':'')+'"></div><div class="clockface"></div><div class="cctv"><div class="monitor"><b>CAM 1</b></div><div class="monitor"><b>CAM 2</b></div><div class="monitor"><b>CAM 3</b></div><div class="monitor"><b>CAM 4</b></div></div></div>';
+ if(room==="lobby")return base+'<div class="door" style="left:38%"></div><div class="window" style="left:7%"></div><div class="window" style="right:7%"></div>'+(eventActive("carpet")?'<div class="red-carpet"></div>':'')+(eventActive("woman")?'<div class="entity woman"></div>':'')+'</div>';
+ if(room==="kitchen")return base+'<div class="counter"></div><div class="cabinet"></div><div class="window" style="left:9%"></div></div>';
+ if(room==="second")return base+'<div class="door" style="left:10%"></div><div class="door" style="right:10%"></div><div class="stairs"></div>'+(eventActive("child")?'<div class="entity child"></div>':'')+'</div>';
+ if(room==="west")return base+'<div class="mirror'+(eventActive("mirror")?' empty':'')+'"><div class="reflection"></div></div><div class="door" style="left:7%"></div><div class="door" style="right:7%"></div></div>';
+ if(room==="basement")return base+'<div class="pipe"></div><div class="boiler"></div></div>';
+ if(room==="service")return base+'<div class="door" style="left:7%"></div><div class="cabinet" style="right:14%;height:38%"></div>'+(eventActive("lastShadow")?'<div class="shadow-face"></div>':'')+'</div>';
+ return base+"</div>";
+}
+function eventActive(id){var e=state.events.find(function(x){return x.id===id});return !!(e&&!e.resolved)}
+
+function renderScene(){
+ if(!state)return;
+ hudRoom.textContent=rooms[state.room].name;
+ $("roomLabel").textContent=rooms[state.room].label;
+ sceneInner.innerHTML=roomMarkup(state.room);
+ actions.innerHTML="";
+ renderNav();
+ var t=activeTaskIn(state.room);
+ if(t)addAction(t.action,function(){doTask(t)});
+
+ if(state.room==="office"){
+   if(state.phone&&state.phone.ringing)addAction("전화 받기",answerPhone,"warn");
+   addAction("직원 명부 펼치기",checkLedger);
+   addAction("CCTV 화면 보기",openCCTV);
+ }
+ if(state.room==="second"){
+   if(eventActive("child")){addAction("시선을 내리고 계단으로 물러난다",function(){resolveEvent("child","아이를 보지 않고 물러났다.");sfxGood()});addAction("아이에게 말을 건다",function(){resolveEvent("child","아이에게 말을 걸었다.");violate("2층의 아이에게 말을 걸었다.")},"warn")}
+   if(eventActive("knock")){addAction("204호 노크를 무시한다",function(){resolveEvent("knock","204호 앞을 지나쳤다.");sfxGood()});addAction("204호 문을 연다",function(){resolveEvent("knock","204호 문손잡이를 잡았다.");violate("비어 있는 204호 문을 열었다.",true)},"warn")}
+ }
+ if(state.room==="west"&&eventActive("mirror")){
+   addAction("눈을 감고 열까지 센다",function(){state.pausedAction=true;setMsg("눈을 감았다. 하나, 둘, 셋…");sfxTick();setTimeout(function(){if(state&&state.running){state.pausedAction=false;resolveEvent("mirror","거울에 다시 모습이 비친다.");renderScene();sfxGood()}},3000)});
+   addAction("거울을 자세히 들여다본다",function(){resolveEvent("mirror","거울 속은 비어 있었다.");violate("비치지 않는 거울을 계속 바라보았다.")},"warn");
+ }
+ if(state.room==="basement"&&eventActive("flicker")){
+   addAction("차단기를 OFF로 내린다",function(){resolveEvent("flicker","차단기를 OFF로 내렸다.");state.breakerOff=true;sfxGood()});
+   addAction("차단기를 다시 ON으로 올린다",function(){resolveEvent("flicker","차단기를 ON으로 올렸다.");violate("세 번 깜빡인 뒤 차단기를 다시 켰다.",true)},"warn");
+ }
+ if(state.room==="lobby"&&eventActive("carpet")){
+   addAction("왔던 길로 되돌아간다",function(){resolveEvent("carpet","붉은 카펫에서 즉시 물러났다.");moveTo("office");sfxGood()});
+   addAction("카펫 위로 걸어간다",function(){resolveEvent("carpet","붉은 카펫을 밟았다.");violate("붉은 카펫 위로 들어갔다.",true)},"warn");
+ }
+ if(state.room==="lobby"&&eventActive("woman")){
+   addAction("문을 열어 준다",function(){womanChoice(true)},"warn");
+   addAction("문을 열지 않는다",function(){womanChoice(false)});
+ }
+ if(eventActive("lastShadow")&&state.room==="office"){
+   addAction("책상 아래로 몸을 숨긴다",function(){resolveEvent("lastShadow","발소리가 지나갈 때까지 숨었다.");sfxGood()});
+   addAction("복도로 나가 확인한다",function(){resolveEvent("lastShadow","문을 열고 복도로 나갔다.");violate("05:30의 발소리를 따라갔다.",true)},"warn");
+ }
+ if(!actions.children.length)addAction("주변을 살핀다",function(){setMsg(randomInspect())});
+ updateMessage();
+}
+
+function randomInspect(){
+ var m={
+ office:["시계 초침이 한 번 멈췄다가 다시 움직인다.","책상 서랍은 잠겨 있다.","CCTV 화면에 가끔 흰 노이즈가 낀다."],
+ lobby:["현관문 바깥은 완전히 어둡다.","회색 카펫에 오래된 얼룩이 남아 있다.","창문에 비친 나무가 바람 없이 흔들린다."],
+ kitchen:["싱크대에서 물이 한 방울씩 떨어진다.","냉장고 모터 소리가 유난히 크게 들린다.","가스 밸브는 낡았지만 작동한다."],
+ second:["204호 문패만 유난히 새것 같다.","복도 끝 전등이 불규칙하게 떨린다.","계단 아래에서 발소리가 한 번 들린다."],
+ west:["거울 표면이 유난히 차갑다.","복도 끝은 조명이 닿지 않는다.","벽지가 군데군데 들떠 있다."],
+ basement:["보일러 내부에서 금속이 식는 소리가 난다.","전등은 불안정하게 떨린다.","배관 어딘가에서 물이 흐른다."],
+ service:["낡은 수레가 벽에 붙어 있다.","폐기물 봉투에서 오래된 약품 냄새가 난다.","끝쪽 문은 밖에서 못질되어 있다."]
+ };var a=m[state.room];return a[Math.floor(Math.random()*a.length)]
+}
+
+function updateMessage(){
+ if(state.room==="office"&&state.phone&&state.phone.ringing){setMsg("전화벨이 저택 전체에 울린다. 현재 "+state.phone.rings+"번째 벨.");return}
+ if(state.room==="second"&&eventActive("child")){setMsg("복도 끝에 작은 아이가 서 있다. 고개를 숙인 채 아주 작게 울고 있다.");return}
+ if(state.room==="second"&&eventActive("knock")){setMsg("204호 안쪽에서 세 번, 일정한 간격으로 노크 소리가 난다.");return}
+ if(state.room==="west"&&eventActive("mirror")){setMsg("거울에 복도는 비치는데, 당신의 모습만 없다.");return}
+ if(state.room==="basement"&&eventActive("flicker")){setMsg("전등이 정확히 세 번 깜빡였다. 차단기에서 낮은 진동음이 난다.");return}
+ if(state.room==="lobby"&&eventActive("carpet")){setMsg("현관으로 이어지는 카펫이 붉다. 분명 근무 시작 때는 회색이었다.");return}
+ if(state.room==="lobby"&&eventActive("woman")){setMsg("흰 드레스의 여성이 현관 바깥에 서 있다. 노크는 하지 않는다.");return}
+ if(state.room==="office"&&eventActive("lastShadow")){setMsg("문 바로 바깥에서 젖은 발소리가 멈췄다.");return}
+ var t=activeTaskIn(state.room);if(t){setMsg("현재 업무: "+t.text);return}
+ setMsg(rooms[state.room].name+"은 조용하다.");
+}
+
+function renderNav(){
+ nav.innerHTML="";
+ rooms[state.room].adj.forEach(function(id){var b=document.createElement("button");b.type="button";b.textContent=rooms[id].name;b.addEventListener("click",function(){moveTo(id)});nav.appendChild(b)})
+}
+function moveTo(id){
+ if(!state.running||state.pausedAction)return;
+ if(!rooms[state.room].adj.includes(id))return;
+ if(state.room==="lobby"&&eventActive("carpet")&&id!=="office"){violate("붉은 카펫을 보고도 다른 방향으로 이동했다.");resolveEvent("carpet","카펫을 지나쳤다.")}
+ state.room=id;log(rooms[id].name+"으로 이동");sfxStep();renderScene()
+}
+
+function renderTasks(){
+ tasksEl.innerHTML="";
+ state.tasks.forEach(function(t){
+   if(state.time<t.at&&!t.done&&!t.failed)return;
+   var d=document.createElement("div");d.className="task"+(t.done?" done":"")+(t.failed?" urgent":"");
+   if(t.done)d.textContent="완료 · "+t.text;
+   else if(t.failed)d.textContent="실패 · "+t.text;
+   else d.textContent=fmt(t.due)+"까지 · "+t.text;
+   tasksEl.appendChild(d)
+ });
+ if(!tasksEl.children.length){var x=document.createElement("div");x.className="task";x.textContent="현재 지정 업무 없음";tasksEl.appendChild(x)}
+}
+function doTask(t){
+ if(t.id==="room204"&&eventActive("knock")){setMsg("자물쇠를 확인하려는 순간 안쪽에서 노크가 난다. 먼저 수칙에 맞게 대응해야 한다.");return}
+ if(t.id==="cctv"){openCCTV();return}
+ if(t.id==="breaker"&&eventActive("flicker")){setMsg("전등이 세 번 깜빡였다. 단순 점검보다 먼저 수칙에 맞게 차단기를 처리해야 한다.");return}
+ finishTask(t)
+}
+
+function openCCTV(){
+ actions.innerHTML="";setMsg("CCTV 채널을 선택하십시오.");
+ [1,2,3,4].forEach(function(n){addAction("CAM "+n,function(){viewCam(n)},n===4?"warn":"")});
+ addAction("화면 닫기",renderScene)
+}
+function viewCam(n){
+ sfxStatic();
+ var minute=Math.floor(state.time)%60,hour=Math.floor(state.time/60);
+ if(n===4&&hour===3&&minute>=31&&minute<=35){violate("03:33 전후에 CCTV 4번 화면을 확인했다.",true);return}
+ setMsg("CAM "+n+" — "+(n===1?"현관 홀. 움직임 없음.":n===2?"2층 복도. 화면 끝에 노이즈가 낀다.":n===3?"주방. 이상 없음.":"직원 통로. 화면이 심하게 일그러진다."));
+ var t=taskState("cctv");if(t&&!t.done&&!t.failed&&n<=3){t.checked=t.checked||{};t.checked[n]=true;if(t.checked[1]&&t.checked[2]&&t.checked[3])finishTask(t,"CCTV 1~3번 점검 완료")}
+}
+
+function answerPhone(){
+ if(!state.phone||!state.phone.ringing)return;
+ clearRing();state.phone.ringing=false;sfxClick();
+ if(state.phone.knowsName){
+   setMsg('수화기 너머에서 낮은 목소리가 말한다. "거기 있죠. '+state.workerName+' 씨."');
+   actions.innerHTML="";addAction("아무 말 없이 끊는다",function(){state.phone.resolved=true;log("전화 대응 완료");sfxGood();renderScene()});addAction("누구냐고 묻는다",function(){state.phone.resolved=true;violate("이름을 알고 있는 발신자에게 대답했다.",true)},"warn");
+ }else{
+   setMsg('수화기 너머에서 잡음만 들리다가 "204호 문을 열어 주세요."라는 목소리가 난다.');
+   actions.innerHTML="";addAction("아무 말 없이 끊는다",function(){state.phone.resolved=true;log("전화를 끊었다");sfxGood();renderScene()});addAction("알겠다고 대답한다",function(){state.phone.resolved=true;violate("정체불명의 전화에 대답했다.")},"warn");
+ }
+}
+function startPhone(){
+ if(!state.running)return;
+ state.phone={ringing:true,rings:0,resolved:false,knowsName:Math.random()<.65};
+ log("경비실 전화가 울리기 시작함",true);
+ function ring(){
+   if(!state.phone||!state.phone.ringing)return;
+   state.phone.rings++;sfxPhone();if(state.room==="office")renderScene();
+   if(state.phone.rings>=4){clearRing();state.phone.ringing=false;violate("네 번째 벨이 울릴 때까지 전화를 받지 않았다.");if(state.running)renderScene()}
+ }
+ ring();ringTimer=setInterval(ring,2200)
+}
+
+function checkLedger(){
+ state.ledgerChecked=true;
+ setMsg(state.womanListed?"직원 명부 마지막 줄에 희미한 글씨가 있다. '한세라 / 야간 객실 담당'.":"직원 명부 어디에도 현관의 여성과 일치하는 이름은 없다.");
+ sfxPaper();
+ var t=taskState("ledger");if(t&&!t.done&&!t.failed&&state.time>=t.at)finishTask(t,"직원 명부 최종 확인 완료")
+}
+function womanChoice(open){
+ var shouldOpen=state.womanListed;
+ if(!state.ledgerChecked){violate("직원 명부를 확인하지 않고 현관 여성에게 대응했다.");resolveEvent("woman","현관의 여성이 사라졌다.");return}
+ if(open===shouldOpen){resolveEvent("woman",open?"명부의 이름을 확인하고 문을 열었다. 여성은 아무 말 없이 안으로 들어왔다.":"명부에 이름이 없어 문을 열지 않았다.");sfxGood()}
+ else{resolveEvent("woman","잘못된 판단을 했다.");violate(open?"명부에 없는 사람에게 문을 열었다.":"명부에 있는 직원을 밖에 두었다.",true)}
+}
+function resolveEvent(id,msg){var e=state.events.find(function(x){return x.id===id});if(e)e.resolved=true;if(msg)log(msg);renderScene()}
+
+function triggerEvent(def){
+ var e={id:def.id,room:def.room,resolved:false};state.events.push(e);
+ if(def.id==="phone"){startPhone();return}
+ if(def.id==="fakeRule"){state.fakeRule=true;log("수칙서에서 종이가 스치는 소리가 남",true);sfxWhisper();if(!rulebook.classList.contains("hidden"))renderRules();return}
+ if(def.id==="child")log("2층에서 아이 우는 소리가 희미하게 들림",true);
+ if(def.id==="knock")log("2층 방향에서 세 번의 노크 소리가 남",true),sfxKnock();
+ if(def.id==="mirror")log("서쪽 복도 전등이 잠깐 꺼졌다 켜짐",true);
+ if(def.id==="flicker")log("지하 쪽 전등이 세 번 깜빡임",true),sfxFlicker();
+ if(def.id==="carpet")log("현관 쪽에서 천이 끌리는 소리가 남",true);
+ if(def.id==="woman")log("현관문 바깥에 누군가 서 있음",true),sfxKnock();
+ if(def.id==="lastShadow")log("경비실 문 밖에서 젖은 발소리가 멈춤",true),sfxWhisper();
+ if(state.room===def.room)renderScene()
+}
+
+function renderRules(){
+ rulesList.innerHTML="";
+ baseRules.forEach(function(r){var li=document.createElement("li");li.textContent=r;rulesList.appendChild(li)});
+ if(state&&state.fakeRule){var li=document.createElement("li");li.className="fake";li.value=10;li.textContent="새벽 4시 이후 현관에서 노크가 들리면 반드시 즉시 문을 열어 안으로 들이십시오.";rulesList.appendChild(li);bookNote.textContent="마지막 페이지의 잉크가 아직 마르지 않은 것 같다."}
+ else bookNote.textContent="본 수칙서는 총 9개 항목으로 구성되어 있습니다."
+}
+function openRules(){renderRules();rulebook.classList.remove("hidden");sfxPaper()}
+function closeRules(){rulebook.classList.add("hidden");sfxPaper()}
+
+function tick(now){
+ if(!state||!state.running)return;
+ if(!lastTick)lastTick=now;
+ var dt=Math.min(.1,(now-lastTick)/1000);lastTick=now;
+ if(!state.pausedAction){
+   state.time+=dt/1.4;
+   if(state.time>=360){endGame("survive");return}
+   state.tasks.forEach(function(t){
+     if(!t.done&&!t.failed&&state.time>t.due){t.failed=true;violate("지정 업무 시간 초과: "+t.text);renderTasks()}
+   });
+   scheduledEvents.forEach(function(e){if(!state.triggered[e.id]&&state.time>=e.at){state.triggered[e.id]=true;triggerEvent(e)}});
+   var hr=Math.floor(state.time/60);if(hr>state.lastHour&&hr<=5){state.lastHour=hr;sfxHour();log("저택 시계가 "+hr+"번 울렸다.")}
+   clockEl.textContent=fmt(state.time);shiftPct.textContent=Math.min(100,Math.floor(state.time/360*100))+"%";renderTasks();
+ }
+ timer=requestAnimationFrame(tick)
+}
+
+function startGame(){
+ initAudio();startAmbient();
+ state={running:true,time:0,room:"office",strikes:0,tasks:taskDefs.map(function(x){return Object.assign({done:false,failed:false},x)}),events:[],triggered:{},phone:null,fakeRule:false,ledgerChecked:false,womanListed:Math.random()<.5,breakerOff:false,lastHour:0,pausedAction:false,workerName:"야간 근무자"};
+ titleScreen.classList.add("hidden");gameScreen.classList.remove("hidden");rulebook.classList.add("hidden");$("endingOverlay").classList.add("hidden");logEl.innerHTML="";
+ renderStrikes();renderTasks();renderScene();log("00:00 야간 근무 시작");lastTick=performance.now();timer=requestAnimationFrame(tick)
+}
+function endGame(type,reason){
+ if(!state||!state.running)return;state.running=false;cancelAnimationFrame(timer);clearRing();stopAmbient();sfxEnd(type==="survive");
+ var title,grade,text,code;
+ if(type==="survive"){
+   var missed=state.tasks.filter(function(t){return t.failed}).length;
+   if(state.strikes===0&&missed===0){title="정상 퇴근";grade="S";code="06:00 / SHIFT COMPLETE";text="현관 밖이 희미하게 밝아졌다. 마지막 업무일지를 덮고 문을 잠근다. 뒤를 돌아보지 않고 저택을 빠져나왔다. 오늘 밤의 수칙은 전부 지켰다."}
+   else{title="불완전 생환";grade=state.strikes===0?"A":"B";code="06:00 / SURVIVED";text="아침이 왔다. 몇 가지 실수는 있었지만, 당신은 아직 당신이다. 관리인은 아무것도 묻지 않고 봉투를 건넨다. 저택의 창문 하나가 2층에서 천천히 닫힌다."}
+ }else{
+   title="근무 연장";grade="F";code="SHIFT FAILED";text="세 번째 수칙을 어긴 순간 저택의 모든 시계가 멈췄다. 현관문은 열리지 않는다. 다음 날, 새 근무자는 책상 위에서 낯선 이름이 추가된 직원 명부를 발견한다."+ (reason?("\n\n마지막 위반: "+reason):"")
+ }
+ $("endingCode").textContent=code;$("endingTitle").textContent=title;$("endingGrade").textContent=grade;$("endingText").textContent=text;$("endingOverlay").classList.remove("hidden")
+}
+
+function initAudio(){
+ if(audio)return;var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+ audio=new AC();master=audio.createGain();ambGain=audio.createGain();sfxGain=audio.createGain();
+ var comp=audio.createDynamicsCompressor();comp.threshold.value=-20;comp.ratio.value=6;comp.attack.value=.003;comp.release.value=.22;
+ master.gain.value=soundOn?.55:0;ambGain.gain.value=.28;sfxGain.gain.value=.8;ambGain.connect(master);sfxGain.connect(master);master.connect(comp);comp.connect(audio.destination)
+}
+function tone(freq,dur,vol,type,delay,dest){
+ if(!soundOn)return;initAudio();if(!audio)return;if(audio.state==="suspended")audio.resume();
+ var t=audio.currentTime+(delay||0),o=audio.createOscillator(),g=audio.createGain();o.type=type||"sine";o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol||.1,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(dest||sfxGain);o.start(t);o.stop(t+dur+.05)
+}
+function noise(dur,vol,delay){
+ if(!soundOn)return;initAudio();if(!audio)return;var len=Math.floor(audio.sampleRate*dur),buf=audio.createBuffer(1,len,audio.sampleRate),data=buf.getChannelData(0);for(var i=0;i<len;i++)data[i]=(Math.random()*2-1)*(1-i/len);var src=audio.createBufferSource(),g=audio.createGain(),f=audio.createBiquadFilter();f.type="lowpass";f.frequency.value=1500;g.gain.value=vol;src.buffer=buf;src.connect(f);f.connect(g);g.connect(sfxGain);src.start(audio.currentTime+(delay||0))
+}
+function startAmbient(){
+ initAudio();if(!audio||!soundOn)return;stopAmbient();if(audio.state==="suspended")audio.resume();
+ [43.65,55,65.4].forEach(function(f,i){var o=audio.createOscillator(),g=audio.createGain(),filter=audio.createBiquadFilter();o.type=i===1?"sawtooth":"sine";o.frequency.value=f;filter.type="lowpass";filter.frequency.value=180;g.gain.value=i===1?.025:.055;o.connect(filter);filter.connect(g);g.connect(ambGain);o.start();ambientNodes.push(o,g,filter)});
+ var pulse=setInterval(function(){if(state&&state.running&&soundOn){tone(110+Math.random()*35,.8,.025,"sine",0,ambGain);if(Math.random()<.25)noise(.7,.018,0)}},2600);ambientNodes.push({stop:function(){clearInterval(pulse)}})
+}
+function stopAmbient(){ambientNodes.forEach(function(n){try{if(n.stop)n.stop()}catch(e){}});ambientNodes=[]}
+function sfxStep(){tone(82,.08,.23,"triangle");noise(.08,.16,.04)}
+function sfxGood(){tone(392,.08,.28,"sine");tone(523,.1,.22,"sine",.07)}
+function sfxBad(){tone(100,.28,.5,"sawtooth");tone(67,.42,.42,"square",.08);noise(.3,.28)}
+function sfxClick(){tone(240,.04,.25,"square")}
+function sfxPaper(){noise(.18,.18);tone(340,.07,.08,"triangle")}
+function sfxStatic(){noise(.45,.35);tone(91,.25,.16,"square")}
+function sfxPhone(){tone(740,.12,.5,"sine");tone(560,.16,.4,"sine",.13)}
+function sfxKnock(){tone(73,.09,.58,"sine");noise(.06,.4);tone(69,.09,.58,"sine",.26);noise(.06,.4,.26);tone(66,.11,.62,"sine",.52);noise(.07,.42,.52)}
+function sfxWhisper(){noise(.8,.24);tone(48,.9,.12,"sine")}
+function sfxFlicker(){tone(120,.05,.35,"square");tone(90,.05,.35,"square",.16);tone(70,.05,.42,"square",.32)}
+function sfxTick(){for(var i=0;i<10;i++)tone(900,.025,.13,"square",i*.25)}
+function sfxHour(){tone(196,.8,.28,"sine");tone(98,1.1,.22,"sine",.08)}
+function sfxEnd(ok){if(ok){tone(261,.3,.25,"sine");tone(329,.35,.25,"sine",.22);tone(392,.7,.3,"sine",.46)}else{sfxBad();tone(45,1.4,.38,"sawtooth",.2)}}
+
+$("preRuleBtn").addEventListener("click",function(){renderRules();rulebook.classList.remove("hidden")});
+$("closeRuleBtn").addEventListener("click",closeRules);
+$("ruleBtn").addEventListener("click",openRules);
+$("startBtn").addEventListener("click",startGame);
+$("restartBtn").addEventListener("click",function(){location.reload()});
+soundBtn.addEventListener("click",function(){soundOn=!soundOn;initAudio();master.gain.setTargetAtTime(soundOn?.55:0,audio.currentTime,.02);soundBtn.textContent=soundOn?"SOUND ON":"SOUND OFF";if(soundOn&&state&&state.running)startAmbient();else stopAmbient()});
+renderRules();
+})();
+</script>
+</body>
+</html>
