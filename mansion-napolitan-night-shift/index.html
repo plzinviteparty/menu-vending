@@ -319,6 +319,45 @@ function activeTaskIn(room){return state.tasks.find(function(t){return t.room===
 function addAction(label,fn,cls){var b=document.createElement("button");b.type="button";b.className="action-btn"+(cls?" "+cls:"");b.textContent=label;b.addEventListener("click",fn);actions.appendChild(b)}
 function setMsg(msg){sceneMessage.textContent=msg}
 function clearRing(){if(ringTimer){clearInterval(ringTimer);ringTimer=0}}
+var EVENT_WINDOWS={child:4.3,knock:3.8,mirror:4.5,flicker:4.0,carpet:4.0,woman:6.3,lastShadow:3.8};
+function armEventDeadline(id){
+ var e=state&&state.events.find(function(x){return x.id===id});
+ if(!e||e.resolved||!EVENT_WINDOWS[id]||e.deadline)return;
+ e.seenAt=state.time;e.deadline=state.time+EVENT_WINDOWS[id];e.warned=false;
+}
+function armVisibleDeadlines(){
+ if(!state)return;
+ state.events.forEach(function(e){
+   if(!e.resolved&&e.room===state.room&&EVENT_WINDOWS[e.id])armEventDeadline(e.id)
+ })
+}
+function pressureEvent(e){
+ if(!state||!state.running||e.resolved)return;
+ e.warned=true;
+ if(e.id==="child"){sfxWhisper();if(state.room==="second")setMsg("울음소리가 갑자기 가까워졌다. 아이가 고개를 조금 들었다.")}
+ else if(e.id==="knock"){sfxKnock();if(state.room==="second")setMsg("204호의 노크가 훨씬 세졌다. 문손잡이가 아주 조금 움직인다.")}
+ else if(e.id==="mirror"){sfxWhisper();if(state.room==="west")setMsg("거울 속 복도가 한 박자 늦게 움직인다. 당신의 모습은 여전히 없다.")}
+ else if(e.id==="flicker"){sfxFlicker();if(state.room==="basement")setMsg("차단기 안쪽에서 금속이 긁히는 소리가 커진다.")}
+ else if(e.id==="carpet"){sfxWhisper();if(state.room==="lobby")setMsg("붉은 카펫 끝이 당신 쪽으로 아주 조금 늘어났다.")}
+ else if(e.id==="woman"){sfxKnock();if(state.room==="lobby")setMsg("여성이 이번에는 손바닥으로 현관문을 천천히 누른다.")}
+ else if(e.id==="lastShadow"){sfxWhisper();if(state.room==="office")setMsg("문틈 아래 그림자가 안쪽으로 길게 들어온다.")}
+ scene.classList.remove("shake");void scene.offsetWidth;scene.classList.add("shake")
+}
+function expireEvent(e){
+ if(!state||!state.running||!e||e.resolved)return;
+ e.resolved=true;
+ var reason="";
+ if(e.id==="child")reason="2층의 아이 앞에서 너무 오래 머물렀다.";
+ else if(e.id==="knock")reason="204호의 노크에 즉시 대응하지 않았다.";
+ else if(e.id==="mirror")reason="모습이 비치지 않는 거울 앞에서 지체했다.";
+ else if(e.id==="flicker")reason="전등이 세 번 깜빡인 뒤 차단기를 제때 내리지 않았다.";
+ else if(e.id==="carpet")reason="붉은 카펫을 보고도 즉시 물러나지 않았다.";
+ else if(e.id==="woman")reason="현관의 여성을 확인한 뒤 너무 오래 지체했다.";
+ else if(e.id==="lastShadow")reason="경비실 문 앞의 발소리에 즉시 숨지 않았다.";
+ else reason="이상현상에 제때 대응하지 않았다.";
+ log("대처가 늦었다.",true);
+ showJumpscare();violate(reason,false);renderScene()
+}
 function violate(reason,severe){
  if(!state||!state.running)return;
  state.strikes+=severe?2:1;
@@ -414,7 +453,7 @@ function startHandSequence(){
    state.handCount=n;sfxHandSlam();if(state.room==="service"){renderScene();scene.classList.remove("shake");void scene.offsetWidth;scene.classList.add("shake")}
    if(n===3){
      log("직원 통로 벽에 세 번째 흰 손바닥이 찍힘",true);
-     state.handEscapeDeadline=state.time+7;
+     state.handEscapeDeadline=state.time+4.2;
    }
  },delay))}
  slam(1,350);slam(2,1150);slam(3,1950)
@@ -434,6 +473,7 @@ function renderScene(){
  sceneInner.innerHTML=roomMarkup(state.room);
  actions.innerHTML="";
  renderNav();
+ armVisibleDeadlines();
  if(state.room==="service"&&eventActive("bloodHands"))startHandSequence();
  var t=activeTaskIn(state.room);
  if(t)addAction(t.action,function(){doTask(t)});
@@ -506,7 +546,7 @@ function moveTo(id){
  if(!state.running||state.pausedAction)return;
  if(!rooms[state.room].adj.includes(id))return;
  if(state.room==="service"&&eventActive("bloodHands")&&state.handCount>=3){
-   resolveEvent("bloodHands","세 번째 손바닥이 찍힌 뒤 직원 통로를 즉시 벗어났다.");clearHandTimers();state.handEscapeDeadline=0;sfxGood();
+   resolveEvent("bloodHands","세 번째 흰 손바닥이 찍힌 뒤 직원 통로를 즉시 벗어났다.");clearHandTimers();state.handEscapeDeadline=0;sfxGood();
  }
  if(state.room==="lobby"&&eventActive("carpet")&&id!=="office"){violate("붉은 카펫을 보고도 다른 방향으로 이동했다.");resolveEvent("carpet","카펫을 지나쳤다.")}
  state.room=id;log(rooms[id].name+"으로 이동");sfxStep();maybeMutateRoom(id);maybeWatcher(id);renderScene();if(state.pendingScare)triggerPendingScare()
@@ -680,8 +720,13 @@ function tick(now){
      if(!t.done&&!t.failed&&state.time>t.due){t.failed=true;violate("지정 업무 시간 초과: "+t.text);renderTasks()}
    });
    scheduledEvents.forEach(function(e){if(!state.triggered[e.id]&&state.time>=e.at){state.triggered[e.id]=true;triggerEvent(e)}});
+   state.events.slice().forEach(function(e){
+     if(e.resolved||!e.deadline)return;
+     if(!e.warned&&state.time>=e.deadline-1.35)pressureEvent(e);
+     if(state.time>=e.deadline)expireEvent(e)
+   });
    if(eventActive("bloodHands")&&state.handEscapeDeadline&&state.time>=state.handEscapeDeadline){
-     state.handEscapeDeadline=0;resolveEvent("bloodHands","직원 통로에 너무 오래 머물렀다.");showJumpscare();violate("세 번째 손바닥이 찍힌 뒤 직원 통로를 벗어나지 않았다.",true);
+     state.handEscapeDeadline=0;resolveEvent("bloodHands","직원 통로에 너무 오래 머물렀다.");showJumpscare();violate("세 번째 흰 손바닥이 찍힌 뒤 직원 통로를 벗어나지 않았다.",true);
    }
    if(state.watcherRoom&&state.time>=state.watcherUntil){var wr=state.watcherRoom;state.watcherRoom=null;if(state.room===wr)renderScene();}
    if(state.ruleMutation&&state.time>=state.ruleMutation.until){state.ruleMutation=null;if(!rulebook.classList.contains("hidden"))renderRules()}
