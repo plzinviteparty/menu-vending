@@ -93,6 +93,20 @@ button{font:inherit}.hidden{display:none!important}
 .jumpscare .face:after{content:"";position:absolute;width:38%;height:9%;left:31%;top:69%;background:#1b0000;border:4px solid #4b0909;border-radius:0 0 60% 60%}
 .jumpscare .blood{position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,transparent 0 24%,rgba(105,0,0,.18) 58%,rgba(70,0,0,.45) 100%)}
 @keyframes jsFlash{0%,100%{filter:brightness(.55)}50%{filter:brightness(2.8) contrast(2)}}
+.chair{position:absolute;width:52px;height:55px;border:5px solid #10110e;background:#28251f;bottom:25%;z-index:3}
+.chair:before{content:"";position:absolute;left:4px;right:4px;top:-38px;height:38px;border:5px solid #10110e;background:#24231e}
+.chair:after{content:"";position:absolute;left:5px;right:5px;bottom:-35px;height:35px;border-left:5px solid #10110e;border-right:5px solid #10110e}
+.odd-frame{position:absolute;top:12%;left:12%;width:78px;height:96px;border:7px solid #15140f;background:#242620;box-shadow:inset 0 0 0 2px #4a4b42}
+.odd-frame .head{position:absolute;width:27px;height:31px;border-radius:50%;background:#080908;left:18px;top:17px}
+.odd-frame .head.extra{left:40px;top:29px;width:22px;height:26px;opacity:.82}
+.door-tag{position:absolute;top:9%;left:50%;transform:translateX(-50%);background:#b6ae91;color:#1a1a16;border:2px solid #111;padding:2px 5px;font-size:9px;z-index:3}
+.room-scratch{position:absolute;right:9%;top:19%;width:74px;height:4px;background:#551116;box-shadow:0 9px #551116,0 18px #551116;transform:rotate(-18deg);opacity:.5;z-index:4}
+.passing-shadow{position:absolute;z-index:9;width:58px;height:170px;background:#020302;bottom:28%;left:60%;border-radius:45% 45% 5% 5%;opacity:.84;animation:passBy 1.8s linear forwards}
+.passing-shadow:before{content:"";position:absolute;width:48px;height:52px;border-radius:50%;background:#020302;left:5px;top:-37px}
+@keyframes passBy{0%{transform:translateX(90px);opacity:0}18%{opacity:.88}78%{opacity:.88}100%{transform:translateX(-180px);opacity:0}}
+.cabinet.ajar:after{content:"";position:absolute;right:-26px;top:2%;width:48%;height:96%;background:#191a16;border:5px solid #10110e;transform:skewY(-7deg);transform-origin:left center;box-shadow:-8px 0 20px rgba(0,0,0,.5)}
+.old-note{position:absolute;left:34%;bottom:34%;width:58px;height:36px;background:#bdb395;border:3px solid #15140f;transform:rotate(-7deg);z-index:5}
+.old-note:after{content:"";position:absolute;left:8px;right:8px;top:9px;height:2px;background:#514c40;box-shadow:0 7px #514c40,0 14px #514c40}
 .scene-message{position:absolute;left:16px;right:16px;bottom:14px;z-index:25;background:rgba(4,5,4,.91);border:1px solid #454942;padding:10px 12px;color:#c9cec4;font-size:12px;line-height:1.55;min-height:44px}
 .actions{padding:10px;display:flex;flex-wrap:wrap;gap:7px;background:#0e100f}.action-btn{border:1px solid #4a4e47;background:#191c19;color:#cbd0c6;padding:9px 11px;cursor:pointer;min-height:42px}.action-btn:hover{background:#252923}.action-btn.warn{border-color:#754344;color:#d8aaa6;background:#241515}
 .sidebar{border-left:1px solid #292d28;background:#0d0f0e;padding:12px;display:flex;flex-direction:column;gap:10px}
@@ -250,6 +264,9 @@ var scheduledEvents=[
 ];
 
 var state=null,timer=0,lastTick=0,audio=null,master=null,ambGain=null,sfxGain=null,ambientNodes=[],ringTimer=0,handTimers=[],soundOn=true;
+var PREV_SHIFT_KEY="mansion_napolitan_previous_shift_v1";
+function loadPreviousShift(){try{return JSON.parse(localStorage.getItem(PREV_SHIFT_KEY)||"null")}catch(e){return null}}
+function savePreviousShift(data){try{localStorage.setItem(PREV_SHIFT_KEY,JSON.stringify(data))}catch(e){}}
 
 function fmt(mins){mins=Math.max(0,Math.floor(mins));var h=Math.floor(mins/60),m=mins%60;return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")}
 function log(msg,hot){var p=document.createElement("p");if(hot)p.className="hot";p.textContent="["+fmt(state?state.time:0)+"] "+msg;logEl.prepend(p)}
@@ -262,23 +279,51 @@ function clearRing(){if(ringTimer){clearInterval(ringTimer);ringTimer=0}}
 function violate(reason,severe){
  if(!state||!state.running)return;
  state.strikes+=severe?2:1;
- log("수칙 위반: "+reason,true);sfxBad();scene.classList.remove("shake");void scene.offsetWidth;scene.classList.add("shake");renderStrikes();if(severe)showJumpscare();
+ log("수칙 위반: "+reason,true);sfxBad();scene.classList.remove("shake");void scene.offsetWidth;scene.classList.add("shake");renderStrikes();
+ if(severe&&state.strikes<3)queueDelayedScare(reason);
  if(state.strikes>=3){endGame("bad",reason)}
 }
 function finishTask(t,msg){t.done=true;log(msg||("업무 완료: "+t.text));sfxGood();renderTasks();renderScene()}
 
 function roomMarkup(room){
- var base='<div class="room-art"><div class="wall"></div><div class="floor"></div>';
- if(room==="office")return base+'<div class="desk"></div><div class="phone'+(state.phone&&state.phone.ringing?' ringing':'')+'"></div><div class="clockface"></div><div class="cctv"><div class="monitor"><b>CAM 1</b></div><div class="monitor"><b>CAM 2</b></div><div class="monitor"><b>CAM 3</b></div><div class="monitor"><b>CAM 4</b></div></div></div>';
- if(room==="lobby")return base+'<div class="door" style="left:38%"></div><div class="window" style="left:7%"></div><div class="window" style="right:7%"></div>'+(watcherHere("lobby")?'<div class="window-watcher" style="left:auto;right:14%"></div>':'')+(eventActive("carpet")?'<div class="red-carpet"></div>':'')+(eventActive("woman")?'<div class="entity woman"></div>':'')+'</div>';
- if(room==="kitchen")return base+'<div class="counter"></div><div class="cabinet"></div><div class="window" style="left:9%"></div>'+(watcherHere("kitchen")?'<div class="window-watcher"></div>':'')+'</div>';
- if(room==="second")return base+'<div class="door" style="left:10%"></div><div class="door" style="right:10%"></div><div class="stairs"></div>'+(eventActive("child")?'<div class="entity child"></div>':'')+'</div>';
- if(room==="west")return base+'<div class="mirror'+(eventActive("mirror")?' empty':'')+'"><div class="reflection"></div></div><div class="door" style="left:7%"></div><div class="door" style="right:7%"></div></div>';
- if(room==="basement")return base+'<div class="pipe"></div><div class="boiler"></div></div>';
- if(room==="service")return base+'<div class="door" style="left:7%"></div><div class="cabinet" style="right:14%;height:38%"></div>'+(eventActive("bloodHands")?handMarkup():"")+(eventActive("lastShadow")?'<div class="shadow-face"></div>':'')+'</div>';
+ var base='<div class="room-art"><div class="wall"></div><div class="floor"></div>',v=state.roomVariants||{},fake=(state.fakeAnomaly&&state.fakeAnomaly.room===room&&state.time<state.fakeAnomaly.until)?state.fakeAnomaly:null;
+ if(room==="office")return base+'<div class="desk"></div><div class="phone'+(state.phone&&state.phone.ringing?' ringing':'')+'"></div><div class="clockface"'+(v.officeClock?' style="right:18%;top:17%"':'')+'></div><div class="cctv"><div class="monitor"><b>CAM 1</b></div><div class="monitor"><b>CAM 2</b></div><div class="monitor"><b>CAM 3</b></div><div class="monitor"><b>CAM 4</b></div></div>'+(state.previous?'<div class="old-note"></div><div class="odd-frame"><span class="head"></span>'+(state.previous.result==="bad"?'<span class="head extra"></span>':'')+'</div>':'')+(fake&&fake.type==="shadow"?'<div class="passing-shadow"></div>':'')+'</div>';
+ if(room==="lobby")return base+'<div class="door" style="left:38%"></div><div class="window" style="left:7%"></div><div class="window" style="right:7%"></div>'+(v.lobbyChair?'<div class="chair" style="left:23%"></div>':'')+(watcherHere("lobby")?'<div class="window-watcher" style="left:auto;right:14%"></div>':'')+(fake&&fake.type==="shadow"?'<div class="passing-shadow" style="left:72%"></div>':'')+(eventActive("carpet")?'<div class="red-carpet"></div>':'')+(eventActive("woman")?'<div class="entity woman"></div>':'')+'</div>';
+ if(room==="kitchen")return base+'<div class="counter"></div><div class="cabinet'+(v.kitchenCabinet?' ajar':'')+'"></div><div class="window" style="left:9%"></div>'+(v.kitchenChair?'<div class="chair" style="right:31%"></div>':'')+(watcherHere("kitchen")?'<div class="window-watcher"></div>':'')+(fake&&fake.type==="shadow"?'<div class="passing-shadow"></div>':'')+'</div>';
+ if(room==="second")return base+'<div class="door" style="left:10%"><span class="door-tag">'+(v.secondNumber?"205":"204")+'</span></div><div class="door" style="right:10%"><span class="door-tag">206</span></div><div class="stairs"></div>'+(v.secondScratch?'<div class="room-scratch"></div>':'')+(fake&&fake.type==="shadow"?'<div class="passing-shadow" style="left:48%"></div>':'')+(eventActive("child")?'<div class="entity child"></div>':'')+'</div>';
+ if(room==="west")return base+'<div class="mirror'+(eventActive("mirror")?' empty':'')+'"'+(v.westMirror?' style="left:49%"':'')+'><div class="reflection"></div></div><div class="door" style="left:7%"></div><div class="door" style="right:7%"></div>'+(fake&&fake.type==="shadow"?'<div class="passing-shadow" style="left:30%"></div>':'')+'</div>';
+ if(room==="basement")return base+'<div class="pipe"></div><div class="boiler"'+(v.basementShift?' style="left:38%"':'')+'></div>'+(fake&&fake.type==="shadow"?'<div class="passing-shadow" style="left:68%"></div>':'')+'</div>';
+ if(room==="service")return base+'<div class="door" style="left:7%"></div><div class="cabinet'+(v.serviceCabinet?' ajar':'')+'" style="right:14%;height:38%"></div>'+(fake&&fake.type==="shadow"?'<div class="passing-shadow" style="left:52%"></div>':'')+(eventActive("bloodHands")?handMarkup():"")+(eventActive("lastShadow")?'<div class="shadow-face"></div>':'')+'</div>';
  return base+"</div>";
 }
 function eventActive(id){var e=state.events.find(function(x){return x.id===id});return !!(e&&!e.resolved)}
+function maybeMutateRoom(room){
+ if(!state)return;state.visits[room]=(state.visits[room]||0)+1;
+ var n=state.visits[room],v=state.roomVariants;
+ if(room==="lobby"&&n>=3&&state.time>110)v.lobbyChair=true;
+ if(room==="kitchen"&&n>=3&&state.time>145){v.kitchenChair=true;if(n>=4)v.kitchenCabinet=true}
+ if(room==="office"&&n>=4&&state.time>155)v.officeClock=true;
+ if(room==="second"&&n>=3&&state.time>175){v.secondScratch=true;if(n>=4)v.secondNumber=true}
+ if(room==="west"&&n>=3&&state.time>220)v.westMirror=true;
+ if(room==="basement"&&n>=3&&state.time>185)v.basementShift=true;
+ if(room==="service"&&n>=3&&state.time>230)v.serviceCabinet=true;
+}
+function triggerFakeAnomaly(){
+ if(!state||!state.running)return;
+ var types=["shadow","flicker","whisper"],type=types[Math.floor(Math.random()*types.length)];
+ state.fakeAnomaly={room:state.room,type:type,until:state.time+4};
+ if(type==="shadow"){sfxWhisper();renderScene()}
+ if(type==="flicker"){sfxFlicker();scene.classList.remove("flash");void scene.offsetWidth;scene.classList.add("flash")}
+ if(type==="whisper"){sfxWhisper()}
+ state.nextFakeAt=state.time+35+Math.random()*35;
+ setTimeout(function(){if(state&&state.running&&state.fakeAnomaly&&state.time>=state.fakeAnomaly.until){var r=state.fakeAnomaly.room;state.fakeAnomaly=null;if(state.room===r)renderScene()}},6200)
+}
+function queueDelayedScare(reason){if(!state)return;state.pendingScare={reason:reason,queuedAt:state.time,moved:false}}
+function triggerPendingScare(){
+ if(!state||!state.pendingScare)return;
+ var p=state.pendingScare;state.pendingScare=null;
+ setTimeout(function(){if(state&&state.running){showJumpscare();log("뒤늦게 무언가 따라붙었다.",true)}},650)
+}
 function watcherHere(room){return !!(state&&state.watcherRoom===room&&state.time<state.watcherUntil)}
 function handMarkup(){
  var n=state&&state.handCount?state.handCount:0,html='<div class="hand-zone">';
@@ -326,6 +371,7 @@ function renderScene(){
  if(state.room==="office"){
    if(state.phone&&state.phone.ringing)addAction("전화 받기",answerPhone,"warn");
    addAction("직원 명부 펼치기",checkLedger);
+   if(state.previous)addAction("책상 위 낡은 근무 기록 보기",checkPreviousShift);
    addAction("CCTV 화면 보기",openCCTV);
  }
  if(state.room==="second"){
@@ -393,7 +439,7 @@ function moveTo(id){
    resolveEvent("bloodHands","세 번째 손바닥이 찍힌 뒤 직원 통로를 즉시 벗어났다.");clearHandTimers();state.handEscapeDeadline=0;sfxGood();
  }
  if(state.room==="lobby"&&eventActive("carpet")&&id!=="office"){violate("붉은 카펫을 보고도 다른 방향으로 이동했다.");resolveEvent("carpet","카펫을 지나쳤다.")}
- state.room=id;log(rooms[id].name+"으로 이동");sfxStep();maybeWatcher(id);renderScene()
+ state.room=id;log(rooms[id].name+"으로 이동");sfxStep();maybeMutateRoom(id);maybeWatcher(id);renderScene();if(state.pendingScare)triggerPendingScare()
 }
 
 function renderTasks(){
@@ -451,9 +497,16 @@ function startPhone(){
  ring();ringTimer=setInterval(ring,2200)
 }
 
+function checkPreviousShift(){
+ var p=state.previous;if(!p)return;
+ if(p.result==="bad")setMsg("낡은 근무 기록 마지막 줄에 '"+p.worker+"'가 적혀 있다. 퇴근 시간 칸은 비어 있고, 비고란에는 '"+(p.reason||"기록 없음")+"'이라고 적혀 있다.");
+ else setMsg("이전 근무 기록에 '"+p.worker+"'의 서명과 06:00 퇴근 도장이 남아 있다. 그런데 서명 옆에 지워진 손자국이 겹쳐 있다.");
+ sfxPaper();
+}
 function checkLedger(){
  state.ledgerChecked=true;
- setMsg(state.womanListed?"직원 명부 마지막 줄에 희미한 글씨가 있다. '한세라 / 야간 객실 담당'.":"직원 명부 어디에도 현관의 여성과 일치하는 이름은 없다.");
+ var memory=state.previous&&state.previous.result==="bad"?" 명부 맨 아래에는 이전 근무자 '"+state.previous.worker+"'가 직원으로 추가되어 있다.":"";
+ setMsg((state.womanListed?"직원 명부 마지막 줄에 희미한 글씨가 있다. '한세라 / 야간 객실 담당'.":"직원 명부 어디에도 현관의 여성과 일치하는 이름은 없다.")+memory);
  sfxPaper();
  var t=taskState("ledger");if(t&&!t.done&&!t.failed&&state.time>=t.at)finishTask(t,"직원 명부 최종 확인 완료")
 }
@@ -468,7 +521,18 @@ function resolveEvent(id,msg){var e=state.events.find(function(x){return x.id===
 function triggerEvent(def){
  var e={id:def.id,room:def.room,resolved:false};state.events.push(e);
  if(def.id==="phone"){startPhone();return}
- if(def.id==="fakeRule"){state.fakeRule=true;log("수칙서에서 종이가 스치는 소리가 남",true);sfxWhisper();if(!rulebook.classList.contains("hidden"))renderRules();return}
+ if(def.id==="fakeRule"){
+   state.fakeRule=true;
+   var muts=[
+     {index:1,text:"205호는 비어 있습니다. 안에서 노크 소리가 들리더라도 문을 열지 마십시오."},
+     {index:3,text:"경비실 전화가 두 번 울리면 세 번째 벨이 울리기 전에 받으십시오. 상대가 자신의 이름을 알고 있다면 아무 말 없이 전화를 끊으십시오."},
+     {index:4,text:"1층 현관에 짙은 회색 카펫이 보인다면 왔던 길로 되돌아가십시오. 본 저택의 카펫은 모두 붉은색입니다."},
+     {index:0,text:"새벽 1시 이후 2층 복도에서 아이가 울고 있다면 먼저 말을 걸어 신원을 확인하십시오."}
+   ];
+   state.ruleMutation=muts[Math.floor(Math.random()*muts.length)];
+   state.ruleMutation.until=state.time+34;
+   log("수칙서에서 종이가 스치는 소리가 남",true);sfxWhisper();if(!rulebook.classList.contains("hidden"))renderRules();return
+ }
  if(def.id==="child")log("2층에서 아이 우는 소리가 희미하게 들림",true);
  if(def.id==="knock")log("2층 방향에서 세 번의 노크 소리가 남",true),sfxKnock();
  if(def.id==="mirror")log("서쪽 복도 전등이 잠깐 꺼졌다 켜짐",true);
@@ -482,8 +546,12 @@ function triggerEvent(def){
 
 function renderRules(){
  rulesList.innerHTML="";
- baseRules.forEach(function(r){var li=document.createElement("li");li.textContent=r;rulesList.appendChild(li)});
- if(state&&state.fakeRule){var li=document.createElement("li");li.className="fake";li.value=11;li.textContent="새벽 4시 이후 현관에서 노크가 들리면 반드시 즉시 문을 열어 안으로 들이십시오.";rulesList.appendChild(li);bookNote.textContent="마지막 페이지의 잉크가 아직 마르지 않은 것 같다."}
+ baseRules.forEach(function(r,idx){
+   var li=document.createElement("li");
+   li.textContent=(state&&state.ruleMutation&&state.ruleMutation.index===idx&&state.time<state.ruleMutation.until)?state.ruleMutation.text:r;
+   rulesList.appendChild(li)
+ });
+ if(state&&state.fakeRule){var li=document.createElement("li");li.value=11;li.textContent="새벽 4시 이후 현관에서 노크가 들리면 반드시 즉시 문을 열어 안으로 들이십시오.";rulesList.appendChild(li);bookNote.textContent="페이지 수는 맞는데 종이 한 장이 더 두꺼워진 것 같다."}
  else bookNote.textContent="본 수칙서는 총 10개 항목으로 구성되어 있습니다."
 }
 function openRules(){renderRules();rulebook.classList.remove("hidden");sfxPaper()}
@@ -504,6 +572,9 @@ function tick(now){
      state.handEscapeDeadline=0;resolveEvent("bloodHands","직원 통로에 너무 오래 머물렀다.");showJumpscare();violate("세 번째 손바닥이 찍힌 뒤 직원 통로를 벗어나지 않았다.",true);
    }
    if(state.watcherRoom&&state.time>=state.watcherUntil){var wr=state.watcherRoom;state.watcherRoom=null;if(state.room===wr)renderScene();}
+   if(state.ruleMutation&&state.time>=state.ruleMutation.until){state.ruleMutation=null;if(!rulebook.classList.contains("hidden"))renderRules()}
+   if(state.time>=state.nextFakeAt&&!eventActive("bloodHands"))triggerFakeAnomaly();
+   if(state.pendingScare&&state.time-state.pendingScare.queuedAt>14)triggerPendingScare();
    var hr=Math.floor(state.time/60);if(hr>state.lastHour&&hr<=5){state.lastHour=hr;sfxHour();log("저택 시계가 "+hr+"번 울렸다.")}
    clockEl.textContent=fmt(state.time);shiftPct.textContent=Math.min(100,Math.floor(state.time/360*100))+"%";renderTasks();
  }
@@ -512,7 +583,8 @@ function tick(now){
 
 function startGame(){
  initAudio();startAmbient();
- state={running:true,time:0,room:"office",strikes:0,tasks:taskDefs.map(function(x){return Object.assign({done:false,failed:false},x)}),events:[],triggered:{},phone:null,fakeRule:false,ledgerChecked:false,womanListed:Math.random()<.5,breakerOff:false,lastHour:0,pausedAction:false,workerName:"야간 근무자",handCount:0,handSequenceStarted:false,handEscapeDeadline:0,watcherRoom:null,watcherUntil:0};
+ var prev=loadPreviousShift(),shiftNo=prev&&prev.count?prev.count+1:1;
+ state={running:true,time:0,room:"office",strikes:0,tasks:taskDefs.map(function(x){return Object.assign({done:false,failed:false},x)}),events:[],triggered:{},phone:null,fakeRule:false,ruleMutation:null,ledgerChecked:false,womanListed:Math.random()<.5,breakerOff:false,lastHour:0,pausedAction:false,workerName:"야간 근무자 #"+shiftNo,previous:prev,visits:{office:1},roomVariants:{},fakeAnomaly:null,nextFakeAt:48+Math.random()*22,pendingScare:null,handCount:0,handSequenceStarted:false,handEscapeDeadline:0,watcherRoom:null,watcherUntil:0};
  titleScreen.classList.add("hidden");gameScreen.classList.remove("hidden");rulebook.classList.add("hidden");$("endingOverlay").classList.add("hidden");logEl.innerHTML="";
  renderStrikes();renderTasks();renderScene();log("00:00 야간 근무 시작");lastTick=performance.now();timer=requestAnimationFrame(tick)
 }
@@ -526,6 +598,8 @@ function endGame(type,reason){
  }else{
    title="근무 연장";grade="F";code="SHIFT FAILED";text="세 번째 수칙을 어긴 순간 저택의 모든 시계가 멈췄다. 현관문은 열리지 않는다. 다음 날, 새 근무자는 책상 위에서 낯선 이름이 추가된 직원 명부를 발견한다."+ (reason?("\n\n마지막 위반: "+reason):"")
  }
+ var prevCount=state.previous&&state.previous.count?state.previous.count:0;
+ savePreviousShift({count:prevCount+1,worker:state.workerName,result:type==="survive"?"survive":"bad",grade:grade,reason:reason||"",endedAt:Date.now()});
  $("endingCode").textContent=code;$("endingTitle").textContent=title;$("endingGrade").textContent=grade;$("endingText").textContent=text;$("endingOverlay").classList.remove("hidden")
 }
 
