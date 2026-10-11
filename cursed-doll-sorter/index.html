@@ -63,8 +63,8 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
   linear-gradient(180deg,#654455 0 22%,#281a2d 22% 30%,#6c596a 30% 70%,#281a2d 70% 78%,#4c3445 78%);
   overflow:hidden;touch-action:manipulation}
 .belt:after{content:"";position:absolute;left:0;right:0;top:50%;height:14px;background:repeating-linear-gradient(90deg,#1a111d 0 24px,#6d5b70 24px 38px);transform:translateY(-50%);opacity:.75}
-.item{position:absolute;width:64px;height:64px;border:0;background:transparent;padding:0;cursor:pointer;z-index:3;touch-action:manipulation}
-.item canvas{width:64px;height:64px;image-rendering:pixelated;filter:drop-shadow(4px 4px 0 rgba(0,0,0,.35))}
+.item{position:absolute;width:76px;height:76px;border:0;background:transparent;padding:0;cursor:pointer;z-index:3;touch-action:manipulation}
+.item canvas{width:76px;height:76px;image-rendering:pixelated;filter:drop-shadow(4px 4px 0 rgba(0,0,0,.35))}
 .item.good{animation:goodPop .18s ease forwards}.item.bad{animation:badShake .25s linear}
 @keyframes goodPop{to{transform:scale(.15) rotate(12deg);opacity:0}}
 @keyframes badShake{25%{margin-left:-5px}50%{margin-left:6px}75%{margin-left:-4px}}
@@ -84,7 +84,7 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
 .over-card{width:min(430px,100%);border:4px solid var(--line);background:#2b193c;box-shadow:6px 6px 0 #000;padding:18px;text-align:center}.over-card h2{margin:0;color:var(--yellow);font-size:30px;text-shadow:3px 3px 0 #000}.over-score{font-size:48px;font-weight:1000;color:var(--green);text-shadow:4px 4px 0 #000;margin:8px 0}.over-meta{font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:12px}
 .over-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.secondary{background:var(--violet)}
 @media(max-width:760px){.top,.start-panel,.bottom-grid{grid-template-columns:1fr;display:grid}.bestbox{min-width:0}.stats{grid-template-columns:1fr 1fr}.machine{}}
-@media(max-width:520px){.wrap{padding-left:8px;padding-right:8px}.titlebox{padding:13px}.start-panel{grid-template-columns:1fr}.order-wrap{grid-template-columns:1fr}.order-tag{min-width:0}.belt{height:300px}.item{width:58px;height:58px}.item canvas{width:58px;height:58px}.back-wall{height:58px}.hint{font-size:9px}.over-actions{grid-template-columns:1fr}.stats{gap:5px}.stat{padding:7px}.stat strong{font-size:18px}}
+@media(max-width:520px){.wrap{padding-left:8px;padding-right:8px}.titlebox{padding:13px}.start-panel{grid-template-columns:1fr}.order-wrap{grid-template-columns:1fr}.order-tag{min-width:0}.belt{height:310px}.item{width:68px;height:68px}.item canvas{width:68px;height:68px}.back-wall{height:58px}.hint{font-size:9px}.over-actions{grid-template-columns:1fr}.stats{gap:5px}.stat{padding:7px}.stat strong{font-size:18px}}
 </style>
 </head>
 <body>
@@ -299,6 +299,7 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
   function setRule(first){
     clearActive(false);
     state.rule=buildRule();
+    state.forceMatches=2;
     state.nextRuleAt=state.elapsed+(levelFor(state.elapsed)>=4?18:22);
     orderText.textContent=state.rule.text;
     orderSub.textContent="LEVEL "+levelFor(state.elapsed)+" · 주문이 바뀔 때 컨베이어가 비워집니다.";
@@ -314,38 +315,80 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
   }
 
   function makeCanvas(item){
-    var cv=document.createElement("canvas");cv.width=32;cv.height=32;
+    var cv=document.createElement("canvas");cv.width=48;cv.height=48;
     var g=cv.getContext("2d");g.imageSmoothingEnabled=false;
-    var c=COLORS[item.color].hex,d="#1a1020",l="#fff0d2",r="#d94b55";
+    var c=COLORS[item.color].hex,d="#170d1d",l="#fff1d6",hi="#ffffff",r="#e74e59",gold="#f4cf67",brown="#6b3d32";
     function px(x,y,w,h,col){g.fillStyle=col;g.fillRect(x,y,w,h)}
-    if(item.type==="doll"){
-      px(10,3,12,9,c);px(8,10,16,12,c);px(5,13,4,10,c);px(23,13,4,10,c);px(9,22,5,8,c);px(18,22,5,8,c);
-      px(12,7,3,3,d);px(18,7,3,3,d);px(14,12,4,2,d);
-    }else if(item.type==="candle"){
-      px(12,6,9,22,c);px(10,8,13,4,l);px(15,1,4,6,"#f09d45");px(16,0,2,3,"#fff09b");px(9,27,15,3,d);
-    }else if(item.type==="eye"){
-      px(5,11,22,12,l);px(8,8,16,3,l);px(8,23,16,3,l);px(11,12,10,10,c);px(14,14,5,6,d);px(16,15,2,2,"#fff");
-    }else if(item.type==="candy"){
-      px(5,12,5,8,c);px(10,9,12,14,c);px(22,12,5,8,c);px(2,10,4,12,l);px(26,10,4,12,l);px(13,11,2,10,l);px(18,11,2,10,l);
-    }else if(item.type==="coffin"){
-      px(11,2,10,3,c);px(7,5,18,7,c);px(5,12,22,12,c);px(9,24,14,6,c);px(10,5,2,21,d);px(20,5,2,21,d);px(14,11,4,10,l);px(11,14,10,4,l);
-    }else if(item.type==="talisman"){
-      px(7,3,18,27,"#e7c94b");px(9,5,14,23,"#f5dd62");px(15,7,2,18,r);px(11,10,10,2,r);px(10,20,12,2,r);
-    }else{
-      px(5,13,22,6,l);px(2,10,6,5,l);px(2,18,6,5,l);px(24,10,6,5,l);px(24,18,6,5,l);px(12,11,8,10,c);
+    function outlineRect(x,y,w,h,fill){px(x-2,y-2,w+4,h+4,d);px(x,y,w,h,fill)}
+    function bow(x,y){
+      px(x,y+4,5,5,d);px(x+10,y+4,5,5,d);px(x+5,y+5,5,4,d);
+      px(x+2,y+6,4,4,"#ff82b5");px(x+9,y+6,4,4,"#ff82b5");px(x+6,y+6,3,3,"#ff82b5");
     }
-    if(item.trait==="ribbon"){px(4,3,6,5,"#ff84b5");px(10,5,5,3,"#ff84b5");px(2,5,4,3,"#ff84b5")}
-    if(item.trait==="crack"){px(15,4,2,6,d);px(13,9,3,2,d);px(16,10,2,5,d)}
-    if(item.trait==="red"){px(25,4,4,4,r);px(26,5,2,2,"#fff")}
-    if(item.trait==="plain"){px(3,27,4,2,"#7e687f")}
+    if(item.type==="doll"){
+      // large round head + dress body + separate limbs
+      px(14,3,20,3,d);px(11,6,26,15,d);px(14,7,20,13,c);
+      px(15,10,4,4,l);px(29,10,4,4,l);px(16,11,2,2,d);px(30,11,2,2,d);
+      px(22,15,5,2,d);px(23,17,3,2,r);
+      px(12,22,24,4,d);px(15,24,18,13,c);px(11,27,5,11,d);px(8,29,5,8,c);px(32,27,5,11,d);px(35,29,5,8,c);
+      px(16,36,6,9,d);px(17,36,4,8,c);px(27,36,6,9,d);px(28,36,4,8,c);
+      px(13,23,22,3,l);px(18,26,12,2,hi);
+    }else if(item.type==="candle"){
+      // unmistakably tall candle in holder
+      px(21,1,6,7,d);px(22,2,4,5,"#ff9e45");px(23,1,2,3,"#fff3a0");
+      px(16,8,16,5,d);px(18,9,12,4,c);
+      px(17,11,14,26,d);px(19,12,10,23,c);
+      px(19,15,4,5,l);px(23,13,5,4,l);px(20,24,3,4,l);
+      px(12,36,24,4,d);px(15,38,18,5,brown);px(20,35,8,3,gold);
+    }else if(item.type==="eye"){
+      // huge almond eye with colored iris and veins
+      px(5,20,4,8,d);px(9,16,6,4,d);px(15,13,18,4,d);px(33,16,6,4,d);px(39,20,4,8,d);
+      px(9,20,30,9,l);px(13,17,22,3,l);px(13,29,22,3,l);
+      px(18,18,13,13,d);px(20,19,9,11,c);px(23,21,5,7,d);px(24,22,2,2,hi);
+      px(10,22,5,2,r);px(34,24,5,2,r);px(14,28,4,2,r);
+    }else if(item.type==="candy"){
+      // wrapper fins + striped center
+      px(2,16,8,16,d);px(8,18,6,12,d);px(34,18,6,12,d);px(40,16,6,16,d);
+      px(4,18,6,12,c);px(9,20,6,8,l);px(39,18,5,12,c);px(34,20,6,8,l);
+      px(13,13,22,22,d);px(15,15,18,18,c);
+      px(18,15,4,18,l);px(26,15,4,18,l);px(16,19,17,3,hi);
+    }else if(item.type==="coffin"){
+      // tall hexagonal coffin
+      px(18,2,12,3,d);px(12,5,24,6,d);px(8,11,32,23,d);px(12,34,24,6,d);px(17,40,14,5,d);
+      px(19,5,10,3,c);px(14,8,20,6,c);px(11,13,26,19,c);px(14,32,20,5,c);px(19,37,10,5,c);
+      px(22,12,5,18,l);px(17,18,15,5,l);px(23,14,3,14,gold);px(19,20,11,2,gold);
+    }else if(item.type==="talisman"){
+      // long paper talisman with torn bottom and red glyphs
+      px(10,3,28,40,d);px(12,5,24,34,gold);
+      px(14,7,20,4,"#fff2a2");px(22,11,4,20,r);px(16,14,16,3,r);px(16,22,7,3,r);px(25,26,8,3,r);
+      px(12,39,5,5,gold);px(19,39,5,3,gold);px(26,39,5,5,gold);px(33,39,3,3,gold);
+    }else{
+      // bone: long central shaft with four obvious knuckle bulbs
+      px(6,18,9,5,d);px(4,14,7,7,d);px(4,25,7,7,d);
+      px(13,20,22,9,d);
+      px(34,18,9,5,d);px(38,14,7,7,d);px(38,25,7,7,d);
+      px(7,17,6,5,l);px(7,25,6,5,l);px(12,22,24,5,c);px(36,17,6,5,l);px(36,25,6,5,l);
+      px(16,23,16,2,hi);
+    }
+    if(item.trait==="ribbon"){
+      bow(2,2);
+    }else if(item.trait==="crack"){
+      px(23,4,3,7,d);px(20,10,5,3,d);px(23,12,3,7,d);px(25,17,5,3,d);px(27,19,3,6,d);
+    }else if(item.trait==="red"){
+      px(37,4,7,3,r);px(39,2,3,7,r);px(38,5,5,2,hi);
+    }
     return cv;
   }
 
   function spawnItem(){
     if(!state.running||state.paused||active.length>=8)return;
     var data=randomItem();
+    if(state.forceMatches>0){
+      var tries=0;
+      while(!matches(data,state.rule)&&tries<80){data=randomItem();tries++}
+      if(matches(data,state.rule))state.forceMatches--;
+    }
     var b=belt.getBoundingClientRect();
-    var item={id:++idSeq,data:data,x:-72,y:34+Math.random()*Math.max(80,b.height-116),done:false,should:matches(data,state.rule)};
+    var item={id:++idSeq,data:data,x:-82,y:28+Math.random()*Math.max(90,b.height-124),done:false,should:matches(data,state.rule)};
     var btn=document.createElement("button");btn.type="button";btn.className="item";btn.setAttribute("aria-label",COLORS[data.color].name+" "+TYPES[data.type].name+" "+TRAITS[data.trait]);
     btn.appendChild(makeCanvas(data));btn.style.left=item.x+"px";btn.style.top=item.y+"px";
     btn.addEventListener("click",function(){classify(item)});
