@@ -611,13 +611,13 @@ function startPhone(){
 
 function checkPreviousShift(){
  var p=state.previous;if(!p)return;
- if(p.result==="bad")setMsg("낡은 근무 기록 마지막 줄에 '"+p.worker+"'가 적혀 있다. 퇴근 시간 칸은 비어 있고, 비고란에는 '"+(p.reason||"기록 없음")+"'이라고 적혀 있다.");
- else setMsg("이전 근무 기록에 '"+p.worker+"'의 서명과 06:00 퇴근 도장이 남아 있다. 그런데 서명 옆에 지워진 손자국이 겹쳐 있다.");
+ if(p.result==="bad")setMsg("낡은 근무 기록 마지막 줄에 '■■■'가 적혀 있다. 퇴근 시간 칸은 비어 있고, 비고란에는 '"+(p.reason||"기록 없음")+"'이라고 적혀 있다.");
+ else setMsg("이전 근무 기록에 '■■■'의 서명과 06:00 퇴근 도장이 남아 있다. 그런데 서명 옆에 지워진 손자국이 겹쳐 있다.");
  sfxPaper();
 }
 function checkLedger(){
  state.ledgerChecked=true;
- var memory=state.previous&&state.previous.result==="bad"?" 명부 맨 아래에는 이전 근무자 '"+state.previous.worker+"'가 직원으로 추가되어 있다.":"";
+ var memory=state.previous&&state.previous.result==="bad"?" 명부 맨 아래에는 이전 근무자 '■■■'가 직원으로 추가되어 있다.":"";
  setMsg((state.womanListed?"직원 명부 마지막 줄에 희미한 글씨가 있다. '■■■ / 야간 객실 담당'.":"직원 명부 어디에도 현관의 여성과 일치하는 이름은 없다.")+memory);
  sfxPaper();
  var t=taskState("ledger");if(t&&!t.done&&!t.failed&&state.time>=t.at)finishTask(t,"직원 명부 최종 확인 완료")
