@@ -151,6 +151,7 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
         <div class="over-card">
           <h2>SHOP CLOSED</h2>
           <div id="finalScore" class="over-score">0</div>
+          <div id="finalCoin" style="font-size:20px;font-weight:1000;color:var(--yellow);margin:-2px 0 10px;text-shadow:2px 2px 0 #000">획득 코인 0</div>
           <div id="finalMeta" class="over-meta"></div>
           <div class="over-actions">
             <button id="retryBtn" class="btn" type="button">다시 하기</button>
@@ -192,6 +193,7 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
   var flashRule=root.getElementById("flashRule");
   var gameOverEl=root.getElementById("gameOver");
   var finalScore=root.getElementById("finalScore");
+  var finalCoin=root.getElementById("finalCoin");
   var finalMeta=root.getElementById("finalMeta");
   var rankList=root.getElementById("rankList");
   var myBest=root.getElementById("myBest");
@@ -463,6 +465,7 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
     var total=state.correct+state.mistakes,acc=total?Math.round(state.correct/total*100):0;
     saveScore(state.name,state.score,state.bestCombo,acc,state.elapsed);
     finalScore.textContent=state.score;
+    finalCoin.textContent="획득 코인 "+Math.round(state.score*0.0015);
     finalMeta.innerHTML="닉네임: <strong>"+escapeHTML(state.name)+"</strong><br>최고 콤보 "+state.bestCombo+" · 정확도 "+acc+"% · 버틴 시간 "+fmtTime(state.elapsed)+"<br>마지막 실수: "+escapeHTML(reason||"실수 5회");
     gameOverEl.classList.remove("hidden");renderRanks();renderBest();
   }
