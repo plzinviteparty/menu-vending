@@ -71,6 +71,8 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
 .crate-row{display:flex;justify-content:space-between;align-items:center;background:#21162b;border-top:4px solid var(--line);padding:10px 12px;gap:10px}
 .crate{border:3px solid var(--line);background:#8c5d37;color:#fff2d8;padding:8px 12px;box-shadow:3px 3px 0 #0b0710;font-size:10px;font-weight:1000}
 .hint{font-size:10px;color:#cbb8d0;text-align:right;line-height:1.4}
+.sound-btn{border:3px solid var(--line);background:var(--yellow);color:#25152f;padding:7px 9px;box-shadow:3px 3px 0 #0b0710;font-size:9px;font-weight:1000;cursor:pointer;white-space:nowrap}
+.sound-btn:active{transform:translate(3px,3px);box-shadow:none}
 .flash{position:absolute;inset:0;z-index:10;display:grid;place-items:center;background:rgba(17,8,25,.86);text-align:center;padding:20px}
 .flash strong{display:block;font-size:clamp(24px,6vw,46px);color:var(--yellow);text-shadow:4px 4px 0 #000}
 .flash span{display:block;margin-top:8px;color:#fff0d2;font-size:12px}
@@ -144,7 +146,10 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
       <div id="belt" class="belt" aria-label="컨베이어 벨트"></div>
       <div class="crate-row">
         <div class="crate">[ PACKING BOX ]</div>
-        <div class="hint">맞는 물건은 터치/클릭<br>나머지는 그냥 흘려보내기</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+          <button id="soundBtn" class="sound-btn" type="button">🔊 SOUND ON</button>
+          <div class="hint">맞는 물건은 터치/클릭<br>나머지는 그냥 흘려보내기</div>
+        </div>
       </div>
       <div id="ruleFlash" class="flash hidden"><div><strong>NEW ORDER!</strong><span id="flashRule"></span></div></div>
       <div id="gameOver" class="gameover hidden">
@@ -200,6 +205,7 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
   var bestName=root.getElementById("bestName");
   var retryBtn=root.getElementById("retryBtn");
   var quitBtn=root.getElementById("quitBtn");
+  var soundBtn=root.getElementById("soundBtn");
 
   var COLORS={
     pink:{name:"분홍",hex:"#d9507e"},
@@ -221,6 +227,75 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
   var active=[];
   var idSeq=0;
   var STORAGE="cursed_doll_sorting_scores_v1";
+  var AUDIO_PREF="cursed_doll_sorting_sound_v1";
+  var audioCtx=null,masterGain=null,musicGain=null,sfxGain=null,bgmTimer=0,bgmStep=0;
+  var soundOn=localStorage.getItem(AUDIO_PREF)!=="off";
+
+  function ensureAudio(){
+    if(audioCtx)return audioCtx;
+    var AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC)return null;
+    audioCtx=new AC();
+    masterGain=audioCtx.createGain();
+    musicGain=audioCtx.createGain();
+    sfxGain=audioCtx.createGain();
+    var comp=audioCtx.createDynamicsCompressor();
+    comp.threshold.value=-18;comp.knee.value=16;comp.ratio.value=5;comp.attack.value=.003;comp.release.value=.18;
+    musicGain.gain.value=.22;
+    sfxGain.gain.value=.72;
+    masterGain.gain.value=soundOn?.48:0;
+    musicGain.connect(masterGain);sfxGain.connect(masterGain);masterGain.connect(comp);comp.connect(audioCtx.destination);
+    return audioCtx;
+  }
+  function setSound(on){
+    soundOn=!!on;
+    try{localStorage.setItem(AUDIO_PREF,soundOn?"on":"off")}catch(e){}
+    if(masterGain)masterGain.gain.setTargetAtTime(soundOn?.48:0,audioCtx.currentTime,.02);
+    if(soundBtn)soundBtn.textContent=soundOn?"🔊 SOUND ON":"🔇 SOUND OFF";
+  }
+  function tone(freq,dur,vol,type,when,dest){
+    if(!soundOn)return;
+    var ac=ensureAudio();if(!ac)return;
+    var t=when==null?ac.currentTime:when;
+    var o=ac.createOscillator(),g=ac.createGain();
+    o.type=type||"square";o.frequency.setValueAtTime(freq,t);
+    g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.001,vol||.1),t+.008);
+    g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g);g.connect(dest||sfxGain);o.start(t);o.stop(t+dur+.03);
+  }
+  function startBGM(){
+    var ac=ensureAudio();if(!ac)return;
+    if(ac.state==="suspended")ac.resume();
+    stopBGM();bgmStep=0;
+    var melody=[440,523.25,659.25,523.25,392,466.16,587.33,466.16,349.23,440,523.25,440,329.63,392,493.88,392];
+    var bass=[110,110,98,98,87.31,87.31,98,98];
+    function tick(){
+      if(!audioCtx||!soundOn)return;
+      var now=audioCtx.currentTime;
+      tone(melody[bgmStep%melody.length],.115,.12,bgmStep%4===3?"triangle":"square",now,musicGain);
+      if(bgmStep%2===0)tone(bass[Math.floor(bgmStep/2)%bass.length],.16,.16,"triangle",now,musicGain);
+      if(bgmStep%4===0)tone(75,.055,.11,"square",now,musicGain);
+      bgmStep++;
+    }
+    tick();bgmTimer=setInterval(tick,175);
+  }
+  function stopBGM(){if(bgmTimer){clearInterval(bgmTimer);bgmTimer=0}}
+  function sfxGood(){
+    var ac=ensureAudio();if(!ac||!soundOn)return;var t=ac.currentTime;
+    tone(660,.07,.42,"square",t,sfxGain);tone(880,.09,.34,"square",t+.055,sfxGain);
+  }
+  function sfxBad(){
+    var ac=ensureAudio();if(!ac||!soundOn)return;var t=ac.currentTime;
+    tone(180,.14,.6,"sawtooth",t,sfxGain);tone(120,.2,.48,"square",t+.055,sfxGain);
+  }
+  function sfxOrder(){
+    var ac=ensureAudio();if(!ac||!soundOn)return;var t=ac.currentTime;
+    tone(523.25,.09,.34,"square",t,sfxGain);tone(659.25,.09,.34,"square",t+.08,sfxGain);tone(783.99,.13,.38,"square",t+.16,sfxGain);
+  }
+  function sfxGameOver(){
+    var ac=ensureAudio();if(!ac||!soundOn)return;var t=ac.currentTime;
+    tone(392,.16,.42,"square",t,sfxGain);tone(329.63,.18,.42,"square",t+.15,sfxGain);tone(261.63,.22,.5,"sawtooth",t+.31,sfxGain);
+  }
 
   function safeRead(){
     try{return JSON.parse(localStorage.getItem(STORAGE)||"[]")}catch(e){return[]}
@@ -307,6 +382,7 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
     orderSub.textContent="LEVEL "+levelFor(state.elapsed)+" · 주문이 바뀔 때 컨베이어가 비워집니다.";
     flashRule.textContent=state.rule.text;
     if(!first){
+      sfxOrder();
       state.paused=true;
       ruleFlash.classList.remove("hidden");
       window.setTimeout(function(){
@@ -398,7 +474,7 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
     item.done=true;
     if(item.should){
       state.correct++;state.combo++;state.bestCombo=Math.max(state.bestCombo,state.combo);
-      var pts=comboPoints(state.combo);state.score+=pts;floatText(item,"+"+pts,"#9fce62");item.el.classList.add("good");
+      var pts=comboPoints(state.combo);state.score+=pts;sfxGood();floatText(item,"+"+pts,"#9fce62");item.el.classList.add("good");
       window.setTimeout(function(){removeItem(item)},170);
     }else{
       mistake(item,"잘못 분류함");
@@ -407,7 +483,7 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
   }
   function mistake(item,reason){
     if(!state.running)return;
-    state.mistakes++;state.lives--;state.score=Math.max(0,state.score-100);state.combo=0;
+    state.mistakes++;state.lives--;state.score=Math.max(0,state.score-100);state.combo=0;sfxBad();
     if(item&&item.el){item.done=true;item.el.classList.add("bad");floatText(item,"-100","#e85b66");window.setTimeout(function(){removeItem(item)},240)}
     updateHUD();
     if(state.lives<=0)endGame(reason);
@@ -455,13 +531,13 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
     state={name:n,score:0,combo:0,bestCombo:0,lives:5,mistakes:0,correct:0,elapsed:0,nextRuleAt:22,rule:null,running:true,paused:false,lastClock:performance.now()};
     active=[];belt.querySelectorAll(".item,.float-score").forEach(function(x){x.remove()});
     startPanel.classList.add("hidden");gameArea.classList.remove("hidden");gameOverEl.classList.add("hidden");
-    setRule(true);updateHUD();spawnTimer=.35;lastFrame=performance.now();state.lastClock=lastFrame;raf=requestAnimationFrame(frame);
+    setRule(true);updateHUD();startBGM();spawnTimer=.35;lastFrame=performance.now();state.lastClock=lastFrame;raf=requestAnimationFrame(frame);
     window.setTimeout(function(){gameArea.scrollIntoView({behavior:"smooth",block:"start"})},50);
   }
   function stopLoop(){if(raf)cancelAnimationFrame(raf);raf=0;lastFrame=0;if(transitionTimer)clearTimeout(transitionTimer)}
   function endGame(reason){
     if(!state||!state.running)return;
-    state.running=false;stopLoop();clearActive(false);
+    state.running=false;stopLoop();stopBGM();sfxGameOver();clearActive(false);
     var total=state.correct+state.mistakes,acc=total?Math.round(state.correct/total*100):0;
     saveScore(state.name,state.score,state.bestCombo,acc,state.elapsed);
     finalScore.textContent=state.score;
@@ -488,7 +564,12 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
 
   startBtn.addEventListener("click",startGame);
   retryBtn.addEventListener("click",function(){gameOverEl.classList.add("hidden");startGame()});
-  quitBtn.addEventListener("click",function(){gameOverEl.classList.add("hidden");gameArea.classList.add("hidden");startPanel.classList.remove("hidden");renderRanks();renderBest();window.scrollTo({top:0,behavior:"smooth"})});
+  quitBtn.addEventListener("click",function(){stopBGM();gameOverEl.classList.add("hidden");gameArea.classList.add("hidden");startPanel.classList.remove("hidden");renderRanks();renderBest();window.scrollTo({top:0,behavior:"smooth"})});
+  soundBtn.addEventListener("click",function(){
+    ensureAudio();setSound(!soundOn);
+    if(soundOn&&state&&state.running)startBGM();else if(!soundOn)stopBGM();
+  });
+  setSound(soundOn);
   nickInput.addEventListener("input",renderBest);
   nickInput.addEventListener("keydown",function(e){if(e.key==="Enter")startGame()});
   window.addEventListener("resize",function(){if(state&&state.running){active.forEach(function(it){var ds=64;it.y=Math.min(it.y,Math.max(18,belt.clientHeight-ds-18));it.el.style.top=it.y+"px"})}});
