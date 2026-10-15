@@ -328,7 +328,18 @@ body.sticker-preview-open{overflow:hidden}
 <div class="wide"><button class="btn" type="submit">스티커 등록</button></div></form></div></section>
 <section id="tab-inventory" class="tab hidden"><div class="panel"><h2>전체 스티커 보관함</h2><div class="tablewrap"><table><thead><tr><th>이미지</th><th>이름</th><th>가격</th><th>상태</th><th>매대</th><th>관리</th></tr></thead><tbody id="inventory"></tbody></table></div></div></section>
 <section id="tab-orders" class="tab hidden"><div class="panel"><div class="sectitle"><h2>구매 기록</h2><button id="csvBtn" class="mini">CSV 저장</button></div><div class="field" style="margin-bottom:10px"><label>닉네임 검색</label><input id="orderSearch"></div><div class="tablewrap"><table><thead><tr><th>시간</th><th>닉네임</th><th>내용</th><th>입력</th><th>차감</th><th>잔액</th><th>주문번호</th></tr></thead><tbody id="orders"></tbody></table></div></div></section>
-<section id="tab-admins" class="tab hidden"><div class="panel"><h2>관리자 계정 추가</h2><form id="adminForm" class="adminform"><div class="field"><label>아이디</label><input id="newId" required></div><div class="field"><label>비밀번호</label><input id="newPw" type="password" minlength="4" required></div><div class="field"><label>권한</label><select id="newRole"><option value="admin">일반 관리자</option><option value="owner">총관리자</option></select></div><div class="field"><label>&nbsp;</label><button class="btn" type="submit">계정 추가</button></div></form><div id="adminList" class="audit" style="margin-top:14px"></div></div></section>
+<section id="tab-admins" class="tab hidden">
+<div class="panel">
+<h2>내 비밀번호 변경</h2>
+<form id="changePwForm" class="adminform">
+<div class="field"><label>새 비밀번호</label><input id="changePw1" type="password" minlength="8" autocomplete="new-password" required></div>
+<div class="field"><label>새 비밀번호 확인</label><input id="changePw2" type="password" minlength="8" autocomplete="new-password" required></div>
+<div class="field"><label>&nbsp;</label><button class="btn" type="submit">비밀번호 변경</button></div>
+</form>
+<div id="changePwMsg" class="notice hidden" style="margin-top:10px"></div>
+</div>
+<div class="panel" style="margin-top:14px"><h2>관리자 계정 추가</h2><form id="adminForm" class="adminform"><div class="field"><label>아이디</label><input id="newId" required></div><div class="field"><label>비밀번호</label><input id="newPw" type="password" minlength="4" required></div><div class="field"><label>권한</label><select id="newRole"><option value="admin">일반 관리자</option><option value="owner">총관리자</option></select></div><div class="field"><label>&nbsp;</label><button class="btn" type="submit">계정 추가</button></div></form><div id="adminList" class="audit" style="margin-top:14px"></div></div>
+</section>
 
 <section id="tab-gacha" class="tab hidden">
   <div class="g-admin-stack">
@@ -543,6 +554,29 @@ function move(id){var p=products(),x=p.find(function(v){return v.id===id}),ans=p
 function renderOrders(){var q=(el("orderSearch").value||"").trim().toLowerCase(),o=orders().filter(function(x){return !q||x.nickname.toLowerCase().indexOf(q)>=0});el("orders").innerHTML=o.map(function(x){return"<tr><td>"+new Date(x.at).toLocaleString("ko-KR")+"</td><td><strong>"+esc(x.nickname)+"</strong></td><td>"+x.items.map(function(i){return esc(i.name)+" × "+i.qty}).join("<br>")+"</td><td>"+x.before+"</td><td>"+x.cost+"</td><td>"+x.after+"</td><td>"+x.id+"</td></tr>"}).join("")||'<tr><td colspan="7">기록이 없습니다.</td></tr>'}
 el("orderSearch").oninput=renderOrders;
 el("csvBtn").onclick=function(){var rows=[["구매시간","닉네임","구매내용","입력코인","차감코인","구매후코인","주문번호"]];orders().forEach(function(x){rows.push([new Date(x.at).toLocaleString("ko-KR"),x.nickname,x.items.map(function(i){return i.name+" x"+i.qty}).join(" / "),x.before,x.cost,x.after,x.id])});function cell(v){var s=String(v);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}var csv="\ufeff"+rows.map(function(r){return r.map(cell).join(",")}).join("\n"),blob=new Blob([csv],{type:"text/csv"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="sticker-purchases.csv";a.click()};
+el("changePwForm").onsubmit=async function(e){
+e.preventDefault();
+var msg=el("changePwMsg"),p1=el("changePw1").value,p2=el("changePw2").value;
+try{
+if(!session)throw Error("로그인 세션이 없습니다.");
+if(p1.length<8)throw Error("새 비밀번호는 8자 이상 입력해 주세요.");
+if(p1!==p2)throw Error("새 비밀번호 확인이 일치하지 않습니다.");
+var admins=read(K_ADMINS,[]),me=admins.find(function(a){return a.id===session.id});
+if(!me)throw Error("현재 관리자 계정을 찾지 못했습니다.");
+me.pw=p1;
+var ok=await write(K_ADMINS,admins);
+if(!ok)throw Error("비밀번호 저장에 실패했습니다.");
+audit("내 비밀번호 변경",session.id);
+msg.textContent="비밀번호를 변경했습니다. 다음 로그인부터 새 비밀번호를 사용해 주세요.";
+msg.classList.remove("hidden");
+msg.style.color="#b7ffca";
+e.target.reset();
+}catch(err){
+msg.textContent=err.message;
+msg.classList.remove("hidden");
+msg.style.color="#ff9ebc";
+}
+};
 function renderAdmins(){el("adminList").innerHTML=read(K_ADMINS,[]).map(function(a){return'<div class="audititem"><strong>'+esc(a.id)+"</strong> · "+(a.role==="owner"?"총관리자":"관리자")+"</div>"}).join("")}
 el("adminForm").onsubmit=function(e){e.preventDefault();if(!session||session.role!=="owner"){alert("총관리자만 추가할 수 있습니다.");return}var id=el("newId").value.trim(),pw=el("newPw").value,role=el("newRole").value,a=read(K_ADMINS,[]);if(a.some(function(x){return x.id===id})){alert("이미 있는 아이디입니다.");return}a.push({id:id,pw:pw,role:role});write(K_ADMINS,a);audit("관리자 계정 추가",id+" / "+role);e.target.reset();renderAdminAll()};
 function renderAudit(){var a=read(K_AUDIT,[]);el("audit").innerHTML=a.map(function(x){return'<div class="audititem"><strong>'+new Date(x.at).toLocaleString("ko-KR")+"</strong> · "+esc(x.admin)+"<br>"+esc(x.action)+(x.detail?" — "+esc(x.detail):"")+"</div>"}).join("")||'<div class="audititem">아직 기록이 없습니다.</div>'}
