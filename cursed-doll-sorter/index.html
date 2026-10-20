@@ -544,7 +544,7 @@ h1{margin:9px 0 4px;font-size:clamp(27px,5vw,48px);line-height:.95;color:var(--y
     var total=state.correct+state.mistakes,acc=total?Math.round(state.correct/total*100):0;
     saveScore(state.name,state.score,state.bestCombo,acc,state.elapsed);
     finalScore.textContent=state.score;
-    finalCoin.textContent="획득 코인 "+Math.round(state.score*0.0015);
+    finalCoin.textContent="획득 코인 "+Math.round(state.score*0.003);
     finalMeta.innerHTML="닉네임: <strong>"+escapeHTML(state.name)+"</strong><br>최고 콤보 "+state.bestCombo+" · 정확도 "+acc+"% · 버틴 시간 "+fmtTime(state.elapsed)+"<br>마지막 실수: "+escapeHTML(reason||"실수 5회");
     gameOverEl.classList.remove("hidden");renderRanks();renderBest();
   }
