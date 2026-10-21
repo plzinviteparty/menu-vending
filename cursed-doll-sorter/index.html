@@ -100,6 +100,9 @@ html,body{background:#27212d}.wrap{max-width:1050px;padding:30px 22px 45px}.pixe
 @media(max-width:760px){.top{display:flex}.start-panel{grid-template-columns:1fr;gap:23px}.bottom-grid{grid-template-columns:1fr;gap:24px}.stats{grid-template-columns:repeat(4,1fr)}.stat{padding:10px 8px}.stat strong{font-size:17px}.stat span{font-size:7px}.lives{gap:1px}.heart{width:8px;height:8px;margin:4px}.heart:before,.heart:after{width:7px;height:7px}.heart:before{left:-4px}.heart:after{top:-4px}}
 @media(max-width:520px){.wrap{padding:22px 12px 35px}.titlebox{gap:10px}.sort-sign{width:40px;height:58px}h1{font-size:22px;letter-spacing:0;margin-bottom:8px}.kicker{font-size:5px;letter-spacing:1px;margin-bottom:8px}.subtitle{font-size:8px}.bestbox{min-width:72px;padding:10px 4px}.bestbox strong{font-size:22px}.bestbox span{font-size:6px}.top{gap:10px;padding-bottom:20px}.rules{font-size:10px;line-height:2}.start-card:last-child{padding:20px}.order-wrap{grid-template-columns:80px 1fr}.order-tag{min-width:0;font-size:7px;padding:7px}.order-card{display:block;font-size:11px;padding:11px}.order-card small{display:block;font-size:7px;margin-top:6px}.belt{height:300px}.back-wall:before{font-size:7px;left:10px;letter-spacing:0}.shelf-deco{right:10px}.crate-row{padding:10px 7px;gap:5px}.crate{font-size:7px;padding:8px 5px}.hint{font-size:7px}.sound-btn{font-size:7px;padding:7px 5px}.over-actions{grid-template-columns:1fr 1fr}.over-card{padding:20px}.over-score{font-size:33px}.stats{grid-template-columns:1fr 1fr}.stat{border-bottom:1px solid #856574;min-height:61px}.stat:nth-child(2){border-right:0}.stat:nth-child(n+3){border-bottom:0}.heart{width:11px;height:11px;margin:4px}.heart:before,.heart:after{width:9px;height:9px}}
 
+
+/* Keep touch targets readable while separating objects on small belts. */
+.item,.item canvas{width:var(--item-size,64px);height:var(--item-size,64px)}
 </style>
 </head>
 <body>
@@ -469,8 +472,22 @@ html,body{background:#27212d}.wrap{max-width:1050px;padding:30px 22px 45px}.pixe
     return cv;
   }
 
+  function itemLayout(){
+    var w=belt.clientWidth,h=belt.clientHeight,mobile=w<600,size=mobile?(w<380?48:52):64;
+    var lanes=[],gap=size+18;
+    for(var y=18;y<=h-size-16;y+=gap)lanes.push(y);
+    return {mobile:mobile,size:size,lanes:lanes,max:mobile?6:8};
+  }
+  function freeSpawnLanes(layout,x){
+    return layout.lanes.filter(function(y){return !active.some(function(it){
+      return !it.done&&Math.abs(it.x-x)<layout.size+20&&Math.abs(it.y-y)<layout.size+12;
+    })});
+  }
   function spawnItem(){
-    if(!state.running||state.paused||active.length>=8)return;
+    if(!state.running||state.paused)return;
+    var layout=itemLayout();if(active.length>=layout.max)return;
+    var startX=-(layout.size+12),lanes=layout.mobile?freeSpawnLanes(layout,startX):[];
+    if(layout.mobile&&!lanes.length)return;
     var data=randomItem();
     if(state.forceMatches>0){
       var tries=0;
@@ -478,9 +495,10 @@ html,body{background:#27212d}.wrap{max-width:1050px;padding:30px 22px 45px}.pixe
       if(matches(data,state.rule))state.forceMatches--;
     }
     var b=belt.getBoundingClientRect();
-    var displaySize=64;
-    var item={id:++idSeq,data:data,x:-(displaySize+12),y:18+Math.random()*Math.max(70,b.height-displaySize-34),done:false,should:matches(data,state.rule)};
-    var btn=document.createElement("button");btn.type="button";btn.className="item";btn.setAttribute("aria-label",COLORS[data.color].name+" "+TYPES[data.type].name+" "+TRAITS[data.trait]);
+    var displaySize=layout.size;
+    var item={id:++idSeq,data:data,x:-(displaySize+12),y:layout.mobile?lanes[Math.floor(Math.random()*lanes.length)]:18+Math.random()*Math.max(70,b.height-displaySize-34),done:false,should:matches(data,state.rule)};
+    var btn=document.createElement("button");btn.type="button";btn.className="item";btn.setAttribute("aria-label",COLORS[data.color].name+" "+TYPES[data.type].name+" "+TRAITS[data.trait].name);
+    btn.style.setProperty("--item-size",displaySize+"px");
     btn.appendChild(makeCanvas(data));btn.style.left=item.x+"px";btn.style.top=item.y+"px";
     btn.addEventListener("click",function(){classify(item)});
     item.el=btn;belt.appendChild(btn);active.push(item);
@@ -588,7 +606,7 @@ html,body{background:#27212d}.wrap{max-width:1050px;padding:30px 22px 45px}.pixe
   setSound(soundOn);
   nickInput.addEventListener("input",renderBest);
   nickInput.addEventListener("keydown",function(e){if(e.key==="Enter")startGame()});
-  window.addEventListener("resize",function(){if(state&&state.running){active.forEach(function(it){var ds=64;it.y=Math.min(it.y,Math.max(18,belt.clientHeight-ds-18));it.el.style.top=it.y+"px"})}});
+  window.addEventListener("resize",function(){if(state&&state.running){active.forEach(function(it){var ds=itemLayout().size;it.el.style.setProperty("--item-size",ds+"px");it.y=Math.min(it.y,Math.max(18,belt.clientHeight-ds-18));it.el.style.top=it.y+"px"})}});
   renderRanks();renderBest();
 })();
 </script>
