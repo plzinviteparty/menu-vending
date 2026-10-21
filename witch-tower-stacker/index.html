@@ -200,7 +200,7 @@ function ensureAudio(){
   if(!soundOn)return;
   if(!audioCtx){
     audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    master=audioCtx.createGain();master.gain.value=.22;master.connect(audioCtx.destination);
+    master=audioCtx.createGain();master.gain.value=.62;master.connect(audioCtx.destination);
   }
   if(audioCtx.state==="suspended")audioCtx.resume();
 }
@@ -221,20 +221,20 @@ function noise(dur,vol,when){
 }
 function sfx(name){
   if(!soundOn)return;
-  if(name==="drop"){tone(330,.08,.035,"square",0,220)}
-  else if(name==="land"){tone(120,.09,.055,"triangle",0,95);noise(.055,.018,0)}
-  else if(name==="perfect"){tone(660,.15,.05,"sine");tone(880,.18,.045,"sine",.07);tone(1320,.18,.032,"sine",.14)}
-  else if(name==="good"){tone(440,.10,.035,"triangle");tone(550,.10,.025,"triangle",.06)}
-  else if(name==="fail"){tone(170,.18,.05,"sawtooth",0,85)}
-  else if(name==="gameover"){tone(260,.20,.045,"triangle",0,180);tone(180,.24,.045,"triangle",.18,95);tone(95,.35,.04,"sine",.38,55)}
-  else if(name==="record"){tone(523,.14,.04,"sine");tone(659,.14,.04,"sine",.11);tone(784,.20,.045,"sine",.22);tone(1046,.28,.035,"sine",.35)}
+  if(name==="drop"){tone(330,.09,.07,"square",0,220)}
+  else if(name==="land"){tone(125,.10,.095,"triangle",0,92);noise(.06,.03,0)}
+  else if(name==="perfect"){tone(660,.16,.105,"sine");tone(880,.19,.095,"sine",.07);tone(1320,.20,.07,"sine",.14)}
+  else if(name==="good"){tone(440,.11,.07,"triangle");tone(550,.11,.055,"triangle",.06)}
+  else if(name==="fail"){tone(170,.20,.09,"sawtooth",0,85)}
+  else if(name==="gameover"){tone(260,.22,.08,"triangle",0,180);tone(180,.26,.08,"triangle",.18,95);tone(95,.38,.07,"sine",.38,55)}
+  else if(name==="record"){tone(523,.14,.075,"sine");tone(659,.14,.075,"sine",.11);tone(784,.20,.085,"sine",.22);tone(1046,.28,.065,"sine",.35)}
 }
 var bgmNotes=[220,262,330,392,330,294,262,247,220,262,330,440,392,330,294,262];
 function bgmPulse(){
   if(!soundOn||!running)return;
   var n=bgmNotes[bgmStep%bgmNotes.length];bgmStep++;
-  tone(n,.26,.014,"triangle");tone(n*2,.12,.006,"sine",.02);
-  if(bgmStep%4===1)tone(n/2,.34,.009,"sine",0);
+  tone(n,.28,.038,"triangle");tone(n*2,.13,.016,"sine",.02);
+  if(bgmStep%4===1)tone(n/2,.36,.022,"sine",0);
 }
 function startBgm(){
   if(!soundOn)return;ensureAudio();stopBgm();bgmStep=0;bgmPulse();bgmTimer=setInterval(bgmPulse,330);
@@ -245,7 +245,7 @@ function updateSoundBtn(){
 }
 soundBtn.addEventListener("click",function(e){
   e.stopPropagation();soundOn=!soundOn;try{localStorage.setItem("witch_tower_sound_v1",soundOn?"on":"off")}catch(err){}
-  if(soundOn){ensureAudio();if(running)startBgm()}else stopBgm();updateSoundBtn();
+  if(soundOn){ensureAudio();tone(660,.12,.09,"sine");tone(880,.16,.075,"sine",.08);if(running)startBgm()}else stopBgm();updateSoundBtn();
 });
 updateSoundBtn();
 var TYPES=[
@@ -478,7 +478,7 @@ function tick(ts){
 function start(){
   var n=nickname.value.replace(/\s+/g," ").trim().slice(0,24);
   if(!n){nickname.focus();return}
-  nick=n;startOverlay.classList.add("hidden");overOverlay.classList.add("hidden");ensureAudio();reset();startBgm();
+  nick=n;startOverlay.classList.add("hidden");overOverlay.classList.add("hidden");ensureAudio();tone(440,.10,.07,"triangle");reset();startBgm();
 }
 document.getElementById("startBtn").addEventListener("click",start);
 document.getElementById("retryBtn").addEventListener("click",function(){overOverlay.classList.add("hidden");ensureAudio();reset();startBgm()});
