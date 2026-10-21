@@ -190,7 +190,7 @@ ctx.imageSmoothingEnabled=false;
 var scoreEl=document.getElementById("score"),floorEl=document.getElementById("floor"),comboEl=document.getElementById("combo");
 var startOverlay=document.getElementById("startOverlay"),overOverlay=document.getElementById("overOverlay");
 var nickname=document.getElementById("nickname"),fx=document.getElementById("fx");
-var W=cv.width,H=cv.height,GROUND=548,SPRITE_SIZE=256,LAYER_H=96,BASE_W=256,MIN_W=72,MOVING_Y=18;
+var W=cv.width,H=cv.height,GROUND=548,SPRITE_SIZE=256,LAYER_H=128,BASE_W=256,MIN_W=80,MOVING_Y=8;
 var stack=[],current=null,phase="idle",running=false,last=0,fallY=0,targetY=0,score=0,perfectCombo=0,maxPerfect=0,nick="";
 var bestKey="witch_tower_best_v1";
 var soundBtn=document.getElementById("soundBtn");
@@ -331,127 +331,105 @@ function outline(g,x,y,w,h,fill){
 function sprite(type){
   var c=document.createElement("canvas");c.width=SPRITE_SIZE;c.height=SPRITE_SIZE;
   var g=c.getContext("2d");g.imageSmoothingEnabled=false;
-  var d="#171226",d2="#34273d",cream="#f6ead5",paper="#e6d2b3",gold="#d7ad61",goldD="#8e6638",
+  var d="#171226",cream="#f6ead5",paper="#e4ceb0",gold="#d7ad61",goldD="#8e6638",
       pink="#c77591",pinkD="#8d4f68",violet="#66517e",violetD="#443653",blue="#51678b",blueD="#35455f",
-      mint="#6f8f7c",mintD="#486459",orange="#d47c3c",orangeD="#9d542e",wood="#74503b",woodD="#4f3428",
+      mint="#6f8f7c",orange="#d47c3c",orangeD="#9d542e",wood="#74503b",woodD="#4f3428",
       white="#fff8e9",red="#b95b65",lav="#8e78ad";
   var id=type.id;
   function R(x,y,w,h,col){px(g,x,y,w,h,col)}
-  function O(x,y,w,h,fill,border){
-    R(x-3,y-3,w+6,h+6,border||d);R(x,y,w,h,fill)
-  }
-  function H(x,y,w,h,a){g.fillStyle="rgba(255,255,255,"+(a||.28)+")";g.fillRect(x,y,w,h)}
-  function stitch(x,y,n,step,col){
-    for(var i=0;i<n;i++)R(x+i*step,y,3,2,col||"#e9b77a");
-  }
-  function rivet(x,y){R(x,y,6,6,d);R(x+2,y+2,2,2,gold)}
+  function O(x,y,w,h,fill){R(x-4,y-4,w+8,h+8,d);R(x,y,w,h,fill)}
+  function H(x,y,w,h,a){g.fillStyle="rgba(255,255,255,"+(a||.22)+")";g.fillRect(x,y,w,h)}
+  function stitch(x,y,n,step,col){for(var i=0;i<n;i++)R(x+i*step,y,3,2,col)}
+  // Everything below is intentionally designed inside y=128..255 only.
   if(id==="pumpkin"){
-    // soft cushion, five grooves, one leaf; no decorative sparkles
-    R(28,195,200,48,d);R(34,184,188,59,orangeD);R(40,180,176,62,orange);
-    R(48,184,24,54,"#e99652");R(82,182,20,58,"#bb6637");R(109,181,18,60,"#e99652");
-    R(136,182,20,58,"#bb6637");R(166,184,24,54,"#e99652");
-    R(43,234,170,5,"#8f4b2e");stitch(48,236,14,11,"#efad6b");
-    R(108,164,18,20,d);R(113,162,9,21,"#5e4938");
-    R(122,169,35,13,d);R(125,171,29,9,"#637654");R(139,168,9,5,"#7f9169");
-    H(51,186,16,5,.25);
+    // unmistakable five-lobed pumpkin cushion
+    R(30,180,196,58,d);R(36,170,184,69,orangeD);R(43,166,170,72,orange);
+    R(48,171,27,64,"#e99852");R(82,168,23,69,"#ba6436");R(112,166,22,72,"#ed9650");
+    R(143,168,23,69,"#ba6436");R(178,171,27,64,"#e99852");
+    R(109,147,19,22,d);R(115,145,10,24,"#594535");
+    R(125,153,37,14,d);R(129,156,31,9,"#617553");
+    R(42,232,174,5,"#8e482e");stitch(48,234,14,12,"#efad6b");H(52,173,16,5,.2);
   }else if(id==="gift"){
-    // plain box + one substantial ribbon, lid separation
-    O(31,190,194,51,"#d7c1a6");R(35,194,186,43,"#d9c7ad");
-    R(31,187,194,15,d);R(35,189,186,11,"#ead9c2");R(32,213,192,4,"#9e8b78");
-    R(107,186,34,54,pinkD);R(112,188,24,50,pink);H(116,190,5,43,.22);
-    R(77,169,38,24,d);R(82,172,31,18,pink);R(141,169,38,24,d);R(144,172,31,18,pink);
-    R(116,174,25,22,d);R(120,177,17,15,"#d98aa3");
-    R(92,191,5,43,"#ead6bf");R(162,191,5,43,"#ead6bf");
+    // wide gift, oversized bow as primary identifier
+    O(28,184,200,55,"#d6c0a5");R(34,189,188,45,"#d9c7ad");
+    R(28,180,200,18,d);R(33,183,190,12,"#ead8c1");R(30,211,196,4,"#9e8b78");
+    R(106,180,38,58,pinkD);R(112,183,26,52,pink);
+    R(67,146,49,37,d);R(73,151,41,29,pink);R(140,146,49,37,d);R(142,151,41,29,pink);
+    R(113,157,31,26,d);R(118,161,21,18,"#d78aa2");
+    H(116,187,6,41,.2);
   }else if(id==="book"){
-    // the requested silhouette: square hard spine on left, rounded page block on right
-    R(22,183,214,59,d);
-    R(25,180,39,63,violetD);R(31,184,28,55,violet);
-    R(39,188,5,45,"#8d7aa0");R(51,188,4,45,"#362b43");
-    R(64,185,157,55,paper);R(70,189,145,47,cream);
-    // page layers
-    R(72,194,139,3,white);R(69,203,146,3,"#bfa98c");R(73,213,139,3,"#dac4a5");R(70,224,142,3,"#bfa98c");R(75,233,130,3,"#dac4a5");
-    // rounded fore edge
-    R(213,191,12,38,"#d1b998");R(219,196,8,28,"#bea583");
-    // covers and four restrained brass corners
-    R(20,178,210,10,d);R(24,181,202,6,"#58436e");R(20,236,210,9,d);R(24,236,202,6,"#453551");
-    R(25,182,16,5,gold);R(25,182,5,16,goldD);R(210,182,16,5,gold);R(221,182,5,16,goldD);
-    R(25,233,16,6,gold);R(25,224,5,15,goldD);R(210,233,16,6,gold);R(221,224,5,15,goldD);
-    // one small crescent only
-    R(126,182,5,5,gold);R(131,179,11,14,gold);R(138,182,7,9,"#58436e");
+    // thick horizontal grimoire: hard spine left, rounded page block right
+    R(20,176,218,67,d);
+    R(24,171,44,73,violetD);R(31,177,31,62,violet);
+    R(42,182,5,49,"#8c77a0");R(55,182,4,49,"#352a42");
+    R(68,177,157,63,paper);R(75,182,143,53,cream);
+    // clearly layered pages and rounded fore-edge
+    R(77,188,137,3,white);R(73,198,145,3,"#bda68a");R(78,208,137,3,"#d8c1a2");
+    R(74,219,142,3,"#bda68a");R(79,230,128,3,"#d8c1a2");
+    R(215,188,13,37,"#cdb493");R(222,194,8,25,"#bca17f");
+    // covers + simple brass corners + one crescent
+    R(20,168,212,12,d);R(25,172,202,7,"#58436e");R(20,236,212,9,d);R(25,236,202,6,"#453551");
+    R(27,173,17,5,gold);R(27,173,5,16,goldD);R(210,173,17,5,gold);R(222,173,5,16,goldD);
+    R(27,233,17,6,gold);R(27,224,5,15,goldD);R(210,233,17,6,gold);R(222,224,5,15,goldD);
+    R(124,171,5,5,gold);R(129,168,12,15,gold);R(137,172,8,9,"#58436e");
   }else if(id==="starbox"){
-    // navy chest; single star is the whole motif
-    O(27,188,202,54,blueD);R(33,193,190,45,blue);
-    R(28,185,200,16,d);R(32,188,192,11,"#61769a");R(32,211,192,4,"#31405a");
-    R(27,187,20,15,goldD);R(31,190,14,10,gold);R(209,187,20,15,goldD);R(212,190,13,10,gold);
-    R(27,225,20,15,goldD);R(31,226,14,10,gold);R(209,225,20,15,goldD);R(212,226,13,10,gold);
-    // single centered star lock
-    R(119,200,18,33,goldD);R(111,208,34,17,goldD);R(115,204,26,25,gold);R(122,198,12,37,gold);R(108,211,40,11,gold);
-    R(125,216,5,10,d);
-    H(43,194,72,3,.18);
+    // rigid chest silhouette with one huge centered star-lock
+    O(25,181,206,60,blueD);R(31,187,194,48,blue);
+    R(26,177,204,18,d);R(31,181,194,12,"#62779a");R(32,210,192,5,"#31405a");
+    R(27,180,22,17,goldD);R(31,183,15,11,gold);R(207,180,22,17,goldD);R(211,183,14,11,gold);
+    R(27,224,22,16,goldD);R(31,226,15,10,gold);R(207,224,22,16,goldD);R(211,226,14,10,gold);
+    // oversized star, no other star decorations
+    R(118,193,20,43,goldD);R(104,205,48,19,goldD);R(111,199,34,32,gold);R(122,190,12,48,gold);R(101,210,54,11,gold);
+    R(125,216,6,11,d);
   }else if(id==="moon"){
-    // crescent cushion with one bow; stitched edge, otherwise plain
-    R(41,218,179,24,d);R(47,214,167,27,"#ddb96f");
-    R(77,176,109,64,d);R(84,174,95,65,"#eac979");
-    // bite-out interior
-    R(131,176,61,50,"#111734");R(148,182,48,39,"#111734");
-    // stepped crescent tip
-    R(67,186,38,25,"#eac979");R(60,196,34,30,"#eac979");R(51,209,35,28,"#eac979");
-    stitch(62,230,11,13,"#b28552");
-    R(51,211,29,21,d);R(56,214,22,15,lav);R(70,208,29,22,d);R(72,211,23,16,lav);R(75,216,9,10,"#a28cc2");
-    H(91,180,18,5,.25);
+    // big crescent dominates silhouette; flat stitched bolster keeps stackable base
+    R(27,219,202,22,d);R(33,216,190,24,"#67769c");R(39,219,178,17,"#7c8aae");
+    R(68,151,116,83,d);R(77,148,101,84,"#e7c475");
+    R(126,151,70,63,"#111734");R(147,158,54,49,"#111734");
+    R(63,178,45,37,"#e7c475");R(54,191,40,34,"#e7c475");R(45,205,37,28,"#e7c475");
+    stitch(42,232,15,12,"#a97e4d");
+    // small bow, secondary detail only
+    R(48,214,25,18,d);R(53,217,18,12,lav);R(76,211,27,20,d);R(80,215,20,13,lav);
   }else if(id==="ghost"){
-    // ghost cushion with one soft witch hat, no extra stars
-    R(47,193,164,49,d);R(54,183,150,58,"#ded7cf");R(61,180,136,58,cream);
-    R(61,225,24,17,cream);R(91,221,25,21,cream);R(124,225,24,17,cream);R(157,221,25,21,cream);
-    R(98,207,8,9,d);R(148,207,8,9,d);R(119,222,17,4,d);R(78,214,15,7,"#dda8aa");R(166,214,15,7,"#dda8aa");
-    stitch(64,232,12,11,"#b9aa9d");
-    // hat
-    R(74,175,117,10,d);R(80,177,105,7,violet);
-    R(111,154,51,28,d);R(116,157,42,23,violetD);R(148,161,27,16,d);R(151,164,20,11,violet);
-    // one bow
-    R(111,173,22,14,pinkD);R(114,176,16,9,pink);R(137,173,22,14,pinkD);R(140,176,16,9,pink);R(130,177,10,10,"#cf839a");
+    // full ghost silhouette, no hat: scalloped hem is the identifier
+    R(35,181,186,62,d);R(44,157,168,83,"#ded7cf");R(53,151,150,86,cream);
+    R(52,222,27,20,cream);R(84,218,29,24,cream);R(119,222,27,20,cream);R(151,218,29,24,cream);R(184,222,23,20,cream);
+    R(90,190,9,11,d);R(154,190,9,11,d);R(118,210,20,5,d);
+    R(67,202,16,8,"#dda8aa");R(174,202,16,8,"#dda8aa");
+    stitch(57,232,13,12,"#b9aa9d");H(64,162,28,5,.18);
   }else if(id==="potion"){
-    // wooden crate, three distinct bottles, one cloth corner
-    O(25,190,206,52,woodD);R(31,196,194,42,wood);
-    R(33,215,190,4,"#593927");R(38,201,4,32,"#9a6a4a");R(213,201,4,32,"#9a6a4a");
-    // purple bottle
-    R(55,183,38,51,d);R(60,188,28,43,"#c9d1d4");R(64,207,20,23,"#8c5aa0");R(68,177,13,12,woodD);H(64,192,5,10,.45);
-    // green bottle
-    R(105,188,38,46,d);R(110,193,28,37,"#ced7d2");R(114,211,20,16,"#6f9a79");R(118,182,13,12,woodD);H(114,196,5,9,.4);
-    // blue bottle
-    R(157,193,37,41,d);R(162,198,27,32,"#c8d6dd");R(166,214,19,13,"#6c8b9f");R(170,187,12,12,woodD);H(166,201,5,8,.4);
-    // simple folded cloth corner
-    R(187,219,38,18,d);R(191,221,31,14,violet);R(205,221,4,13,"#9e8ab3");
+    // crate is low, bottles rise high enough to read instantly
+    O(24,194,208,48,woodD);R(31,201,194,36,wood);
+    R(34,218,190,5,"#593927");R(40,203,4,31,"#9a6a4a");R(211,203,4,31,"#9a6a4a");
+    // three large bottle silhouettes
+    R(48,156,48,75,d);R(55,164,34,63,"#cbd6df");R(61,195,22,28,"#8c5aa0");R(66,148,13,18,woodD);H(61,169,6,15,.35);
+    R(103,166,46,65,d);R(109,173,34,54,"#ced7d2");R(115,201,22,22,"#6f9a79");R(120,157,13,18,woodD);H(115,177,6,13,.35);
+    R(159,174,44,57,d);R(165,181,32,46,"#c8d6dd");R(171,205,20,18,"#6c8b9f");R(176,165,12,17,woodD);H(171,185,5,12,.35);
   }else if(id==="cake"){
-    // cake and stand: defined layers, restrained fruit
-    R(32,231,192,12,d);R(39,233,178,8,"#d2b89c");
-    R(50,197,156,37,d);R(56,201,144,30,"#dcae97");
-    R(56,201,144,9,cream);R(61,211,134,6,red);R(61,219,134,8,"#efc8ad");
-    // cream drips
-    R(72,205,10,10,cream);R(105,205,11,14,cream);R(150,205,10,11,cream);R(178,205,10,14,cream);
-    // only three berries
-    R(78,188,22,15,d);R(82,185,14,16,red);R(116,184,23,17,d);R(120,181,15,18,red);R(158,188,22,15,d);R(162,185,14,16,red);
-    // pedestal
-    R(105,233,45,8,d);R(111,236,33,15,"#cbb294");R(87,247,81,6,d);R(94,248,67,5,"#dbc5aa");
+    // pedestal shape stays obvious even while stacked
+    R(29,229,198,13,d);R(37,231,182,9,"#ccb294");
+    R(49,184,160,45,d);R(56,190,146,35,"#dba991");
+    R(56,190,146,11,cream);R(62,204,134,7,red);R(62,215,134,7,"#efc6ac");
+    R(74,195,11,13,cream);R(108,195,12,17,cream);R(151,195,11,14,cream);R(180,195,10,17,cream);
+    // three large strawberries
+    R(73,166,28,22,d);R(78,162,19,24,red);R(115,160,29,24,d);R(121,156,18,27,red);R(158,166,28,22,d);R(163,162,19,24,red);
+    R(105,240,46,5,d);R(112,242,32,10,"#c3a88a");R(84,249,88,6,d);R(93,250,70,5,"#d8c1a4");
   }else if(id==="cat"){
-    // plain black cat cushion with one bow and bell
-    R(31,198,194,45,d);R(38,188,180,53,"#343247");
-    R(48,174,38,29,d);R(54,180,28,20,"#3f3c55");R(169,174,38,29,d);R(174,180,28,20,"#3f3c55");
-    R(60,183,14,10,"#b27683");R(181,183,14,10,"#b27683");
-    R(84,209,9,10,gold);R(163,209,9,10,gold);R(121,222,15,5,"#d7b8be");
-    R(66,220,25,2,"#77728e");R(62,226,29,2,"#77728e");R(165,220,25,2,"#77728e");R(165,226,29,2,"#77728e");
-    // single bow + bell
-    R(96,230,24,14,pinkD);R(100,232,18,9,pink);R(136,230,24,14,pinkD);R(139,232,18,9,pink);R(120,232,17,13,d);R(124,234,9,9,gold);
-    stitch(43,236,14,12,"#222033");
+    // very large ears + eyes; plain cushion body
+    R(27,191,202,52,d);R(35,178,186,62,"#343247");
+    R(44,148,47,38,d);R(51,156,34,27,"#403c55");R(166,148,47,38,d);R(172,156,34,27,"#403c55");
+    R(60,159,18,13,"#b27683");R(179,159,18,13,"#b27683");
+    R(82,198,11,13,gold);R(164,198,11,13,gold);R(121,216,16,6,"#d7b8be");
+    R(62,216,31,3,"#77728e");R(58,224,35,3,"#77728e");R(164,216,31,3,"#77728e");R(164,224,35,3,"#77728e");
+    // one small bow/bell centered at base
+    R(101,226,26,15,pinkD);R(106,229,19,9,pink);R(136,226,26,15,pinkD);R(139,229,19,9,pink);R(126,228,15,14,d);R(130,231,8,8,gold);
   }else{
-    // pink jewel box, one center gem, no additional celestial marks
-    O(26,188,204,54,"#9d6b7b");R(32,194,192,44,"#c68498");
-    R(27,185,202,17,d);R(32,189,192,11,"#df9db0");R(31,212,194,4,"#805360");
-    R(27,187,20,15,goldD);R(31,190,14,10,gold);R(210,187,20,15,goldD);R(213,190,13,10,gold);
-    R(27,225,20,15,goldD);R(31,226,14,10,gold);R(210,225,20,15,goldD);R(213,226,13,10,gold);
-    // center setting
-    R(105,193,46,43,d);R(110,197,36,35,goldD);R(115,200,26,29,"#81548f");R(121,204,14,21,"#b976bb");R(125,207,7,13,"#ddb6e0");
-    H(42,195,64,3,.18);
+    // jewel box: broad chest + huge gem, nothing else competing
+    O(25,184,206,57,"#9a6879");R(32,190,192,45,"#c28296");
+    R(26,179,204,19,d);R(32,184,192,12,"#dc99ad");R(31,212,194,5,"#805360");
+    R(27,182,22,16,goldD);R(31,185,15,10,gold);R(207,182,22,16,goldD);R(211,185,14,10,gold);
+    R(27,224,22,16,goldD);R(31,226,15,10,gold);R(207,224,22,16,goldD);R(211,226,14,10,gold);
+    R(96,188,64,50,d);R(103,194,50,39,goldD);R(111,198,34,31,"#80538e");R(118,202,20,24,"#b975ba");R(124,206,9,16,"#deb7e0");
   }
   return c;
 }
@@ -461,9 +439,9 @@ function drawPreview(){
   var box=document.getElementById("objlist");box.innerHTML="";
   TYPES.forEach(function(t){
     var d=document.createElement("div");d.className="obj";
-    var src=sprite(t),p=document.createElement("canvas");p.width=256;p.height=112;
+    var src=sprite(t),p=document.createElement("canvas");p.width=256;p.height=128;
     var pg=p.getContext("2d");pg.imageSmoothingEnabled=false;
-    pg.drawImage(src,0,SPRITE_SIZE-112,256,112,0,0,256,112);
+    pg.drawImage(src,0,SPRITE_SIZE-128,256,128,0,0,256,128);
     d.appendChild(p);
     var s=document.createElement("span");s.textContent=t.name;d.appendChild(s);box.appendChild(d);
   })
@@ -487,11 +465,29 @@ function reset(){
 }
 function makeCurrent(){
   var prev=stack[stack.length-1],w=prev.w;
-  current={x:18,w:w,crop:0,type:randType(),dir:1};
+  var fromLeft=Math.random()<.5;
+  var jitter=Math.floor(Math.random()*18);
+  current={
+    x:fromLeft?12+jitter:W-12-w-jitter,
+    w:w,crop:0,type:randType(),
+    dir:fromLeft?1:-1,
+    speedMul:.84+Math.random()*.34,
+    targetSpeedMul:.84+Math.random()*.34,
+    tempoTimer:.65+Math.random()*.75
+  };
   phase="moving";
 }
-function speed(){return Math.min(310,120+(stack.length-1)*9)}
-function cameraOffset(){return Math.max(0,(stack.length-4)*LAYER_H)}
+function baseSpeed(){return Math.min(300,118+(stack.length-1)*8.5)}
+function updateMotionTempo(dt){
+  if(!current)return;
+  current.tempoTimer-=dt;
+  if(current.tempoTimer<=0){
+    current.targetSpeedMul=.82+Math.random()*.38;
+    current.tempoTimer=.65+Math.random()*.9;
+  }
+  current.speedMul+=(current.targetSpeedMul-current.speedMul)*Math.min(1,dt*1.7);
+}
+function cameraOffset(){return Math.max(0,(stack.length-3)*LAYER_H)}
 function layerY(i){return GROUND-(i+1)*LAYER_H+cameraOffset()}
 function currentTargetY(){return GROUND-(stack.length+1)*LAYER_H+cameraOffset()}
 function updateHUD(){
@@ -510,12 +506,12 @@ function drop(){
 function land(){
   var prev=stack[stack.length-1],dx=current.x-prev.x;
   // Near-misses should still read as satisfying placements on mobile.
-  var tolerance=Math.max(10,Math.min(18,prev.w*.075));
+  var tolerance=Math.max(8,Math.min(14,prev.w*.055));
   var perfect=Math.abs(dx)<=tolerance;
   var nx,nw,cropAdd=0;
   if(perfect){
     // Snap to the tower and reward sustained accuracy with a tiny width recovery.
-    var recover=perfectCombo>=2?Math.min(8,BASE_W-prev.w):0;
+    var recover=perfectCombo>=4?Math.min(4,BASE_W-prev.w):0;
     nx=Math.max(12,prev.x-recover/2);
     nw=Math.min(BASE_W,prev.w+recover);
     if(nx+nw>W-12)nx=W-12-nw;
@@ -579,9 +575,18 @@ function tick(ts){
   if(!last)last=ts;var dt=Math.min(.04,(ts-last)/1000);last=ts;
   if(running&&current){
     if(phase==="moving"){
-      current.x+=current.dir*speed()*dt;
-      if(current.x<=12){current.x=12;current.dir=1}
-      if(current.x+current.w>=W-12){current.x=W-12-current.w;current.dir=-1}
+      updateMotionTempo(dt);
+      current.x+=current.dir*baseSpeed()*current.speedMul*dt;
+      if(current.x<=12){
+        current.x=12;current.dir=1;
+        current.targetSpeedMul=.82+Math.random()*.38;
+        current.tempoTimer=.55+Math.random()*.85;
+      }
+      if(current.x+current.w>=W-12){
+        current.x=W-12-current.w;current.dir=-1;
+        current.targetSpeedMul=.82+Math.random()*.38;
+        current.tempoTimer=.55+Math.random()*.85;
+      }
     }else if(phase==="falling"){
       fallY+=620*dt;
       if(fallY>=targetY){fallY=targetY;land()}
