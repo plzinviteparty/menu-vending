@@ -190,7 +190,7 @@ ctx.imageSmoothingEnabled=false;
 var scoreEl=document.getElementById("score"),floorEl=document.getElementById("floor"),comboEl=document.getElementById("combo");
 var startOverlay=document.getElementById("startOverlay"),overOverlay=document.getElementById("overOverlay");
 var nickname=document.getElementById("nickname"),fx=document.getElementById("fx");
-var W=cv.width,H=cv.height,GROUND=548,SPRITE_SIZE=256,LAYER_H=96,BASE_W=256,MIN_W=10,MOVING_Y=18;
+var W=cv.width,H=cv.height,GROUND=548,SPRITE_SIZE=256,LAYER_H=96,BASE_W=256,MIN_W=72,MOVING_Y=18;
 var stack=[],current=null,phase="idle",running=false,last=0,fallY=0,targetY=0,score=0,perfectCombo=0,maxPerfect=0,nick="";
 var bestKey="witch_tower_best_v1";
 var soundBtn=document.getElementById("soundBtn");
@@ -509,23 +509,41 @@ function drop(){
 }
 function land(){
   var prev=stack[stack.length-1],dx=current.x-prev.x;
-  var tolerance=Math.max(3,Math.min(7,prev.w*.03));
+  // Near-misses should still read as satisfying placements on mobile.
+  var tolerance=Math.max(10,Math.min(18,prev.w*.075));
   var perfect=Math.abs(dx)<=tolerance;
   var nx,nw,cropAdd=0;
   if(perfect){
-    nx=prev.x;nw=prev.w;current.x=nx;current.w=nw;
+    // Snap to the tower and reward sustained accuracy with a tiny width recovery.
+    var recover=perfectCombo>=2?Math.min(8,BASE_W-prev.w):0;
+    nx=Math.max(12,prev.x-recover/2);
+    nw=Math.min(BASE_W,prev.w+recover);
+    if(nx+nw>W-12)nx=W-12-nw;
+    current.x=nx;current.w=nw;
     perfectCombo++;maxPerfect=Math.max(maxPerfect,perfectCombo);
-    score+=180+perfectCombo*18;showFx("PERFECT!","perfect");sfx("perfect");
+    score+=180+perfectCombo*18;
+    showFx("PERFECT!","perfect");sfx("perfect");
   }else{
-    nx=Math.max(current.x,prev.x);
-    nw=Math.min(current.x+current.w,prev.x+prev.w)-nx;
+    // Keep the classic overlap mechanic, but only apply 42% of the raw miss as permanent trim.
+    var rawLeft=Math.max(current.x,prev.x);
+    var rawRight=Math.min(current.x+current.w,prev.x+prev.w);
+    var rawOverlap=rawRight-rawLeft;
+    if(rawOverlap<=0){sfx("fail");gameOver();return}
+    var rawLoss=Math.max(0,prev.w-rawOverlap);
+    var loss=Math.max(4,Math.round(rawLoss*.42));
+    nw=prev.w-loss;
+    if(nw<MIN_W){sfx("fail");gameOver();return}
+    // Shift gently toward the actual overlap instead of jumping to the extreme edge.
+    var targetCenter=(rawLeft+rawRight)/2;
+    nx=targetCenter-nw/2;
+    nx=Math.max(12,Math.min(W-12-nw,nx));
+    cropAdd=Math.max(0,nx-current.x);
     perfectCombo=0;
-    if(nw<=MIN_W){sfx("fail");gameOver();return}
-    cropAdd=nx-current.x;
     score+=Math.max(40,Math.round(110*(nw/prev.w)));
     showFx("GOOD","");sfx("good");
   }
-  sfx("land");stack.push({x:nx,w:nw,crop:current.crop+cropAdd,type:current.type});
+  sfx("land");
+  stack.push({x:nx,w:nw,crop:current.crop+cropAdd,type:current.type});
   makeCurrent();updateHUD();
 }
 function gameOver(){
