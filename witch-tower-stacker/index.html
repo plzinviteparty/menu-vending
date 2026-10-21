@@ -190,7 +190,7 @@ ctx.imageSmoothingEnabled=false;
 var scoreEl=document.getElementById("score"),floorEl=document.getElementById("floor"),comboEl=document.getElementById("combo");
 var startOverlay=document.getElementById("startOverlay"),overOverlay=document.getElementById("overOverlay");
 var nickname=document.getElementById("nickname"),fx=document.getElementById("fx");
-var W=cv.width,H=cv.height,GROUND=548,SPRITE_SIZE=256,LAYER_H=128,BASE_W=256,MIN_W=80,MOVING_Y=8;
+var W=cv.width,H=cv.height,GROUND=548,SPRITE_SIZE=256,LAYER_H=128,STACK_STEP=82,BASE_W=256,MIN_W=80,MOVING_Y=8;
 var stack=[],current=null,phase="idle",running=false,last=0,fallY=0,targetY=0,score=0,perfectCombo=0,maxPerfect=0,nick="";
 var bestKey="witch_tower_best_v1";
 var soundBtn=document.getElementById("soundBtn");
@@ -435,13 +435,16 @@ function sprite(type){
 }
 var spriteCache={};
 function getSprite(type){return spriteCache[type.id]||(spriteCache[type.id]=sprite(type))}
+var SPRITE_TOP={pumpkin:145,gift:146,book:168,starbox:177,moon:148,ghost:151,potion:148,cake:156,cat:148,jewel:179};
+function spriteSourceTop(type){return SPRITE_TOP[type.id]||128}
 function drawPreview(){
   var box=document.getElementById("objlist");box.innerHTML="";
   TYPES.forEach(function(t){
     var d=document.createElement("div");d.className="obj";
     var src=sprite(t),p=document.createElement("canvas");p.width=256;p.height=128;
     var pg=p.getContext("2d");pg.imageSmoothingEnabled=false;
-    pg.drawImage(src,0,SPRITE_SIZE-128,256,128,0,0,256,128);
+    var sy=spriteSourceTop(t),sh=256-sy;
+    pg.drawImage(src,0,sy,256,sh,0,128-sh,256,sh);
     d.appendChild(p);
     var s=document.createElement("span");s.textContent=t.name;d.appendChild(s);box.appendChild(d);
   })
@@ -487,9 +490,9 @@ function updateMotionTempo(dt){
   }
   current.speedMul+=(current.targetSpeedMul-current.speedMul)*Math.min(1,dt*1.7);
 }
-function cameraOffset(){return Math.max(0,(stack.length-3)*LAYER_H)}
-function layerY(i){return GROUND-(i+1)*LAYER_H+cameraOffset()}
-function currentTargetY(){return GROUND-(stack.length+1)*LAYER_H+cameraOffset()}
+function cameraOffset(){return Math.max(0,(stack.length-5)*STACK_STEP)}
+function layerY(i){return GROUND-LAYER_H-i*STACK_STEP+cameraOffset()}
+function currentTargetY(){return GROUND-LAYER_H-stack.length*STACK_STEP+cameraOffset()}
 function updateHUD(){
   scoreEl.textContent=String(score).padStart(6,"0");floorEl.textContent=Math.max(0,stack.length-1);comboEl.textContent=perfectCombo;
 }
@@ -554,9 +557,11 @@ function gameOver(){
 }
 function drawBlock(b,y){
   var sp=getSprite(b.type);
+  var sy=spriteSourceTop(b.type),sh=SPRITE_SIZE-sy;
+  var destY=y+(LAYER_H-sh);
   ctx.save();
   ctx.beginPath();ctx.rect(b.x,y,b.w,LAYER_H);ctx.clip();
-  ctx.drawImage(sp,b.x-b.crop,y-(SPRITE_SIZE-LAYER_H),SPRITE_SIZE,SPRITE_SIZE);
+  ctx.drawImage(sp,b.crop,sy,b.w,sh,b.x,destY,b.w,sh);
   ctx.restore();
 }
 function render(){
