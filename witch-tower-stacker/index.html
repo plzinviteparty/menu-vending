@@ -194,58 +194,110 @@ var W=cv.width,H=cv.height,GROUND=548,LAYER_H=58,BASE_W=228,MIN_W=9;
 var stack=[],current=null,phase="idle",running=false,last=0,fallY=0,targetY=0,score=0,perfectCombo=0,maxPerfect=0,nick="";
 var bestKey="witch_tower_best_v1";
 var soundBtn=document.getElementById("soundBtn");
-var audioCtx=null,master=null,bgmTimer=null,bgmStep=0,soundOn=true;
+var audioCtx=null,master=null,bgmTimer=null,bgmStep=0,soundOn=true,audioUnlocked=false;
 try{soundOn=localStorage.getItem("witch_tower_sound_v1")!=="off"}catch(e){}
-function ensureAudio(){
-  if(!soundOn)return;
-  if(!audioCtx){
-    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    master=audioCtx.createGain();master.gain.value=.62;master.connect(audioCtx.destination);
-  }
-  if(audioCtx.state==="suspended")audioCtx.resume();
+function buildAudio(){
+  if(audioCtx)return;
+  var AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)return;
+  audioCtx=new AC();
+  master=audioCtx.createGain();
+  master.gain.value=.9;
+  master.connect(audioCtx.destination);
 }
-function tone(freq,dur,vol,type,when,slide){
-  if(!soundOn)return;ensureAudio();if(!audioCtx||!master)return;
+function unlockAudio(done){
+  if(!soundOn){if(done)done();return}
+  buildAudio();
+  if(!audioCtx){if(done)done();return}
+  var finish=function(){audioUnlocked=true;if(done)done()};
+  if(audioCtx.state==="running"){finish();return}
+  var p=audioCtx.resume();
+  if(p&&typeof p.then==="function"){p.then(finish).catch(function(){if(done)done()})}
+  else finish();
+}
+function toneNow(freq,dur,vol,type,when,slide){
+  if(!soundOn||!audioCtx||!master)return;
   var o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime+(when||0);
-  o.type=type||"triangle";o.frequency.setValueAtTime(freq,t);
+  o.type=type||"triangle";
+  o.frequency.setValueAtTime(freq,t);
   if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,slide),t+dur);
-  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol||.05,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  g.gain.setValueAtTime(.0001,t);
+  g.gain.exponentialRampToValueAtTime(vol||.1,t+.008);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
   o.connect(g);g.connect(master);o.start(t);o.stop(t+dur+.03);
 }
-function noise(dur,vol,when){
-  if(!soundOn)return;ensureAudio();if(!audioCtx||!master)return;
+function tone(freq,dur,vol,type,when,slide){
+  if(!soundOn)return;
+  unlockAudio(function(){toneNow(freq,dur,vol,type,when,slide)});
+}
+function noiseNow(dur,vol,when){
+  if(!soundOn||!audioCtx||!master)return;
   var len=Math.max(1,Math.floor(audioCtx.sampleRate*dur)),buf=audioCtx.createBuffer(1,len,audioCtx.sampleRate),data=buf.getChannelData(0);
   for(var i=0;i<len;i++)data[i]=(Math.random()*2-1)*(1-i/len);
-  var s=audioCtx.createBufferSource(),g=audioCtx.createGain(),t=audioCtx.currentTime+(when||0);s.buffer=buf;
-  g.gain.setValueAtTime(vol||.03,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(g);g.connect(master);s.start(t);
+  var src=audioCtx.createBufferSource(),g=audioCtx.createGain(),tm=audioCtx.currentTime+(when||0);
+  src.buffer=buf;
+  g.gain.setValueAtTime(vol||.05,tm);
+  g.gain.exponentialRampToValueAtTime(.0001,tm+dur);
+  src.connect(g);g.connect(master);src.start(tm);
+}
+function noise(dur,vol,when){
+  if(!soundOn)return;
+  unlockAudio(function(){noiseNow(dur,vol,when)});
 }
 function sfx(name){
   if(!soundOn)return;
-  if(name==="drop"){tone(330,.09,.07,"square",0,220)}
-  else if(name==="land"){tone(125,.10,.095,"triangle",0,92);noise(.06,.03,0)}
-  else if(name==="perfect"){tone(660,.16,.105,"sine");tone(880,.19,.095,"sine",.07);tone(1320,.20,.07,"sine",.14)}
-  else if(name==="good"){tone(440,.11,.07,"triangle");tone(550,.11,.055,"triangle",.06)}
-  else if(name==="fail"){tone(170,.20,.09,"sawtooth",0,85)}
-  else if(name==="gameover"){tone(260,.22,.08,"triangle",0,180);tone(180,.26,.08,"triangle",.18,95);tone(95,.38,.07,"sine",.38,55)}
-  else if(name==="record"){tone(523,.14,.075,"sine");tone(659,.14,.075,"sine",.11);tone(784,.20,.085,"sine",.22);tone(1046,.28,.065,"sine",.35)}
+  unlockAudio(function(){
+    if(name==="drop"){toneNow(330,.10,.13,"square",0,220)}
+    else if(name==="land"){toneNow(125,.11,.16,"triangle",0,92);noiseNow(.065,.045,0)}
+    else if(name==="perfect"){toneNow(660,.17,.17,"sine");toneNow(880,.20,.15,"sine",.07);toneNow(1320,.21,.11,"sine",.14)}
+    else if(name==="good"){toneNow(440,.12,.12,"triangle");toneNow(550,.12,.09,"triangle",.06)}
+    else if(name==="fail"){toneNow(170,.21,.15,"sawtooth",0,85)}
+    else if(name==="gameover"){toneNow(260,.23,.13,"triangle",0,180);toneNow(180,.27,.13,"triangle",.18,95);toneNow(95,.40,.11,"sine",.38,55)}
+    else if(name==="record"){toneNow(523,.15,.13,"sine");toneNow(659,.15,.13,"sine",.11);toneNow(784,.21,.14,"sine",.22);toneNow(1046,.29,.11,"sine",.35)}
+    else if(name==="test"){toneNow(523,.13,.16,"sine");toneNow(784,.17,.15,"sine",.10);toneNow(1046,.24,.12,"sine",.22)}
+  });
 }
 var bgmNotes=[220,262,330,392,330,294,262,247,220,262,330,440,392,330,294,262];
 function bgmPulse(){
   if(!soundOn||!running)return;
   var n=bgmNotes[bgmStep%bgmNotes.length];bgmStep++;
-  tone(n,.28,.038,"triangle");tone(n*2,.13,.016,"sine",.02);
-  if(bgmStep%4===1)tone(n/2,.36,.022,"sine",0);
+  unlockAudio(function(){
+    toneNow(n,.30,.065,"triangle");
+    toneNow(n*2,.14,.028,"sine",.02);
+    if(bgmStep%4===1)toneNow(n/2,.38,.038,"sine",0);
+  });
 }
 function startBgm(){
-  if(!soundOn)return;ensureAudio();stopBgm();bgmStep=0;bgmPulse();bgmTimer=setInterval(bgmPulse,330);
+  if(!soundOn)return;
+  stopBgm();bgmStep=0;
+  unlockAudio(function(){
+    bgmPulse();
+    bgmTimer=setInterval(bgmPulse,330);
+  });
 }
 function stopBgm(){if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null}}
 function updateSoundBtn(){
-  soundBtn.textContent=soundOn?"♪ SOUND ON":"♪ SOUND OFF";soundBtn.classList.toggle("off",!soundOn);
+  soundBtn.textContent=soundOn?"♪ SOUND ON":"♪ SOUND OFF";
+  soundBtn.classList.toggle("off",!soundOn);
 }
 soundBtn.addEventListener("click",function(e){
-  e.stopPropagation();soundOn=!soundOn;try{localStorage.setItem("witch_tower_sound_v1",soundOn?"on":"off")}catch(err){}
-  if(soundOn){ensureAudio();tone(660,.12,.09,"sine");tone(880,.16,.075,"sine",.08);if(running)startBgm()}else stopBgm();updateSoundBtn();
+  e.stopPropagation();
+  soundOn=!soundOn;
+  try{localStorage.setItem("witch_tower_sound_v1",soundOn?"on":"off")}catch(err){}
+  if(soundOn){
+    unlockAudio(function(){
+      sfx("test");
+      if(running)startBgm();
+    });
+  }else{
+    stopBgm();
+  }
+  updateSoundBtn();
+});
+["pointerdown","touchend"].forEach(function(evt){
+  document.addEventListener(evt,function(){
+    if(soundOn&&!audioUnlocked)unlockAudio(function(){});
+  },{once:true,passive:true});
 });
 updateSoundBtn();
 var TYPES=[
@@ -478,10 +530,10 @@ function tick(ts){
 function start(){
   var n=nickname.value.replace(/\s+/g," ").trim().slice(0,24);
   if(!n){nickname.focus();return}
-  nick=n;startOverlay.classList.add("hidden");overOverlay.classList.add("hidden");ensureAudio();tone(440,.10,.07,"triangle");reset();startBgm();
+  nick=n;startOverlay.classList.add("hidden");overOverlay.classList.add("hidden");unlockAudio(function(){sfx("test");reset();startBgm()});
 }
 document.getElementById("startBtn").addEventListener("click",start);
-document.getElementById("retryBtn").addEventListener("click",function(){overOverlay.classList.add("hidden");ensureAudio();reset();startBgm()});
+document.getElementById("retryBtn").addEventListener("click",function(){overOverlay.classList.add("hidden");unlockAudio(function(){sfx("test");reset();startBgm()})});
 document.getElementById("homeBtn").addEventListener("click",function(){overOverlay.classList.add("hidden");startOverlay.classList.remove("hidden");running=false;stopBgm();phase="idle";stack=[];current=null;updateHUD()});
 document.getElementById("stage").addEventListener("pointerdown",function(e){
   if(e.target.closest("button")||e.target.closest("input")||!startOverlay.classList.contains("hidden")||!overOverlay.classList.contains("hidden"))return;
