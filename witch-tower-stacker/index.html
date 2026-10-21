@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>마녀의 탑 쌓기</title>
+<style>
+:root{
+  --night:#111634;--night2:#1a2148;--ink:#090d22;--panel:#202754;
+  --cream:#fff3dc;--muted:#bfc4e7;--gold:#f3cf78;--pink:#e58aa9;
+  --violet:#8f80cf;--line:#080b1d;
+  font-family:"Courier New","Noto Sans KR",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#0e132c;color:var(--cream)}
+body{
+  background:
+    radial-gradient(circle at 72% 14%,rgba(255,223,161,.10),transparent 18%),
+    linear-gradient(180deg,#171e45 0%,#10162f 58%,#0a1024 100%);
+}
+button,input{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.wrap{max-width:1040px;margin:0 auto;padding:16px 12px 44px}
+.topbar{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.brand{min-width:0}
+.brand h1{margin:0;font-size:clamp(28px,5.8vw,52px);line-height:.95;letter-spacing:-3px;color:#ffd9bf;text-shadow:4px 4px 0 #5f406f}
+.brand p{margin:8px 0 0;color:#aeb5da;font-size:11px;line-height:1.5}
+.moonmark{color:var(--gold)}
+.statrow{display:grid;grid-template-columns:repeat(3,minmax(86px,1fr));gap:7px;min-width:min(420px,48vw)}
+.stat{
+  border:3px solid #0b0e27;background:#1a214a;padding:8px 9px;box-shadow:3px 3px 0 #080b1d;
+  text-align:center
+}
+.stat span{display:block;font-size:8px;letter-spacing:1px;color:#aeb5d8}
+.stat strong{display:block;font-size:20px;margin-top:2px;color:#fff3dc}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px;align-items:start}
+.gameCard{position:relative;border:4px solid var(--line);background:#151c40;box-shadow:5px 5px 0 #080b1d;overflow:hidden}
+.stage{
+  position:relative;min-height:680px;overflow:hidden;
+  background:
+    radial-gradient(circle at 72% 15%,#f1c896 0 34px,#bf8aa3 35px 38px,transparent 39px),
+    linear-gradient(180deg,#18224d 0 58%,#101937 58% 100%);
+}
+.stars{position:absolute;inset:0;pointer-events:none;opacity:.6}
+.stars i{position:absolute;width:3px;height:3px;background:#e9dca8;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.stars i:nth-child(1){left:11%;top:11%}.stars i:nth-child(2){left:23%;top:18%}.stars i:nth-child(3){left:83%;top:9%}.stars i:nth-child(4){left:76%;top:29%}.stars i:nth-child(5){left:52%;top:13%}.stars i:nth-child(6){left:91%;top:41%}.stars i:nth-child(7){left:14%;top:37%}.stars i:nth-child(8){left:36%;top:27%}
+.skyline{position:absolute;left:0;right:0;bottom:72px;height:176px;opacity:.85}
+.towerSil{position:absolute;bottom:0;background:#0b1230;border-top:3px solid #0a0f28}
+.towerSil:before{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:100%;width:0;height:0;border-left:22px solid transparent;border-right:22px solid transparent;border-bottom:55px solid #0b1230}
+.t1{left:2%;width:74px;height:92px}.t2{left:21%;width:54px;height:132px}.t3{left:43%;width:90px;height:72px}.t4{right:18%;width:68px;height:118px}.t5{right:1%;width:52px;height:82px}
+.window{position:absolute;width:6px;height:12px;background:#d89c65;opacity:.7}
+.ground{position:absolute;left:0;right:0;bottom:0;height:76px;background:
+  linear-gradient(#22274d 0 6px,transparent 6px),
+  repeating-linear-gradient(90deg,#161b3d 0 48px,#1d234a 48px 51px);
+  border-top:4px solid #090d23;
+}
+.canvasWrap{position:absolute;inset:0;display:grid;place-items:end center;padding-bottom:68px}
+#game{width:min(100%,520px);height:auto;max-height:600px;touch-action:manipulation;image-rendering:pixelated}
+.fx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.fxText{position:absolute;left:50%;top:28%;transform:translateX(-50%);font-weight:1000;font-size:28px;color:#ffd87b;text-shadow:3px 3px 0 #4e2b66;animation:pop .7s ease forwards}
+.spark{position:absolute;width:5px;height:5px;background:#ffd87b;transform:rotate(45deg);animation:spark .7s ease forwards}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,8px) scale(.85)}25%{opacity:1;transform:translate(-50%,0) scale(1.05)}100%{opacity:0;transform:translate(-50%,-18px) scale(1)}}
+@keyframes spark{to{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(135deg) scale(.3)}}
+.tapbar{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);border:3px solid #090d23;background:#242b58;color:#ffe6c9;padding:8px 18px;box-shadow:3px 3px 0 #080b1d;font-size:10px;font-weight:1000;letter-spacing:1px}
+.side{display:grid;gap:10px}
+.panel{border:3px solid var(--line);background:#171e43;box-shadow:4px 4px 0 #080b1d;padding:12px}
+.panel h2{margin:0 0 9px;font-size:13px;color:#ffe0c0}
+.objlist{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.obj{border:2px solid #303866;background:#111735;padding:6px;min-width:0}
+.obj canvas{display:block;width:100%;height:auto;image-rendering:pixelated;background:#171d3c}
+.obj span{display:block;font-size:8px;text-align:center;color:#c9cdea;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.how{font-size:10px;color:#b8bedf;line-height:1.65;margin:0;padding-left:16px}
+.startOverlay,.overOverlay{
+  position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:20px;
+  background:rgba(8,11,29,.84);backdrop-filter:blur(2px)
+}
+.modal{width:min(420px,100%);border:4px solid #090c22;background:#1a2149;box-shadow:6px 6px 0 #080a18;padding:18px;text-align:center}
+.modal h2{margin:0;color:#ffdec3;font-size:29px;line-height:1;text-shadow:3px 3px 0 #5a3b69}
+.modal p{font-size:10px;line-height:1.6;color:#bdc3e2}
+.field{text-align:left;margin:12px 0}
+.field label{display:block;font-size:9px;color:#f3cf78;margin-bottom:5px;font-weight:1000}
+.field input{width:100%;border:3px solid #080b1d;background:#fff2dc;color:#1d1730;padding:10px;font-size:16px;outline:none;box-shadow:3px 3px 0 #080b1d}
+.btn{border:3px solid #080b1d;background:#d889a5;color:#20162f;padding:10px 13px;font-weight:1000;box-shadow:3px 3px 0 #080b1d}
+.btn:active{transform:translate(3px,3px);box-shadow:none}
+.big{width:100%;background:#f1c975}
+.resultGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:12px 0}
+.result{border:2px solid #080b1d;background:#101633;padding:8px}
+.result span{display:block;font-size:8px;color:#aeb5da}.result strong{display:block;font-size:19px;color:#fff2d6;margin-top:3px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.smallnote{font-size:9px!important;color:#9299bf!important}
+@media(max-width:820px){
+  .topbar{display:grid}.statrow{min-width:0;width:100%}.layout{grid-template-columns:1fr}.side{grid-template-columns:1fr 1fr}.stage{min-height:620px}
+}
+@media(max-width:520px){
+  .wrap{padding:9px 7px 30px}.brand h1{font-size:34px}.brand p{font-size:9px}
+  .stage{min-height:570px}.stat{padding:6px}.stat strong{font-size:17px}.side{grid-template-columns:1fr}.objlist{grid-template-columns:repeat(5,1fr)}
+  .obj{padding:3px}.obj span{display:none}.panel{padding:9px}.tapbar{bottom:10px}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="topbar">
+    <div class="brand">
+      <h1>마녀의 <span class="moonmark">☾</span><br>탑 쌓기</h1>
+      <p>WITCH TOWER STACKER · 삐져나온 만큼 잘립니다.</p>
+    </div>
+    <div class="statrow">
+      <div class="stat"><span>SCORE</span><strong id="score">000000</strong></div>
+      <div class="stat"><span>FLOOR</span><strong id="floor">0</strong></div>
+      <div class="stat"><span>PERFECT</span><strong id="combo">0</strong></div>
+    </div>
+  </header>
+
+  <section class="layout">
+    <div class="gameCard">
+      <div class="stage" id="stage">
+        <div class="stars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="skyline">
+          <div class="towerSil t1"><i class="window" style="left:18px;top:34px"></i></div>
+          <div class="towerSil t2"><i class="window" style="left:28px;top:46px"></i></div>
+          <div class="towerSil t3"></div>
+          <div class="towerSil t4"><i class="window" style="left:19px;top:52px"></i></div>
+          <div class="towerSil t5"></div>
+        </div>
+        <div class="ground"></div>
+        <div class="canvasWrap"><canvas id="game" width="520" height="600" aria-label="마녀의 탑 쌓기 게임"></canvas></div>
+        <div id="fx" class="fx"></div>
+        <div class="tapbar">TAP TO DROP</div>
+
+        <div id="startOverlay" class="startOverlay">
+          <div class="modal">
+            <h2>마녀의 탑 쌓기</h2>
+            <p>좌우로 움직이는 마법 물건을 탭해서 떨어뜨리세요.<br>정확하게 겹치면 PERFECT, 어긋나면 튀어나온 부분이 잘립니다.</p>
+            <div class="field">
+              <label>밴드 닉네임</label>
+              <input id="nickname" maxlength="24" autocomplete="off" placeholder="닉네임 입력">
+            </div>
+            <button id="startBtn" class="btn big" type="button">GAME START</button>
+            <p class="smallnote">닉네임별 최고점은 현재 이 기기에 저장됩니다.</p>
+          </div>
+        </div>
+
+        <div id="overOverlay" class="overOverlay hidden">
+          <div class="modal">
+            <h2>TOWER COLLAPSED</h2>
+            <div class="resultGrid">
+              <div class="result"><span>SCORE</span><strong id="rScore">0</strong></div>
+              <div class="result"><span>FLOOR</span><strong id="rFloor">0</strong></div>
+              <div class="result"><span>MAX PERFECT</span><strong id="rPerfect">0</strong></div>
+              <div class="result"><span>MY BEST</span><strong id="rBest">0</strong></div>
+            </div>
+            <div class="actions">
+              <button id="retryBtn" class="btn" type="button">다시 하기</button>
+              <button id="homeBtn" class="btn" type="button">처음으로</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="side">
+      <section class="panel">
+        <h2>☾ 블록 종류</h2>
+        <div id="objlist" class="objlist"></div>
+      </section>
+      <section class="panel">
+        <h2>게임 방법</h2>
+        <ol class="how">
+          <li>움직이는 물건을 탭해서 떨어뜨립니다.</li>
+          <li>딱 맞으면 PERFECT 콤보가 이어집니다.</li>
+          <li>어긋난 부분은 잘리고 다음 발판이 좁아집니다.</li>
+          <li>겹치는 부분이 없어지면 바로 게임 오버입니다.</li>
+          <li>높이 올라갈수록 이동 속도가 빨라집니다.</li>
+        </ol>
+      </section>
+    </aside>
+  </section>
+</main>
+
+<script>
+(function(){
+"use strict";
+var cv=document.getElementById("game"),ctx=cv.getContext("2d");
+ctx.imageSmoothingEnabled=false;
+var scoreEl=document.getElementById("score"),floorEl=document.getElementById("floor"),comboEl=document.getElementById("combo");
+var startOverlay=document.getElementById("startOverlay"),overOverlay=document.getElementById("overOverlay");
+var nickname=document.getElementById("nickname"),fx=document.getElementById("fx");
+var W=cv.width,H=cv.height,GROUND=548,LAYER_H=58,BASE_W=228,MIN_W=9;
+var stack=[],current=null,phase="idle",running=false,last=0,fallY=0,targetY=0,score=0,perfectCombo=0,maxPerfect=0,nick="";
+var bestKey="witch_tower_best_v1";
+var TYPES=[
+ {id:"pumpkin",name:"호박 쿠션"},
+ {id:"gift",name:"리본 선물상자"},
+ {id:"book",name:"마법책"},
+ {id:"starbox",name:"별 장식 상자"},
+ {id:"moon",name:"초승달 쿠션"},
+ {id:"ghost",name:"유령 쿠션"},
+ {id:"potion",name:"포션 상자"},
+ {id:"cake",name:"케이크 받침대"},
+ {id:"cat",name:"고양이 쿠션"},
+ {id:"jewel",name:"보석함"}
+];
+
+function px(g,x,y,w,h,c){g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))}
+function outline(g,x,y,w,h,fill){
+  px(g,x-3,y-3,w+6,h+6,"#171128");px(g,x,y,w,h,fill)
+}
+function sprite(type,w=BASE_W,h=LAYER_H){
+  var c=document.createElement("canvas");c.width=BASE_W;c.height=LAYER_H;
+  var g=c.getContext("2d");g.imageSmoothingEnabled=false;
+  var d="#18112a",cream="#fff0dc",gold="#f0c66e",pink="#d982a2",violet="#67558f",blue="#6b8fc4",mint="#6fa58e";
+  var id=type.id;
+  if(id==="pumpkin"){
+    px(g,28,17,172,34,d);px(g,36,13,156,42,"#d97c3f");
+    px(g,45,15,18,38,"#ef9a4c");px(g,82,14,14,40,"#ef9a4c");px(g,126,14,14,40,"#ef9a4c");px(g,163,15,18,38,"#ef9a4c");
+    px(g,103,4,18,12,d);px(g,108,2,10,13,"#56764d");px(g,116,5,20,7,"#68895a");
+    px(g,88,29,7,7,d);px(g,134,29,7,7,d);px(g,108,39,18,4,d);
+  }else if(id==="gift"){
+    outline(g,27,17,174,36,"#c96788");px(g,34,22,160,28,"#dc7c9d");
+    px(g,101,17,25,36,"#f2b6c6");px(g,27,28,174,8,"#efadc1");
+    px(g,76,4,37,17,d);px(g,80,7,30,12,"#e99db5");px(g,116,4,37,17,d);px(g,119,7,30,12,"#e99db5");px(g,108,11,17,13,"#f2bfd0");
+  }else if(id==="book"){
+    // square spine on left, rounded page block on right
+    px(g,24,11,176,44,d);
+    px(g,27,13,32,40,"#5a477c");px(g,33,16,20,34,"#78629f");
+    px(g,57,15,137,36,"#f3dfbd");
+    px(g,62,18,125,4,"#fff3dc");px(g,62,27,131,3,"#cdbb9e");px(g,62,38,128,3,"#cdbb9e");px(g,62,47,118,3,"#cdbb9e");
+    px(g,185,19,12,28,"#e0cbaa");
+    px(g,23,9,174,9,"#65508d");px(g,23,46,174,9,"#4f3d70");
+    px(g,108,11,18,4,gold);px(g,113,8,8,10,gold);
+  }else if(id==="starbox"){
+    outline(g,27,14,174,40,"#4f78a8");px(g,34,20,160,31,"#628bb7");
+    px(g,27,14,18,14,gold);px(g,183,14,18,14,gold);px(g,27,40,18,14,gold);px(g,183,40,18,14,gold);
+    px(g,103,24,8,8,gold);px(g,111,17,8,24,gold);px(g,119,24,8,8,gold);px(g,108,21,14,15,gold);
+  }else if(id==="moon"){
+    px(g,29,28,170,26,d);px(g,36,27,156,25,"#6c7ead");
+    px(g,42,37,46,14,"#dbe0ee");px(g,146,37,40,14,"#dbe0ee");
+    px(g,94,6,47,44,d);px(g,100,9,35,36,"#f0cd78");px(g,115,8,27,32,"#171f46");
+    px(g,157,22,5,5,gold);px(g,160,17,4,14,gold);px(g,153,26,18,4,gold);
+  }else if(id==="ghost"){
+    px(g,39,18,150,35,d);px(g,47,11,134,39,cream);
+    px(g,47,39,22,14,cream);px(g,78,37,22,16,cream);px(g,111,40,22,13,cream);px(g,145,37,22,16,cream);
+    px(g,87,28,7,7,d);px(g,135,28,7,7,d);px(g,108,39,16,4,d);px(g,66,31,12,6,"#e5a7af");px(g,151,31,12,6,"#e5a7af");
+  }else if(id==="potion"){
+    outline(g,25,14,178,40,"#537b72");px(g,32,20,164,31,"#6b9587");
+    px(g,62,17,34,30,"#b9c2d8");px(g,69,12,20,10,"#d7d9df");px(g,73,24,15,18,"#bd6f9c");
+    px(g,136,17,34,30,"#b9c2d8");px(g,143,12,20,10,"#d7d9df");px(g,147,24,15,18,"#6b83ba");
+    px(g,105,24,8,8,gold);px(g,113,17,8,24,gold);px(g,121,24,8,8,gold);px(g,110,21,14,15,gold);
+  }else if(id==="cake"){
+    px(g,31,38,166,16,d);px(g,36,40,156,12,"#d9bca2");px(g,52,18,126,26,d);px(g,57,20,116,22,"#f1d1c4");
+    px(g,57,20,116,8,cream);px(g,63,17,18,8,"#c85f7a");px(g,107,15,18,10,"#fff0dc");px(g,147,17,18,8,"#c85f7a");
+    px(g,98,50,32,5,d);px(g,103,52,22,5,"#d3b38e");
+  }else if(id==="cat"){
+    px(g,29,22,170,32,d);px(g,36,18,156,35,"#333250");
+    px(g,43,10,30,22,d);px(g,47,14,23,19,"#3d3c5e");px(g,155,10,30,22,d);px(g,159,14,23,19,"#3d3c5e");
+    px(g,82,31,7,7,gold);px(g,139,31,7,7,gold);px(g,109,40,14,4,"#f0c4cf");
+    px(g,45,38,14,6,"#b87591");px(g,169,38,14,6,"#b87591");
+  }else{
+    outline(g,25,16,178,38,"#7b557c");px(g,32,21,164,30,"#9b6f97");
+    px(g,45,16,138,8,gold);px(g,43,44,142,8,"#5c405e");
+    px(g,102,13,24,24,d);px(g,106,16,16,18,"#cf7fa2");px(g,110,19,8,12,"#f2bfd0");
+    px(g,52,27,14,14,gold);px(g,162,27,14,14,gold);
+  }
+  return c;
+}
+var spriteCache={};
+function getSprite(type){return spriteCache[type.id]||(spriteCache[type.id]=sprite(type))}
+function drawPreview(){
+  var box=document.getElementById("objlist");box.innerHTML="";
+  TYPES.forEach(function(t){
+    var d=document.createElement("div");d.className="obj";
+    var c=sprite(t);c.width=c.width;c.height=c.height;
+    d.appendChild(c);var s=document.createElement("span");s.textContent=t.name;d.appendChild(s);box.appendChild(d);
+  })
+}
+function readBest(){
+  try{return JSON.parse(localStorage.getItem(bestKey)||"{}")}catch(e){return{}}
+}
+function writeBest(){
+  var all=readBest(),k=nick.replace(/\s+/g,"").toLowerCase(),old=all[k];
+  if(!old||score>old.score){all[k]={name:nick,score:score,floor:stack.length,maxPerfect:maxPerfect};try{localStorage.setItem(bestKey,JSON.stringify(all))}catch(e){}}
+}
+function currentBest(){
+  var all=readBest(),k=nick.replace(/\s+/g,"").toLowerCase();return all[k]||{score:0}
+}
+function randType(){return TYPES[Math.floor(Math.random()*TYPES.length)]}
+function reset(){
+  stack=[];score=0;perfectCombo=0;maxPerfect=0;running=true;phase="moving";
+  stack.push({x:(W-BASE_W)/2,w:BASE_W,crop:0,type:randType()});
+  makeCurrent();
+  updateHUD();
+}
+function makeCurrent(){
+  var prev=stack[stack.length-1],w=prev.w;
+  current={x:18,w:w,crop:0,type:randType(),dir:1};
+  phase="moving";
+}
+function speed(){return Math.min(310,120+(stack.length-1)*9)}
+function cameraOffset(){return Math.max(0,(stack.length-6)*LAYER_H)}
+function layerY(i){return GROUND-(i+1)*LAYER_H+cameraOffset()}
+function currentTargetY(){return GROUND-(stack.length+1)*LAYER_H+cameraOffset()}
+function updateHUD(){
+  scoreEl.textContent=String(score).padStart(6,"0");floorEl.textContent=Math.max(0,stack.length-1);comboEl.textContent=perfectCombo;
+}
+function showFx(text,kind){
+  var d=document.createElement("div");d.className="fxText";d.textContent=text;fx.appendChild(d);setTimeout(function(){d.remove()},720);
+  if(kind==="perfect"){
+    for(var i=0;i<5;i++){var s=document.createElement("i");s.className="spark";s.style.left=(46+Math.random()*8)+"%";s.style.top=(27+Math.random()*8)+"%";s.style.setProperty("--dx",(Math.random()*100-50)+"px");s.style.setProperty("--dy",(Math.random()*70-45)+"px");fx.appendChild(s);setTimeout((function(x){return function(){x.remove()}})(s),720)}
+  }
+}
+function drop(){
+  if(!running||phase!=="moving")return;
+  phase="falling";fallY=92;targetY=currentTargetY();
+}
+function land(){
+  var prev=stack[stack.length-1],dx=current.x-prev.x;
+  var tolerance=Math.max(3,Math.min(7,prev.w*.03));
+  var perfect=Math.abs(dx)<=tolerance;
+  var nx,nw,cropAdd=0;
+  if(perfect){
+    nx=prev.x;nw=prev.w;current.x=nx;current.w=nw;
+    perfectCombo++;maxPerfect=Math.max(maxPerfect,perfectCombo);
+    score+=180+perfectCombo*18;showFx("PERFECT!","perfect");
+  }else{
+    nx=Math.max(current.x,prev.x);
+    nw=Math.min(current.x+current.w,prev.x+prev.w)-nx;
+    perfectCombo=0;
+    if(nw<=MIN_W){gameOver();return}
+    cropAdd=nx-current.x;
+    score+=Math.max(40,Math.round(110*(nw/prev.w)));
+    showFx("GOOD","");
+  }
+  stack.push({x:nx,w:nw,crop:current.crop+cropAdd,type:current.type});
+  makeCurrent();updateHUD();
+}
+function gameOver(){
+  running=false;phase="over";writeBest();updateHUD();
+  document.getElementById("rScore").textContent=score;
+  document.getElementById("rFloor").textContent=Math.max(0,stack.length-1);
+  document.getElementById("rPerfect").textContent=maxPerfect;
+  document.getElementById("rBest").textContent=currentBest().score||score;
+  overOverlay.classList.remove("hidden");
+}
+function drawBlock(b,y){
+  var sp=getSprite(b.type);
+  ctx.save();ctx.beginPath();ctx.rect(b.x,y,b.w,LAYER_H);ctx.clip();
+  ctx.drawImage(sp,b.x-b.crop,y,BASE_W,LAYER_H);ctx.restore();
+}
+function render(){
+  ctx.clearRect(0,0,W,H);
+  for(var i=0;i<stack.length;i++)drawBlock(stack[i],layerY(i));
+  if(running&&current){
+    var y=phase==="falling"?fallY:92;
+    drawBlock(current,y);
+    if(phase==="moving"){
+      ctx.save();ctx.globalAlpha=.14;ctx.fillStyle="#f7e8bd";
+      ctx.fillRect(current.x,currentTargetY()+LAYER_H-3,current.w,3);ctx.restore();
+    }
+  }
+}
+function tick(ts){
+  if(!last)last=ts;var dt=Math.min(.04,(ts-last)/1000);last=ts;
+  if(running&&current){
+    if(phase==="moving"){
+      current.x+=current.dir*speed()*dt;
+      if(current.x<=12){current.x=12;current.dir=1}
+      if(current.x+current.w>=W-12){current.x=W-12-current.w;current.dir=-1}
+    }else if(phase==="falling"){
+      fallY+=620*dt;
+      if(fallY>=targetY){fallY=targetY;land()}
+    }
+  }
+  render();requestAnimationFrame(tick);
+}
+function start(){
+  var n=nickname.value.replace(/\s+/g," ").trim().slice(0,24);
+  if(!n){nickname.focus();return}
+  nick=n;startOverlay.classList.add("hidden");overOverlay.classList.add("hidden");reset();
+}
+document.getElementById("startBtn").addEventListener("click",start);
+document.getElementById("retryBtn").addEventListener("click",function(){overOverlay.classList.add("hidden");reset()});
+document.getElementById("homeBtn").addEventListener("click",function(){overOverlay.classList.add("hidden");startOverlay.classList.remove("hidden");running=false;phase="idle";stack=[];current=null;updateHUD()});
+document.getElementById("stage").addEventListener("pointerdown",function(e){
+  if(e.target.closest("button")||e.target.closest("input")||!startOverlay.classList.contains("hidden")||!overOverlay.classList.contains("hidden"))return;
+  drop();
+});
+nickname.addEventListener("keydown",function(e){if(e.key==="Enter")start()});
+drawPreview();updateHUD();requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
