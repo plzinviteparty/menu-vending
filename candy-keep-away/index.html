@@ -91,7 +91,7 @@ button{cursor:pointer}
       <div class="card">
         <h2>사탕 사수 작전</h2>
         <p>사탕을 손가락이나 마우스로 끌어 괴물 손을 피하세요.<br>
-        손은 처음엔 정직하지만, 오래 버티면 이동 방향을 읽고 덮쳐옵니다.</p>
+        손은 직선으로 오다가 나중엔 S자로 휘고, 회오리치고, 자기 팔끼리 꼬이기도 합니다.</p>
         <div class="field">
           <label>밴드 닉네임</label>
           <input id="nickname" maxlength="24" autocomplete="off" placeholder="닉네임 입력">
@@ -232,27 +232,50 @@ function createHand(side){
     side:side,ax:anchor.x,ay:anchor.y,color:HAND_COLORS[side%HAND_COLORS.length],
     phase:"wait",timer:.35+Math.random()*.8,telegraph:.42,strikeDur:.34,retractDur:.28,
     p:0,tx:W/2,ty:H/2,tipX:anchor.x,tipY:anchor.y,
-    didCount:false,feint:false,reAim:false
+    didCount:false,feint:false,reAim:false,
+    pattern:"straight",amp:0,spin:1,waves:2
   };
 }
 function desiredHandCount(t){
   if(t<10)return 1;if(t<22)return 2;if(t<36)return 3;return 4;
 }
+function pickPattern(t){
+  var pool;
+  if(t<8)pool=["straight","straight","curve"];
+  else if(t<18)pool=["straight","curve","curve","s","hook"];
+  else pool=["straight","curve","s","hook","spiral","spiral"];
+  return pool[Math.floor(Math.random()*pool.length)];
+}
 function attackSetup(h){
   var c=state.candy,t=state.elapsed;
-  var predict=Math.min(.38,.12+t*.006);
+  var predict=Math.min(.36,.10+t*.006);
   var tx=c.x+c.vx*predict,ty=c.y+c.vy*predict;
-  // small aim imperfection early, much less later
-  var error=Math.max(5,30-t*.55);
+  var error=Math.max(7,28-t*.5);
   tx+=(-error+Math.random()*error*2);ty+=(-error+Math.random()*error*2);
-  tx=clamp(tx,45,W-45);ty=clamp(ty,60,H-80);
-  h.feint=t>18&&Math.random()<Math.min(.34,(t-18)*.012);
-  if(h.feint){tx=lerp(tx,c.x,.25);ty=lerp(ty,c.y,.25)}
+  tx=clamp(tx,45,W-45);ty=clamp(ty,55,H-70);
+  h.pattern=pickPattern(t);
+  h.amp=(h.pattern==="straight")?0:(45+Math.random()*55);
+  if(h.pattern==="spiral")h.amp=58+Math.random()*45;
+  h.spin=Math.random()<.5?-1:1;
+  h.waves=2+Math.floor(Math.random()*2);
+  h.feint=t>16&&Math.random()<Math.min(.28,(t-16)*.01);
   h.tx=tx;h.ty=ty;h.p=0;h.didCount=false;h.reAim=false;
-  h.telegraph=Math.max(.18,.48-t*.006);
-  h.strikeDur=Math.max(.18,.38-t*.004);
-  h.retractDur=.25;
+  h.telegraph=Math.max(.20,.48-t*.0055);
+  h.strikeDur=Math.max(.19,.39-t*.0038);
+  if(h.pattern==="spiral")h.strikeDur*=1.12;
+  h.retractDur=.24;
   h.phase="aim";h.timer=h.telegraph;
+}
+function motionTip(h,q){
+  var x=lerp(h.ax,h.tx,q),y=lerp(h.ay,h.ty,q);
+  var dx=h.tx-h.ax,dy=h.ty-h.ay,n=norm(dx,dy),px=-n.y,py=n.x;
+  var off=0;
+  if(h.pattern==="curve")off=Math.sin(Math.PI*q)*h.amp*h.spin;
+  else if(h.pattern==="s")off=Math.sin(Math.PI*2*q)*h.amp*h.spin;
+  else if(h.pattern==="hook")off=Math.sin(Math.PI*q)*h.amp*h.spin*(.35+q*.85);
+  else if(h.pattern==="spiral")off=Math.sin(Math.PI*4*q)*h.amp*h.spin*(1-q*.55);
+  x+=px*off;y+=py*off;
+  return{x:x,y:y};
 }
 function updateHand(h,dt){
   if(h.phase==="wait"){
@@ -262,33 +285,32 @@ function updateHand(h,dt){
     h.timer-=dt;
     if(h.feint&&h.timer<h.telegraph*.45&&!h.reAim){
       h.reAim=true;
-      // feint: update once to the candy's latest position, not teleporting the arm
-      var c=state.candy,pred=.14+Math.min(.16,state.elapsed*.004);
-      h.tx=clamp(c.x+c.vx*pred,45,W-45);h.ty=clamp(c.y+c.vy*pred,60,H-80);
+      var c=state.candy,pred=.12+Math.min(.14,state.elapsed*.0035);
+      h.tx=clamp(c.x+c.vx*pred,45,W-45);h.ty=clamp(c.y+c.vy*pred,55,H-70);
     }
     if(h.timer<=0){h.phase="strike";h.p=0;sfx("whoosh")}
     return;
   }
   if(h.phase==="strike"){
-    h.p+=dt/h.strikeDur;var q=easeOut(clamp(h.p,0,1));
-    h.tipX=lerp(h.ax,h.tx,q);h.tipY=lerp(h.ay,h.ty,q);
+    h.p+=dt/h.strikeDur;
+    var q=easeOut(clamp(h.p,0,1)),pt=motionTip(h,q);
+    h.tipX=pt.x;h.tipY=pt.y;
     var c=state.candy;
-    if(h.p>.34&&dist(h.tipX,h.tipY,c.x,c.y)<c.r+27){endGame();return}
-    if(h.p>=1){h.phase="hold";h.timer=.055}
+    if(h.p>.32&&dist(h.tipX,h.tipY,c.x,c.y)<c.r+26){endGame();return}
+    if(h.p>=1){h.tipX=h.tx;h.tipY=h.ty;h.phase="hold";h.timer=.055}
     return;
   }
   if(h.phase==="hold"){
-    h.timer-=dt;
-    if(h.timer<=0){h.phase="retract";h.p=0}
-    return;
+    h.timer-=dt;if(h.timer<=0){h.phase="retract";h.p=0}return;
   }
   if(h.phase==="retract"){
     h.p+=dt/h.retractDur;var q=easeInOut(clamp(h.p,0,1));
     h.tipX=lerp(h.tx,h.ax,q);h.tipY=lerp(h.ty,h.ay,q);
     if(h.p>.55&&!h.didCount){h.didCount=true;state.dodges++;sfx("dodge")}
     if(h.p>=1){
-      var a=edgePoint(h.side,.16+Math.random()*.68);h.ax=a.x;h.ay=a.y;h.tipX=a.x;h.tipY=a.y;
-      h.phase="wait";h.timer=Math.max(.18,.7-state.elapsed*.008)+Math.random()*.45;
+      var ep=edgePoint(h.side,.16+Math.random()*.68);
+      h.ax=ep.x;h.ay=ep.y;h.tipX=ep.x;h.tipY=ep.y;
+      h.phase="wait";h.timer=Math.max(.18,.72-state.elapsed*.008)+Math.random()*.45;
     }
   }
 }
@@ -311,64 +333,102 @@ function updateCandy(dt){
 }
 
 function drawBackground(){
-  ctx.fillStyle="#1a1e39";ctx.fillRect(0,0,W,H);
-  // back wall
-  ctx.fillStyle="#222748";ctx.fillRect(0,0,W,180);
-  ctx.fillStyle="#13172f";ctx.fillRect(0,180,W,H-180);
-  // moon
-  ctx.beginPath();ctx.arc(W-120,100,55,0,Math.PI*2);ctx.fillStyle="#d9a978";ctx.fill();
-  ctx.beginPath();ctx.arc(W-101,86,54,0,Math.PI*2);ctx.fillStyle="#222748";ctx.fill();
-  // table
-  ctx.fillStyle="#493348";ctx.fillRect(0,H*.72,W,H*.28);
-  ctx.fillStyle="#604153";ctx.fillRect(0,H*.72,W,12);
-  for(var i=0;i<8;i++){ctx.fillStyle=i%2?"#4f374b":"#583c50";ctx.fillRect(i*100,H*.72+12,100,H*.28-12)}
-  // sparse candy wrappers
-  var deco=[[72,610,"#7a9b83"],[650,595,"#bb775f"],[130,690,"#c99a59"],[590,700,"#6b83a3"]];
-  deco.forEach(function(v){ctx.fillStyle=v[2];ctx.fillRect(v[0],v[1],18,8);ctx.fillRect(v[0]-8,v[1]+2,8,4);ctx.fillRect(v[0]+18,v[1]+2,8,4)})
+  // Entire playfield is a simple wooden tabletop. No scenery competing with the candy.
+  ctx.fillStyle="#704a3d";ctx.fillRect(0,0,W,H);
+  var plank=95;
+  for(var y=0;y<H;y+=plank){
+    ctx.fillStyle=(Math.floor(y/plank)%2)?"#744c3e":"#6b463a";
+    ctx.fillRect(0,y,W,plank);
+    ctx.fillStyle="rgba(38,22,25,.25)";ctx.fillRect(0,y, W,3);
+    // sparse wood grain only
+    ctx.strokeStyle="rgba(255,214,177,.055)";ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(25+(y%71),y+31);ctx.bezierCurveTo(170,y+17,290,y+48,430,y+30);
+    ctx.bezierCurveTo(540,y+18,650,y+42,735,y+27);ctx.stroke();
+  }
+  ctx.fillStyle="rgba(10,8,16,.18)";ctx.fillRect(0,0,16,H);ctx.fillRect(W-16,0,16,H);
 }
 function drawCandy(c){
   ctx.save();ctx.translate(c.x,c.y);
-  // shadow
-  ctx.globalAlpha=.25;ctx.fillStyle="#070914";ctx.beginPath();ctx.ellipse(3,30,31,10,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
-  // wrapper
-  ctx.fillStyle="#7cae97";ctx.beginPath();ctx.moveTo(-39,-8);ctx.lineTo(-24,-19);ctx.lineTo(-22,18);ctx.lineTo(-40,9);ctx.closePath();ctx.fill();
-  ctx.beginPath();ctx.moveTo(39,-8);ctx.lineTo(24,-19);ctx.lineTo(22,18);ctx.lineTo(40,9);ctx.closePath();ctx.fill();
-  ctx.strokeStyle="#0b0d1a";ctx.lineWidth=5;ctx.stroke();
-  // candy
-  ctx.beginPath();ctx.arc(0,0,28,0,Math.PI*2);ctx.fillStyle="#d86f9a";ctx.fill();ctx.strokeStyle="#0b0d1a";ctx.lineWidth=5;ctx.stroke();
-  ctx.fillStyle="#efa9bd";ctx.beginPath();ctx.arc(-8,-9,7,0,Math.PI*2);ctx.fill();
-  // tiny star mark
-  ctx.fillStyle="#f0d17f";ctx.fillRect(-3,-8,6,16);ctx.fillRect(-8,-3,16,6);
+  ctx.globalAlpha=.22;ctx.fillStyle="#22151b";ctx.beginPath();ctx.ellipse(3,29,34,10,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+  // flat wrapper
+  ctx.fillStyle="#80b58f";ctx.strokeStyle="#17111d";ctx.lineWidth=5;ctx.lineJoin="round";
+  ctx.beginPath();ctx.moveTo(-45,-8);ctx.lineTo(-27,-22);ctx.lineTo(-23,19);ctx.lineTo(-45,9);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.moveTo(45,-8);ctx.lineTo(27,-22);ctx.lineTo(23,19);ctx.lineTo(45,9);ctx.closePath();ctx.fill();ctx.stroke();
+  // candy body
+  ctx.beginPath();ctx.arc(0,0,29,0,Math.PI*2);ctx.fillStyle="#ef759c";ctx.fill();ctx.stroke();
+  ctx.strokeStyle="#ffd6e1";ctx.lineWidth=7;
+  ctx.beginPath();ctx.arc(0,0,17,-1.0,.35);ctx.stroke();
+  // stupid little face
+  ctx.fillStyle="#3b2231";ctx.beginPath();ctx.arc(-9,4,3.5,0,Math.PI*2);ctx.arc(9,4,3.5,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle="#3b2231";ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,9,7,.15,Math.PI-.15);ctx.stroke();
   ctx.restore();
+}
+function handCurvePoint(h,t,tipX,tipY){
+  var x=lerp(h.ax,tipX,t),y=lerp(h.ay,tipY,t);
+  var dx=tipX-h.ax,dy=tipY-h.ay,n=norm(dx,dy),px=-n.y,py=n.x;
+  var amp=h.amp||0,off=0;
+  if(h.pattern==="curve")off=Math.sin(Math.PI*t)*amp*.72*h.spin;
+  else if(h.pattern==="s")off=Math.sin(Math.PI*2*t)*amp*.80*h.spin;
+  else if(h.pattern==="hook")off=Math.sin(Math.PI*t)*amp*h.spin*(.25+t);
+  else if(h.pattern==="spiral")off=Math.sin(Math.PI*(h.waves||3)*2*t)*amp*h.spin*(.95-.25*t);
+  x+=px*off;y+=py*off;
+  return{x:x,y:y};
+}
+function strokeRubberArm(h,tipX,tipY,width,color){
+  ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap="round";ctx.lineJoin="round";
+  ctx.beginPath();
+  for(var i=0;i<=28;i++){
+    var t=i/28,p=handCurvePoint(h,t,tipX,tipY);
+    if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);
+  }
+  ctx.stroke();
 }
 function drawHand(h){
   if(h.phase==="wait")return;
-  var tx=(h.phase==="aim")?h.tx:h.tipX,ty=(h.phase==="aim")?h.ty:h.tipY;
+  var tipX=(h.phase==="aim")?h.tx:h.tipX,tipY=(h.phase==="aim")?h.ty:h.tipY;
   if(h.phase==="aim"){
-    // telegraph only: soft predicted grab circle and line
-    ctx.save();ctx.globalAlpha=.18;ctx.strokeStyle=h.color;ctx.lineWidth=4;ctx.setLineDash([10,12]);
-    ctx.beginPath();ctx.moveTo(h.ax,h.ay);ctx.lineTo(h.tx,h.ty);ctx.stroke();ctx.setLineDash([]);
-    ctx.beginPath();ctx.arc(h.tx,h.ty,34,0,Math.PI*2);ctx.stroke();ctx.restore();
+    // Only a small target marker. No decorative prediction line.
+    ctx.save();ctx.globalAlpha=.45;ctx.strokeStyle=h.color;ctx.lineWidth=4;ctx.setLineDash([8,8]);
+    ctx.beginPath();ctx.arc(h.tx,h.ty,30,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
     return;
   }
-  var n=norm(tx-h.ax,ty-h.ay),px=-n.y,py=n.x;
-  // arm
-  ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
-  ctx.strokeStyle="#0a0c17";ctx.lineWidth=43;ctx.beginPath();ctx.moveTo(h.ax,h.ay);ctx.lineTo(tx,ty);ctx.stroke();
-  ctx.strokeStyle=h.color;ctx.lineWidth=34;ctx.beginPath();ctx.moveTo(h.ax,h.ay);ctx.lineTo(tx,ty);ctx.stroke();
-  // cuff
-  ctx.fillStyle="#2a2340";ctx.strokeStyle="#090b18";ctx.lineWidth=5;
-  ctx.beginPath();ctx.moveTo(tx-n.x*35+px*24,ty-n.y*35+py*24);ctx.lineTo(tx-n.x*35-px*24,ty-n.y*35-py*24);ctx.lineTo(tx-n.x*10-px*20,ty-n.y*10-py*20);ctx.lineTo(tx-n.x*10+px*20,ty-n.y*10+py*20);ctx.closePath();ctx.fill();ctx.stroke();
-  // palm
-  ctx.fillStyle=h.color;ctx.beginPath();ctx.arc(tx,ty,28,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#090b18";ctx.lineWidth=5;ctx.stroke();
-  // three claws/fingers
-  ctx.strokeStyle="#090b18";ctx.lineWidth=13;ctx.lineCap="round";
+  var dx=tipX-h.ax,dy=tipY-h.ay,n=norm(dx,dy),px=-n.y,py=n.x;
+  ctx.save();
+  // ridiculous rubber-hose arm: deliberately allowed to cross itself and other arms
+  strokeRubberArm(h,tipX,tipY,44,"#17111d");
+  strokeRubberArm(h,tipX,tipY,34,h.color);
+
+  // very simple palm
+  ctx.fillStyle=h.color;ctx.strokeStyle="#17111d";ctx.lineWidth=5;
+  ctx.beginPath();ctx.ellipse(tipX,tipY,29,25,Math.atan2(dy,dx),0,Math.PI*2);ctx.fill();ctx.stroke();
+
+  // three long cartoon fingers
+  ctx.lineCap="round";
   [-1,0,1].forEach(function(k){
-    var baseX=tx+px*k*12,baseY=ty+py*k*12;
-    var ex=baseX+n.x*25+px*k*4,ey=baseY+n.y*25+py*k*4;
-    ctx.beginPath();ctx.moveTo(baseX,baseY);ctx.lineTo(ex,ey);ctx.stroke();
-    ctx.strokeStyle=h.color;ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(baseX,baseY);ctx.lineTo(ex,ey);ctx.stroke();ctx.strokeStyle="#090b18";ctx.lineWidth=13;
+    var bx=tipX+px*k*12+n.x*6,by=tipY+py*k*12+n.y*6;
+    var spread=k*7;
+    var ex=bx+n.x*(29+(k===0?5:0))+px*spread,ey=by+n.y*(29+(k===0?5:0))+py*spread;
+    ctx.strokeStyle="#17111d";ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(ex,ey);ctx.stroke();
+    ctx.strokeStyle=h.color;ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(ex,ey);ctx.stroke();
+    // dumb black nail
+    ctx.fillStyle="#17111d";ctx.beginPath();ctx.arc(ex,ey,4.5,0,Math.PI*2);ctx.fill();
   });
+
+  // cuff: one blocky shape only
+  var cx=tipX-n.x*30,cy=tipY-n.y*30;
+  ctx.fillStyle="#2c2436";ctx.strokeStyle="#17111d";ctx.lineWidth=5;
+  ctx.beginPath();
+  ctx.moveTo(cx+px*23,cy+py*23);ctx.lineTo(cx-px*23,cy-py*23);
+  ctx.lineTo(cx-n.x*20-px*19,cy-n.y*20-py*19);ctx.lineTo(cx-n.x*20+px*19,cy-n.y*20+py*19);
+  ctx.closePath();ctx.fill();ctx.stroke();
+
+  // spiral attack gets two tiny motion loops so the stupidity reads immediately
+  if(h.pattern==="spiral"){
+    ctx.globalAlpha=.45;ctx.strokeStyle="#f4e5d3";ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(tipX-n.x*55,tipY-n.y*55,22,0,Math.PI*1.5);ctx.stroke();
+    ctx.beginPath();ctx.arc(tipX-n.x*80,tipY-n.y*80,13,0,Math.PI*1.5);ctx.stroke();
+  }
   ctx.restore();
 }
 function draw(){
@@ -376,8 +436,7 @@ function draw(){
   if(state){
     state.hands.forEach(drawHand);
     drawCandy(state.candy);
-    // subtle danger frame
-    var danger=Math.min(1,state.elapsed/45);ctx.save();ctx.globalAlpha=.08+danger*.08;ctx.strokeStyle="#d86f9a";ctx.lineWidth=10;ctx.strokeRect(5,5,W-10,H-10);ctx.restore();
+
   }
 }
 function frame(ts){
