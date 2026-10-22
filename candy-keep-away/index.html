@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Candy Keep Away</title>
+<style>
+:root{
+  --bg:#14172d;--panel:#1d2140;--line:#090b18;--cream:#f7ead4;
+  --muted:#aeb4cf;--pink:#d86f9a;--orange:#d98a4e;--mint:#7fae95;--yellow:#e5c66e;
+  font-family:"Courier New","Noto Sans KR",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#0d1022;color:var(--cream)}
+body{
+  background:
+    radial-gradient(circle at 70% 12%,rgba(221,155,109,.12),transparent 20%),
+    linear-gradient(180deg,#171a35 0,#0d1125 100%);
+}
+button,input{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.wrap{max-width:980px;margin:auto;padding:14px 10px 38px}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px}
+.brand h1{margin:0;font-size:clamp(27px,5vw,48px);line-height:.95;color:#f5dfc5;text-shadow:4px 4px 0 #4d3158}
+.brand p{margin:7px 0 0;color:var(--muted);font-size:10px;line-height:1.55}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(88px,1fr)) auto;gap:7px}
+.stat,.sound{
+  border:3px solid var(--line);box-shadow:3px 3px 0 #070914;background:#1b2148;padding:7px 9px;text-align:center
+}
+.stat span{display:block;font-size:8px;letter-spacing:1px;color:#9fa7ca}
+.stat strong{display:block;font-size:19px;color:#fff0d8;margin-top:2px}
+.sound{color:#e8d4bd;font-size:10px;font-weight:900}
+.sound.off{color:#777f9e;background:#171a34}
+.gamebox{position:relative;border:4px solid var(--line);box-shadow:5px 5px 0 #070914;background:#11162f;overflow:hidden}
+#game{display:block;width:100%;height:auto;max-height:760px;touch-action:none;background:#181c36}
+.overlay{position:absolute;inset:0;z-index:10;display:grid;place-items:center;padding:18px;background:rgba(7,9,20,.84);backdrop-filter:blur(2px)}
+.card{width:min(440px,100%);border:4px solid var(--line);box-shadow:6px 6px 0 #070914;background:#1b2145;padding:18px;text-align:center}
+.card h2{margin:0;color:#f3d9bf;font-size:29px;text-shadow:3px 3px 0 #56355f}
+.card p{font-size:10px;color:#b5bbd6;line-height:1.6}
+.field{text-align:left;margin:13px 0}
+.field label{display:block;font-size:9px;color:#e7c76f;margin-bottom:5px;font-weight:1000}
+.field input{width:100%;border:3px solid var(--line);box-shadow:3px 3px 0 #070914;background:#f8ecd8;color:#21162d;padding:10px;font-size:16px;outline:none}
+.btn{width:100%;border:3px solid var(--line);box-shadow:3px 3px 0 #070914;background:#d67b9c;color:#21162d;padding:10px 12px;font-weight:1000}
+.btn:active{transform:translate(3px,3px);box-shadow:none}
+.result{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:12px 0}
+.result div{border:2px solid var(--line);background:#111630;padding:8px}
+.result span{display:block;font-size:8px;color:#959dbd}
+.result strong{display:block;font-size:20px;margin-top:3px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.actions .btn:nth-child(2){background:#8792c2}
+.tipbar{
+  position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:4;
+  border:3px solid var(--line);background:rgba(24,29,59,.92);box-shadow:3px 3px 0 #070914;
+  padding:7px 13px;font-size:9px;font-weight:1000;color:#ead9c4;pointer-events:none
+}
+.flash{position:absolute;left:50%;top:21%;transform:translateX(-50%);z-index:6;font-weight:1000;font-size:26px;text-shadow:3px 3px 0 #070914;pointer-events:none;animation:pop .65s ease forwards}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,8px) scale(.85)}25%{opacity:1;transform:translate(-50%,0) scale(1.05)}100%{opacity:0;transform:translate(-50%,-18px)}}
+.ranks{margin-top:12px;border:3px solid var(--line);box-shadow:4px 4px 0 #070914;background:#171c39;padding:12px}
+.ranks h2{margin:0 0 8px;font-size:13px;color:#eed7bb}
+.ranklist{display:grid;gap:5px}
+.rank{display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:center;border:2px solid #30385d;background:#11162e;padding:7px 8px;font-size:10px}
+.rank b{color:#e7c76f}.rank strong{color:#f0dfc8}
+.note{color:#8f96b3;font-size:9px;line-height:1.55;margin-top:7px}
+@media(max-width:700px){
+  .top{display:grid}.stats{grid-template-columns:repeat(3,1fr)}.sound{grid-column:1/-1}
+  .brand h1{font-size:34px}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>CANDY<br>KEEP AWAY</h1>
+      <p>사탕을 붙잡고 괴물 손을 피하세요.<br>오래 버틸수록 손이 빨라지고 더 영리해집니다.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><span>TIME</span><strong id="time">0.00</strong></div>
+      <div class="stat"><span>DODGE</span><strong id="dodge">0</strong></div>
+      <div class="stat"><span>BEST</span><strong id="best">0.00</strong></div>
+      <button id="soundBtn" class="sound" type="button">♪ SOUND ON</button>
+    </div>
+  </header>
+
+  <section class="gamebox">
+    <canvas id="game" width="760" height="760"></canvas>
+    <div id="tipbar" class="tipbar">사탕을 잡고 움직이세요</div>
+
+    <div id="startOverlay" class="overlay">
+      <div class="card">
+        <h2>사탕 사수 작전</h2>
+        <p>사탕을 손가락이나 마우스로 끌어 괴물 손을 피하세요.<br>
+        손은 처음엔 정직하지만, 오래 버티면 이동 방향을 읽고 덮쳐옵니다.</p>
+        <div class="field">
+          <label>밴드 닉네임</label>
+          <input id="nickname" maxlength="24" autocomplete="off" placeholder="닉네임 입력">
+        </div>
+        <button id="startBtn" class="btn" type="button">GAME START</button>
+        <p class="note">현재 랭킹은 이 기기에 저장되는 테스트 기록입니다.</p>
+      </div>
+    </div>
+
+    <div id="overOverlay" class="overlay hidden">
+      <div class="card">
+        <h2>CAUGHT!</h2>
+        <div class="result">
+          <div><span>SURVIVAL</span><strong id="rTime">0.00초</strong></div>
+          <div><span>DODGE</span><strong id="rDodge">0</strong></div>
+          <div><span>MAX HANDS</span><strong id="rHands">1</strong></div>
+          <div><span>MY BEST</span><strong id="rBest">0.00초</strong></div>
+        </div>
+        <div class="actions">
+          <button id="retryBtn" class="btn" type="button">다시 하기</button>
+          <button id="homeBtn" class="btn" type="button">처음으로</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ranks">
+    <h2>이 기기 최고 기록</h2>
+    <div id="ranklist" class="ranklist"></div>
+    <div class="note">같은 닉네임으로 다시 플레이하면 더 오래 버틴 기록만 남습니다.</div>
+  </section>
+</main>
+
+<script>
+(function(){
+"use strict";
+var cv=document.getElementById("game"),ctx=cv.getContext("2d");
+ctx.imageSmoothingEnabled=true;
+var W=cv.width,H=cv.height;
+var timeEl=document.getElementById("time"),dodgeEl=document.getElementById("dodge"),bestEl=document.getElementById("best");
+var startOverlay=document.getElementById("startOverlay"),overOverlay=document.getElementById("overOverlay");
+var nickname=document.getElementById("nickname"),ranklist=document.getElementById("ranklist"),soundBtn=document.getElementById("soundBtn");
+var tipbar=document.getElementById("tipbar");
+var STORAGE="candy_keep_away_scores_v1";
+var state=null,last=0,raf=0;
+var audioCtx=null,master=null,soundOn=true,bgmTimer=null,bgmStep=0;
+try{soundOn=localStorage.getItem("candy_keep_away_sound_v1")!=="off"}catch(e){}
+
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function lerp(a,b,t){return a+(b-a)*t}
+function dist(ax,ay,bx,by){var dx=ax-bx,dy=ay-by;return Math.sqrt(dx*dx+dy*dy)}
+function easeOut(t){return 1-Math.pow(1-t,3)}
+function easeInOut(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
+function norm(x,y){var d=Math.sqrt(x*x+y*y)||1;return{x:x/d,y:y/d}}
+function safeRead(){try{return JSON.parse(localStorage.getItem(STORAGE)||"[]")}catch(e){return[]}}
+function safeWrite(v){try{localStorage.setItem(STORAGE,JSON.stringify(v))}catch(e){}}
+function cleanName(s){return String(s||"").replace(/\s+/g," ").trim().slice(0,24)}
+function fmt(t){return Math.max(0,t).toFixed(2)}
+function updateHud(){
+  if(!state)return;
+  timeEl.textContent=fmt(state.elapsed);
+  dodgeEl.textContent=state.dodges;
+  var rec=getBest(state.name);bestEl.textContent=rec?fmt(rec.time):"0.00";
+}
+function getBest(name){
+  var key=cleanName(name).replace(/\s+/g,"").toLowerCase();
+  return safeRead().find(function(x){return x.key===key})||null;
+}
+function saveScore(){
+  var rows=safeRead(),key=state.name.replace(/\s+/g,"").toLowerCase(),r=rows.find(function(x){return x.key===key});
+  var rec={key:key,name:state.name,time:state.elapsed,dodges:state.dodges,maxHands:state.maxHands,at:Date.now()};
+  if(!r)rows.push(rec);else if(rec.time>r.time)Object.assign(r,rec);
+  rows.sort(function(a,b){return b.time-a.time||b.dodges-a.dodges});safeWrite(rows.slice(0,30));
+}
+function renderRanks(){
+  var rows=safeRead().slice(0,10);ranklist.innerHTML="";
+  if(!rows.length){ranklist.innerHTML='<div class="note">아직 기록이 없습니다.</div>';return}
+  rows.forEach(function(r,i){
+    var d=document.createElement("div");d.className="rank";
+    d.innerHTML="<b>"+(i+1)+"</b><span>"+escapeHTML(r.name)+"</span><strong>"+fmt(r.time)+"초</strong>";
+    ranklist.appendChild(d);
+  });
+}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,function(ch){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]})}
+
+function buildAudio(){
+  if(audioCtx)return;
+  var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  audioCtx=new AC();master=audioCtx.createGain();master.gain.value=.55;master.connect(audioCtx.destination);
+}
+function unlockAudio(done){
+  if(!soundOn){if(done)done();return}buildAudio();if(!audioCtx){if(done)done();return}
+  var f=function(){if(done)done()};if(audioCtx.state==="running"){f();return}
+  var p=audioCtx.resume();if(p&&p.then)p.then(f).catch(f);else f();
+}
+function tone(freq,dur,vol,type,delay,slide){
+  if(!soundOn)return;unlockAudio(function(){
+    var o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime+(delay||0);
+    o.type=type||"triangle";o.frequency.setValueAtTime(freq,t);
+    if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,slide),t+dur);
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol||.08,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g);g.connect(master);o.start(t);o.stop(t+dur+.03);
+  });
+}
+function sfx(name){
+  if(name==="grab"){tone(420,.08,.10,"square",0,260)}
+  else if(name==="whoosh"){tone(180,.13,.08,"sawtooth",0,90)}
+  else if(name==="dodge"){tone(620,.08,.07,"triangle");tone(820,.09,.05,"sine",.05)}
+  else if(name==="caught"){tone(190,.18,.12,"sawtooth",0,90);tone(95,.3,.10,"triangle",.14,45)}
+  else if(name==="start"){tone(392,.09,.08,"triangle");tone(523,.12,.08,"triangle",.08)}
+}
+var bgmNotes=[196,220,233.08,261.63,233.08,220,196,174.61,196,220,261.63,293.66];
+function bgmPulse(){
+  if(!state||!state.running||!soundOn)return;
+  var n=bgmNotes[bgmStep%bgmNotes.length];bgmStep++;
+  tone(n,.18,.018,"triangle");if(bgmStep%3===1)tone(n/2,.28,.011,"sine");
+}
+function startBgm(){stopBgm();if(!soundOn)return;bgmStep=0;bgmPulse();bgmTimer=setInterval(bgmPulse,290)}
+function stopBgm(){if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null}}
+function updateSound(){soundBtn.textContent=soundOn?"♪ SOUND ON":"♪ SOUND OFF";soundBtn.classList.toggle("off",!soundOn)}
+soundBtn.onclick=function(e){e.stopPropagation();soundOn=!soundOn;try{localStorage.setItem("candy_keep_away_sound_v1",soundOn?"on":"off")}catch(err){};if(soundOn){unlockAudio(function(){sfx("start");if(state&&state.running)startBgm()})}else stopBgm();updateSound()};
+updateSound();
+
+function newCandy(){
+  return{x:W*.5,y:H*.62,r:28,drag:false,targetX:W*.5,targetY:H*.62,vx:0,vy:0,lastX:W*.5,lastY:H*.62};
+}
+var HAND_COLORS=["#7f6aa8","#6f9a7b","#b56d72","#b38a57"];
+function edgePoint(side,u){
+  var pad=12;
+  if(side===0)return{x:lerp(80,W-80,u),y:-pad};
+  if(side===1)return{x:W+pad,y:lerp(90,H-130,u)};
+  if(side===2)return{x:lerp(W-80,80,u),y:H+pad};
+  return{x:-pad,y:lerp(H-130,90,u)};
+}
+function createHand(side){
+  var anchor=edgePoint(side,.18+Math.random()*.64);
+  return{
+    side:side,ax:anchor.x,ay:anchor.y,color:HAND_COLORS[side%HAND_COLORS.length],
+    phase:"wait",timer:.35+Math.random()*.8,telegraph:.42,strikeDur:.34,retractDur:.28,
+    p:0,tx:W/2,ty:H/2,tipX:anchor.x,tipY:anchor.y,
+    didCount:false,feint:false,reAim:false
+  };
+}
+function desiredHandCount(t){
+  if(t<10)return 1;if(t<22)return 2;if(t<36)return 3;return 4;
+}
+function attackSetup(h){
+  var c=state.candy,t=state.elapsed;
+  var predict=Math.min(.38,.12+t*.006);
+  var tx=c.x+c.vx*predict,ty=c.y+c.vy*predict;
+  // small aim imperfection early, much less later
+  var error=Math.max(5,30-t*.55);
+  tx+=(-error+Math.random()*error*2);ty+=(-error+Math.random()*error*2);
+  tx=clamp(tx,45,W-45);ty=clamp(ty,60,H-80);
+  h.feint=t>18&&Math.random()<Math.min(.34,(t-18)*.012);
+  if(h.feint){tx=lerp(tx,c.x,.25);ty=lerp(ty,c.y,.25)}
+  h.tx=tx;h.ty=ty;h.p=0;h.didCount=false;h.reAim=false;
+  h.telegraph=Math.max(.18,.48-t*.006);
+  h.strikeDur=Math.max(.18,.38-t*.004);
+  h.retractDur=.25;
+  h.phase="aim";h.timer=h.telegraph;
+}
+function updateHand(h,dt){
+  if(h.phase==="wait"){
+    h.timer-=dt;if(h.timer<=0)attackSetup(h);return;
+  }
+  if(h.phase==="aim"){
+    h.timer-=dt;
+    if(h.feint&&h.timer<h.telegraph*.45&&!h.reAim){
+      h.reAim=true;
+      // feint: update once to the candy's latest position, not teleporting the arm
+      var c=state.candy,pred=.14+Math.min(.16,state.elapsed*.004);
+      h.tx=clamp(c.x+c.vx*pred,45,W-45);h.ty=clamp(c.y+c.vy*pred,60,H-80);
+    }
+    if(h.timer<=0){h.phase="strike";h.p=0;sfx("whoosh")}
+    return;
+  }
+  if(h.phase==="strike"){
+    h.p+=dt/h.strikeDur;var q=easeOut(clamp(h.p,0,1));
+    h.tipX=lerp(h.ax,h.tx,q);h.tipY=lerp(h.ay,h.ty,q);
+    var c=state.candy;
+    if(h.p>.34&&dist(h.tipX,h.tipY,c.x,c.y)<c.r+27){endGame();return}
+    if(h.p>=1){h.phase="hold";h.timer=.055}
+    return;
+  }
+  if(h.phase==="hold"){
+    h.timer-=dt;
+    if(h.timer<=0){h.phase="retract";h.p=0}
+    return;
+  }
+  if(h.phase==="retract"){
+    h.p+=dt/h.retractDur;var q=easeInOut(clamp(h.p,0,1));
+    h.tipX=lerp(h.tx,h.ax,q);h.tipY=lerp(h.ty,h.ay,q);
+    if(h.p>.55&&!h.didCount){h.didCount=true;state.dodges++;sfx("dodge")}
+    if(h.p>=1){
+      var a=edgePoint(h.side,.16+Math.random()*.68);h.ax=a.x;h.ay=a.y;h.tipX=a.x;h.tipY=a.y;
+      h.phase="wait";h.timer=Math.max(.18,.7-state.elapsed*.008)+Math.random()*.45;
+    }
+  }
+}
+function syncHands(){
+  var n=desiredHandCount(state.elapsed);
+  while(state.hands.length<n){
+    var used=state.hands.map(function(h){return h.side}),side=0;
+    for(var i=0;i<4;i++)if(used.indexOf(i)<0){side=i;break}
+    state.hands.push(createHand(side));
+    state.maxHands=Math.max(state.maxHands,state.hands.length);
+  }
+}
+function updateCandy(dt){
+  var c=state.candy;
+  var ox=c.x,oy=c.y;
+  var follow=c.drag?Math.min(1,dt*18):Math.min(1,dt*8);
+  c.x=lerp(c.x,c.targetX,follow);c.y=lerp(c.y,c.targetY,follow);
+  c.x=clamp(c.x,c.r+12,W-c.r-12);c.y=clamp(c.y,c.r+24,H-c.r-38);
+  c.vx=(c.x-ox)/Math.max(dt,.001);c.vy=(c.y-oy)/Math.max(dt,.001);
+}
+
+function drawBackground(){
+  ctx.fillStyle="#1a1e39";ctx.fillRect(0,0,W,H);
+  // back wall
+  ctx.fillStyle="#222748";ctx.fillRect(0,0,W,180);
+  ctx.fillStyle="#13172f";ctx.fillRect(0,180,W,H-180);
+  // moon
+  ctx.beginPath();ctx.arc(W-120,100,55,0,Math.PI*2);ctx.fillStyle="#d9a978";ctx.fill();
+  ctx.beginPath();ctx.arc(W-101,86,54,0,Math.PI*2);ctx.fillStyle="#222748";ctx.fill();
+  // table
+  ctx.fillStyle="#493348";ctx.fillRect(0,H*.72,W,H*.28);
+  ctx.fillStyle="#604153";ctx.fillRect(0,H*.72,W,12);
+  for(var i=0;i<8;i++){ctx.fillStyle=i%2?"#4f374b":"#583c50";ctx.fillRect(i*100,H*.72+12,100,H*.28-12)}
+  // sparse candy wrappers
+  var deco=[[72,610,"#7a9b83"],[650,595,"#bb775f"],[130,690,"#c99a59"],[590,700,"#6b83a3"]];
+  deco.forEach(function(v){ctx.fillStyle=v[2];ctx.fillRect(v[0],v[1],18,8);ctx.fillRect(v[0]-8,v[1]+2,8,4);ctx.fillRect(v[0]+18,v[1]+2,8,4)})
+}
+function drawCandy(c){
+  ctx.save();ctx.translate(c.x,c.y);
+  // shadow
+  ctx.globalAlpha=.25;ctx.fillStyle="#070914";ctx.beginPath();ctx.ellipse(3,30,31,10,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+  // wrapper
+  ctx.fillStyle="#7cae97";ctx.beginPath();ctx.moveTo(-39,-8);ctx.lineTo(-24,-19);ctx.lineTo(-22,18);ctx.lineTo(-40,9);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(39,-8);ctx.lineTo(24,-19);ctx.lineTo(22,18);ctx.lineTo(40,9);ctx.closePath();ctx.fill();
+  ctx.strokeStyle="#0b0d1a";ctx.lineWidth=5;ctx.stroke();
+  // candy
+  ctx.beginPath();ctx.arc(0,0,28,0,Math.PI*2);ctx.fillStyle="#d86f9a";ctx.fill();ctx.strokeStyle="#0b0d1a";ctx.lineWidth=5;ctx.stroke();
+  ctx.fillStyle="#efa9bd";ctx.beginPath();ctx.arc(-8,-9,7,0,Math.PI*2);ctx.fill();
+  // tiny star mark
+  ctx.fillStyle="#f0d17f";ctx.fillRect(-3,-8,6,16);ctx.fillRect(-8,-3,16,6);
+  ctx.restore();
+}
+function drawHand(h){
+  if(h.phase==="wait")return;
+  var tx=(h.phase==="aim")?h.tx:h.tipX,ty=(h.phase==="aim")?h.ty:h.tipY;
+  if(h.phase==="aim"){
+    // telegraph only: soft predicted grab circle and line
+    ctx.save();ctx.globalAlpha=.18;ctx.strokeStyle=h.color;ctx.lineWidth=4;ctx.setLineDash([10,12]);
+    ctx.beginPath();ctx.moveTo(h.ax,h.ay);ctx.lineTo(h.tx,h.ty);ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(h.tx,h.ty,34,0,Math.PI*2);ctx.stroke();ctx.restore();
+    return;
+  }
+  var n=norm(tx-h.ax,ty-h.ay),px=-n.y,py=n.x;
+  // arm
+  ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
+  ctx.strokeStyle="#0a0c17";ctx.lineWidth=43;ctx.beginPath();ctx.moveTo(h.ax,h.ay);ctx.lineTo(tx,ty);ctx.stroke();
+  ctx.strokeStyle=h.color;ctx.lineWidth=34;ctx.beginPath();ctx.moveTo(h.ax,h.ay);ctx.lineTo(tx,ty);ctx.stroke();
+  // cuff
+  ctx.fillStyle="#2a2340";ctx.strokeStyle="#090b18";ctx.lineWidth=5;
+  ctx.beginPath();ctx.moveTo(tx-n.x*35+px*24,ty-n.y*35+py*24);ctx.lineTo(tx-n.x*35-px*24,ty-n.y*35-py*24);ctx.lineTo(tx-n.x*10-px*20,ty-n.y*10-py*20);ctx.lineTo(tx-n.x*10+px*20,ty-n.y*10+py*20);ctx.closePath();ctx.fill();ctx.stroke();
+  // palm
+  ctx.fillStyle=h.color;ctx.beginPath();ctx.arc(tx,ty,28,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#090b18";ctx.lineWidth=5;ctx.stroke();
+  // three claws/fingers
+  ctx.strokeStyle="#090b18";ctx.lineWidth=13;ctx.lineCap="round";
+  [-1,0,1].forEach(function(k){
+    var baseX=tx+px*k*12,baseY=ty+py*k*12;
+    var ex=baseX+n.x*25+px*k*4,ey=baseY+n.y*25+py*k*4;
+    ctx.beginPath();ctx.moveTo(baseX,baseY);ctx.lineTo(ex,ey);ctx.stroke();
+    ctx.strokeStyle=h.color;ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(baseX,baseY);ctx.lineTo(ex,ey);ctx.stroke();ctx.strokeStyle="#090b18";ctx.lineWidth=13;
+  });
+  ctx.restore();
+}
+function draw(){
+  drawBackground();
+  if(state){
+    state.hands.forEach(drawHand);
+    drawCandy(state.candy);
+    // subtle danger frame
+    var danger=Math.min(1,state.elapsed/45);ctx.save();ctx.globalAlpha=.08+danger*.08;ctx.strokeStyle="#d86f9a";ctx.lineWidth=10;ctx.strokeRect(5,5,W-10,H-10);ctx.restore();
+  }
+}
+function frame(ts){
+  if(!last)last=ts;var dt=Math.min(.035,(ts-last)/1000);last=ts;
+  if(state&&state.running){
+    state.elapsed+=dt;syncHands();updateCandy(dt);
+    for(var i=0;i<state.hands.length&&state.running;i++)updateHand(state.hands[i],dt);
+    updateHud();
+  }
+  draw();raf=requestAnimationFrame(frame);
+}
+function startGame(){
+  var n=cleanName(nickname.value);if(!n){nickname.focus();return}
+  state={name:n,running:true,elapsed:0,dodges:0,maxHands:1,candy:newCandy(),hands:[createHand(Math.floor(Math.random()*4))]};
+  last=performance.now();startOverlay.classList.add("hidden");overOverlay.classList.add("hidden");tipbar.textContent="사탕을 잡고 움직이세요";
+  unlockAudio(function(){sfx("start");startBgm()});updateHud();
+}
+function endGame(){
+  if(!state||!state.running)return;
+  state.running=false;stopBgm();sfx("caught");saveScore();renderRanks();updateHud();
+  var rec=getBest(state.name);
+  document.getElementById("rTime").textContent=fmt(state.elapsed)+"초";
+  document.getElementById("rDodge").textContent=state.dodges;
+  document.getElementById("rHands").textContent=state.maxHands;
+  document.getElementById("rBest").textContent=fmt(rec?rec.time:state.elapsed)+"초";
+  overOverlay.classList.remove("hidden");
+}
+function canvasPos(e){
+  var r=cv.getBoundingClientRect(),sx=W/r.width,sy=H/r.height;
+  return{x:(e.clientX-r.left)*sx,y:(e.clientY-r.top)*sy};
+}
+cv.addEventListener("pointerdown",function(e){
+  if(!state||!state.running)return;var p=canvasPos(e),c=state.candy;
+  if(dist(p.x,p.y,c.x,c.y)<80){
+    c.drag=true;cv.setPointerCapture(e.pointerId);sfx("grab");
+    c.targetX=p.x;c.targetY=p.y-(e.pointerType==="touch"?46:0);
+    tipbar.textContent="뺏기지 마!";
+  }
+});
+cv.addEventListener("pointermove",function(e){
+  if(!state||!state.running||!state.candy.drag)return;var p=canvasPos(e),c=state.candy;
+  c.targetX=p.x;c.targetY=p.y-(e.pointerType==="touch"?46:0);
+});
+function release(e){if(state&&state.candy)state.candy.drag=false}
+cv.addEventListener("pointerup",release);cv.addEventListener("pointercancel",release);
+document.getElementById("startBtn").onclick=startGame;
+document.getElementById("retryBtn").onclick=function(){overOverlay.classList.add("hidden");startGame()};
+document.getElementById("homeBtn").onclick=function(){overOverlay.classList.add("hidden");startOverlay.classList.remove("hidden");if(state)state.running=false;stopBgm()};
+nickname.addEventListener("keydown",function(e){if(e.key==="Enter")startGame()});
+document.addEventListener("pointerdown",function(){if(soundOn)unlockAudio(function(){})},{once:true,passive:true});
+renderRanks();draw();raf=requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
