@@ -396,7 +396,8 @@ function finish(success){
   state.running=false;stopBgm();
   var made=totalMade(),total=PRODUCTS.reduce(function(n,p){return n+p.target},0);
   document.getElementById("endTitle").textContent=success?"주문 완료!":"영업 종료!";
-  document.getElementById("endText").textContent=success?"오늘 주문을 전부 만들었습니다.":"시간 안에 주문을 다 못 채웠습니다.";
+  var evalText=state.fails===0?"마히다 그히":state.fails<=3?"제법?":state.fails<=7?"위생 점검 예정":"공장 폐쇄 검토";
+  document.getElementById("endText").textContent=evalText;
   document.getElementById("rMade").textContent=made+" / "+total;
   document.getElementById("rFail").textContent=state.fails;
   document.getElementById("rTime").textContent=Math.ceil(state.time)+"초";
