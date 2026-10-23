@@ -87,6 +87,9 @@ button{cursor:pointer}
 .result div{border:2px solid var(--ink);background:#fff8ec;padding:8px}
 .result span{display:block;font-size:8px;color:#7b6f75}
 .result strong{display:block;font-size:18px;margin-top:3px}
+.coinResult{grid-column:1/-1!important;background:var(--yellow)!important}
+.coinResult span{color:#5c4b28!important;font-weight:1000}
+.coinResult strong{font-size:24px!important}
 
 .tipbar{
   position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:4;
@@ -177,6 +180,7 @@ button{cursor:pointer}
           <div><span>DODGE</span><strong id="rDodge">0</strong></div>
           <div><span>MAX HANDS</span><strong id="rHands">1</strong></div>
           <div><span>MY BEST</span><strong id="rBest">0.00초</strong></div>
+          <div class="coinResult"><span>획득 코인</span><strong id="rCoin">0코인</strong></div>
         </div>
         <div class="actions">
           <button id="retryBtn" class="btn" type="button">다시 하기</button>
@@ -223,6 +227,9 @@ function safeRead(){try{return JSON.parse(localStorage.getItem(STORAGE)||"[]")}c
 function safeWrite(v){try{localStorage.setItem(STORAGE,JSON.stringify(v))}catch(e){}}
 function cleanName(s){return String(s||"").replace(/\s+/g," ").trim().slice(0,24)}
 function fmt(t){return Math.max(0,t).toFixed(2)}
+function calcCoins(seconds,dodges){
+  return Math.min(10,Math.floor(seconds/10)+Math.floor(dodges/5));
+}
 function updateHud(){
   if(!state)return;
   timeEl.textContent=fmt(state.elapsed);
@@ -535,6 +542,7 @@ function endGame(){
   document.getElementById("rDodge").textContent=state.dodges;
   document.getElementById("rHands").textContent=state.maxHands;
   document.getElementById("rBest").textContent=fmt(rec?rec.time:state.elapsed)+"초";
+  document.getElementById("rCoin").textContent=calcCoins(state.elapsed,state.dodges)+"코인";
   overOverlay.classList.remove("hidden");
 }
 function canvasPos(e){
