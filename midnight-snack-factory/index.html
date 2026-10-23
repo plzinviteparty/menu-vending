@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Midnight Snack Factory</title>
+<style>
+:root{
+  --ink:#201625;--paper:#f5ead8;--cream:#fff7e8;--pink:#e47ea1;--pink2:#bd5d81;
+  --mint:#8db99a;--yellow:#e8c86f;--orange:#d98658;--purple:#75639b;--red:#c75d62;
+  --bg:#2a2030;--metal:#cbc5bd;--darkmetal:#8f8a87;
+  font-family:"Courier New","Noto Sans KR",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink)}
+body{background:linear-gradient(180deg,#39283d 0 150px,#261d2b 150px 100%)}
+button,input{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.wrap{max-width:980px;margin:auto;padding:9px 8px 28px}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:8px;color:var(--paper)}
+.brand h1{margin:0;font-size:clamp(24px,5vw,40px);line-height:.92;letter-spacing:-1.5px}
+.brand p{margin:5px 0 0;font-size:9px;color:#cdbfd0}
+.topright{display:flex;gap:6px;align-items:stretch}
+.pill{min-width:82px;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);background:var(--paper);padding:6px 8px;text-align:center;color:var(--ink)}
+.pill span{display:block;font-size:7px;color:#756b72}
+.pill strong{display:block;font-size:18px;margin-top:1px}
+.sound{width:45px;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);background:var(--yellow);font-weight:1000}
+.sound.off{background:#bcb4aa;color:#6c646b}
+.factory{position:relative;border:4px solid var(--ink);box-shadow:5px 5px 0 var(--ink);background:#d8d0c3;overflow:hidden}
+.orderboard{display:grid;grid-template-columns:auto repeat(4,1fr);gap:6px;align-items:stretch;background:#30273a;padding:8px;border-bottom:4px solid var(--ink)}
+.orderTitle{display:grid;place-items:center;padding:0 12px;border:3px solid var(--ink);background:var(--yellow);font-weight:1000;font-size:11px}
+.order{border:3px solid var(--ink);background:var(--paper);padding:6px 8px;display:grid;grid-template-columns:auto 1fr;gap:7px;align-items:center}
+.order .ico{font-size:25px}
+.order b{display:block;font-size:10px}
+.order strong{display:block;font-size:15px;margin-top:1px}
+.order.done{background:#b9d5b8}
+.floor{padding:9px;background:repeating-linear-gradient(90deg,#b9b2aa 0 82px,#afa8a1 82px 84px)}
+.lines{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.line{border:3px solid var(--ink);background:#eee7dc;min-height:242px;position:relative;overflow:hidden}
+.lineHead{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--ink);background:#f7efdf;padding:7px 8px}
+.prodName{font-weight:1000;font-size:12px}
+.count{font-weight:1000;font-size:11px}
+.machine{position:relative;height:122px;background:linear-gradient(#d5d0ca,#bbb6b0);border-bottom:3px solid var(--ink);overflow:hidden}
+.belt{position:absolute;left:0;right:0;bottom:15px;height:32px;background:#6d6870;border-top:4px solid var(--ink);border-bottom:4px solid var(--ink)}
+.belt:after{content:"";position:absolute;inset:4px 0;background:repeating-linear-gradient(90deg,#928b91 0 18px,#4c4850 18px 22px)}
+.product{position:absolute;left:12%;bottom:50px;width:56px;height:56px;display:grid;place-items:center;font-size:40px;transition:left .2s ease,transform .15s ease;filter:drop-shadow(3px 3px 0 rgba(32,22,37,.28))}
+.product.stage1{left:12%}.product.stage2{left:44%}.product.stage3{left:76%}
+.product.working{animation:bob .45s infinite alternate}
+.product.bad{animation:bad .3s 2}
+@keyframes bob{to{transform:translateY(-4px) rotate(2deg)}}
+@keyframes bad{50%{transform:rotate(14deg) scale(.85)}}
+.machineLamp{position:absolute;top:8px;right:8px;width:16px;height:16px;border:3px solid var(--ink);border-radius:50%;background:#887f83}
+.machineLamp.on{background:#7fca87;box-shadow:0 0 0 4px rgba(127,202,135,.18)}
+.machineLamp.warn{background:#e8c86f;animation:blink .35s infinite}
+.machineLamp.bad{background:#cf6269}
+@keyframes blink{50%{opacity:.4}}
+.progressWrap{position:absolute;left:9px;right:9px;bottom:4px;height:8px;border:2px solid var(--ink);background:#f6ead8}
+.progress{height:100%;width:0;background:var(--mint)}
+.status{position:absolute;left:8px;top:8px;border:2px solid var(--ink);background:var(--paper);padding:4px 6px;font-size:9px;font-weight:1000;max-width:70%}
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px}
+.step{min-height:52px;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);background:#c8c0b7;color:#4e4650;padding:6px 4px;font-weight:1000;font-size:10px;line-height:1.25}
+.step small{display:block;margin-top:3px;font-size:7px;font-weight:400}
+.step.current{background:var(--pink);color:var(--ink)}
+.step.ready{background:var(--yellow);animation:blink .45s infinite}
+.step:active{transform:translate(3px,3px);box-shadow:none}
+.overlay{position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:16px;background:rgba(32,22,37,.65)}
+.card{width:min(430px,94%);border:4px solid var(--ink);box-shadow:6px 6px 0 var(--ink);background:var(--paper);padding:16px;text-align:center}
+.card h2{margin:0 0 8px;font-size:25px}
+.card p{font-size:10px;line-height:1.55;color:#665b63;margin:7px 0}
+.field{text-align:left;margin:12px 0}
+.field label{display:block;font-size:9px;font-weight:1000;margin-bottom:5px}
+.field input{width:100%;border:3px solid var(--ink);background:#fffaf0;padding:10px;font-size:15px;outline:none}
+.btn{width:100%;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);background:var(--pink);padding:10px;font-weight:1000}
+.btn:active{transform:translate(3px,3px);box-shadow:none}
+.help{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:10px 0}
+.help div{border:2px solid var(--ink);background:#fff8ec;padding:7px 4px;font-size:8px;line-height:1.4}
+.resultGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}
+.resultGrid div{border:2px solid var(--ink);background:#fff8ec;padding:7px}
+.resultGrid span{display:block;font-size:8px;color:#756a70}
+.resultGrid strong{display:block;font-size:19px;margin-top:2px}
+.coinBox{grid-column:1/-1;background:var(--yellow)!important}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.actions .btn:nth-child(2){background:#d7cfc2}
+.toast{position:absolute;z-index:15;left:50%;top:50%;transform:translate(-50%,-50%);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);background:var(--paper);padding:8px 12px;font-weight:1000;font-size:12px;pointer-events:none;animation:toast .7s forwards}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-30%) scale(.9)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.04)}100%{opacity:0;transform:translate(-50%,-80%)}}
+@media(max-width:700px){
+  .wrap{padding:6px 6px 24px}
+  .top{align-items:flex-end}.brand h1{font-size:25px}.brand p{display:none}
+  .pill{min-width:64px;padding:5px}.pill strong{font-size:15px}.sound{width:40px}
+  .orderboard{grid-template-columns:repeat(4,1fr);gap:4px;padding:5px}.orderTitle{grid-column:1/-1;min-height:28px}
+  .order{padding:4px;grid-template-columns:1fr;text-align:center;gap:0}.order .ico{font-size:20px}.order b{font-size:8px}.order strong{font-size:12px}
+  .floor{padding:6px}.lines{gap:6px}
+  .line{min-height:222px}.lineHead{padding:5px 6px}.prodName{font-size:10px}.count{font-size:9px}
+  .machine{height:108px}.product{font-size:34px;width:48px;height:48px;bottom:45px}
+  .controls{gap:4px;padding:6px}.step{min-height:48px;font-size:8px;padding:4px 2px}.step small{font-size:6px}
+}
+@media(max-width:470px){
+  .lines{grid-template-columns:1fr}
+  .line{min-height:208px}
+  .machine{height:98px}
+  .topright .pill:nth-child(2){display:none}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>MIDNIGHT SNACK FACTORY</h1>
+      <p>마녀의 야식 공장 · 주문량을 100초 안에 전부 채우세요.</p>
+    </div>
+    <div class="topright">
+      <div class="pill"><span>TIME</span><strong id="time">100</strong></div>
+      <div class="pill"><span>FAIL</span><strong id="fails">0</strong></div>
+      <button id="soundBtn" class="sound" type="button">♪</button>
+    </div>
+  </header>
+
+  <section class="factory">
+    <div class="orderboard">
+      <div class="orderTitle">TODAY'S ORDER</div>
+      <div class="order" id="order0"><div class="ico">👻</div><div><b>유령 마시멜로</b><strong><span id="made0">0</span> / <span id="target0">5</span></strong></div></div>
+      <div class="order" id="order1"><div class="ico">🦇</div><div><b>박쥐 쿠키</b><strong><span id="made1">0</span> / <span id="target1">5</span></strong></div></div>
+      <div class="order" id="order2"><div class="ico">👁️</div><div><b>눈알 사탕</b><strong><span id="made2">0</span> / <span id="target2">5</span></strong></div></div>
+      <div class="order" id="order3"><div class="ico">🎃</div><div><b>호박 초콜릿</b><strong><span id="made3">0</span> / <span id="target3">5</span></strong></div></div>
+    </div>
+
+    <div class="floor">
+      <div class="lines" id="lines"></div>
+    </div>
+
+    <div id="startOverlay" class="overlay">
+      <div class="card">
+        <h2>야식 공장 오픈</h2>
+        <p>네 라인은 동시에 돌아갑니다. 불이 들어온 공정을 누르고,<br>기계가 끝나면 너무 늦기 전에 다음 공정으로 넘기세요.</p>
+        <div class="help">
+          <div><b>① 버튼 누르기</b><br>현재 공정 시작</div>
+          <div><b>② 다른 라인 보기</b><br>기계는 자동 작동</div>
+          <div><b>③ 노란불!</b><br>빨리 다음 버튼</div>
+        </div>
+        <div class="field">
+          <label>밴드 닉네임</label>
+          <input id="nickname" maxlength="24" autocomplete="off" placeholder="닉네임 입력">
+        </div>
+        <button id="startBtn" class="btn" type="button">공장 돌리기</button>
+        <p>잘못된 공정을 누르거나 방치하면 불량 +1.</p>
+      </div>
+    </div>
+
+    <div id="endOverlay" class="overlay hidden">
+      <div class="card">
+        <h2 id="endTitle">영업 종료!</h2>
+        <p id="endText"></p>
+        <div class="resultGrid">
+          <div><span>완제품</span><strong id="rMade">0 / 20</strong></div>
+          <div><span>불량</span><strong id="rFail">0</strong></div>
+          <div><span>남은 시간</span><strong id="rTime">0초</strong></div>
+          <div><span>점수</span><strong id="rScore">0</strong></div>
+          <div class="coinBox"><span>획득 코인</span><strong id="rCoin">0코인</strong></div>
+        </div>
+        <div class="actions">
+          <button id="retryBtn" class="btn" type="button">다시 하기</button>
+          <button id="homeBtn" class="btn" type="button">처음으로</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+"use strict";
+var PRODUCTS=[
+  {name:"유령 마시멜로",icon:"👻",target:5,color:"#df789d",stages:[["반죽",1.55],["틀",1.18],["굽기",2.15]]},
+  {name:"박쥐 쿠키",icon:"🦇",target:5,color:"#75639b",stages:[["반죽",1.35],["찍기",1.05],["굽기",2.55]]},
+  {name:"눈알 사탕",icon:"👁️",target:5,color:"#8db99a",stages:[["시럽",1.48],["색 넣기",.92],["포장",1.35]]},
+  {name:"호박 초콜릿",icon:"🎃",target:5,color:"#d98658",stages:[["녹이기",1.72],["틀",1.28],["냉각",2.02]]}
+];
+var READY_WINDOW=1.75;
+var GAME_TIME=100;
+var state=null,last=0,raf=0;
+var linesEl=document.getElementById("lines");
+var timeEl=document.getElementById("time"),failEl=document.getElementById("fails");
+var startOverlay=document.getElementById("startOverlay"),endOverlay=document.getElementById("endOverlay");
+var nickname=document.getElementById("nickname"),soundBtn=document.getElementById("soundBtn");
+var audioCtx=null,soundOn=true,bgmTimer=null,bgmStep=0;
+try{soundOn=localStorage.getItem("midnight_factory_sound")!=="off"}catch(e){}
+
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function cleanName(s){return String(s||"").replace(/\s+/g," ").trim().slice(0,24)}
+function totalMade(){return state.lines.reduce(function(n,l){return n+l.made},0)}
+function allDone(){return state.lines.every(function(l,i){return l.made>=PRODUCTS[i].target})}
+function coinCalc(success){
+  var base=Math.floor(totalMade()/4);
+  var clear=success?3:0;
+  var timeBonus=success?Math.floor(state.time/25):0;
+  return Math.min(10,base+clear+timeBonus);
+}
+function buildAudio(){
+  if(audioCtx)return;
+  var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  audioCtx=new AC();
+}
+function tone(freq,dur,type,vol){
+  if(!soundOn)return;buildAudio();if(!audioCtx)return;
+  var o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type=type||"square";o.frequency.value=freq;g.gain.value=vol||.035;
+  o.connect(g);g.connect(audioCtx.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+dur);o.stop(audioCtx.currentTime+dur);
+}
+function sfx(kind){
+  if(kind==="press")tone(330,.06,"square",.025);
+  else if(kind==="ready")tone(660,.08,"square",.025);
+  else if(kind==="done"){tone(740,.08,"square",.03);setTimeout(function(){tone(980,.1,"square",.025)},70)}
+  else if(kind==="bad")tone(115,.18,"sawtooth",.04);
+}
+function startBgm(){
+  stopBgm();if(!soundOn)return;buildAudio();if(audioCtx&&audioCtx.state==="suspended")audioCtx.resume();
+  var notes=[196,220,247,220,174,196,220,165];
+  bgmStep=0;
+  bgmTimer=setInterval(function(){tone(notes[bgmStep%notes.length],.12,"triangle",.012);bgmStep++},360);
+}
+function stopBgm(){if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null}}
+function updateSound(){
+  soundBtn.textContent=soundOn?"♪":"×";soundBtn.classList.toggle("off",!soundOn);
+}
+soundBtn.onclick=function(){
+  soundOn=!soundOn;try{localStorage.setItem("midnight_factory_sound",soundOn?"on":"off")}catch(e){}
+  updateSound();if(state&&state.running){if(soundOn)startBgm();else stopBgm()}
+};
+
+function makeLine(i){
+  var p=PRODUCTS[i];
+  var el=document.createElement("div");el.className="line";el.id="line"+i;
+  var buttons=p.stages.map(function(s,j){
+    return '<button class="step" data-line="'+i+'" data-step="'+j+'" type="button">'+(j+1)+'. '+s[0]+'<small>'+s[1].toFixed(1)+'초</small></button>';
+  }).join("");
+  el.innerHTML=
+    '<div class="lineHead"><span class="prodName">'+p.icon+' '+p.name+'</span><span class="count"><span id="lc'+i+'">0</span> / '+p.target+'</span></div>'+
+    '<div class="machine">'+
+      '<div class="status" id="status'+i+'">대기 중</div>'+
+      '<div class="machineLamp" id="lamp'+i+'"></div>'+
+      '<div class="product stage1" id="product'+i+'">'+p.icon+'</div>'+
+      '<div class="belt"></div>'+
+      '<div class="progressWrap"><div class="progress" id="progress'+i+'"></div></div>'+
+    '</div>'+
+    '<div class="controls">'+buttons+'</div>';
+  linesEl.appendChild(el);
+}
+for(var i=0;i<PRODUCTS.length;i++)makeLine(i);
+
+linesEl.addEventListener("click",function(e){
+  var b=e.target.closest(".step");if(!b||!state||!state.running)return;
+  handleStep(+b.dataset.line,+b.dataset.step);
+});
+
+function resetGame(){
+  state={
+    running:true,time:GAME_TIME,fails:0,score:0,name:cleanName(nickname.value),
+    lines:PRODUCTS.map(function(){return{stage:0,mode:"idle",timer:0,readyLeft:0,made:0}})
+  };
+  last=performance.now();renderAll();startBgm();
+}
+function handleStep(li,step){
+  var l=state.lines[li],p=PRODUCTS[li];
+  if(l.made>=p.target)return;
+  if(l.mode==="working")return;
+  if(step!==l.stage){
+    failLine(li,"순서 틀림!");
+    return;
+  }
+  if(l.mode==="ready"){
+    if(step!==l.stage)return;
+    if(l.stage===p.stages.length-1){
+      l.made++;state.score+=300;l.stage=0;l.mode="idle";l.timer=0;l.readyLeft=0;sfx("done");showToast(p.icon+" 완성!");
+      if(allDone()){finish(true);return}
+    }else{
+      l.stage++;l.mode="idle";l.timer=0;l.readyLeft=0;sfx("press");
+    }
+    renderLine(li);renderOrders();return;
+  }
+  if(l.mode==="idle"){
+    l.mode="working";l.timer=0;l.readyLeft=READY_WINDOW;sfx("press");renderLine(li);
+  }
+}
+function failLine(li,msg){
+  var l=state.lines[li];
+  state.fails++;state.score=Math.max(0,state.score-100);
+  l.stage=0;l.mode="bad";l.timer=.42;l.readyLeft=0;sfx("bad");showToast(msg||"불량!");
+  renderLine(li);renderHud();
+}
+function update(dt){
+  if(!state||!state.running)return;
+  state.time-=dt;
+  if(state.time<=0){state.time=0;finish(false);return}
+  state.lines.forEach(function(l,i){
+    var p=PRODUCTS[i];
+    if(l.mode==="working"){
+      l.timer+=dt;
+      if(l.timer>=p.stages[l.stage][1]){
+        l.mode="ready";l.timer=p.stages[l.stage][1];l.readyLeft=READY_WINDOW;sfx("ready");renderLine(i);
+      }else updateProgress(i);
+    }else if(l.mode==="ready"){
+      l.readyLeft-=dt;
+      updateProgress(i);
+      if(l.readyLeft<=0)failLine(i,"방치해서 불량!");
+    }else if(l.mode==="bad"){
+      l.timer-=dt;
+      if(l.timer<=0){l.mode="idle";l.timer=0;renderLine(i)}
+    }
+  });
+  renderHud();
+}
+function updateProgress(i){
+  var l=state.lines[i],p=PRODUCTS[i],bar=document.getElementById("progress"+i);
+  if(l.mode==="working")bar.style.width=clamp(l.timer/p.stages[l.stage][1]*100,0,100)+"%";
+  else if(l.mode==="ready")bar.style.width=clamp(l.readyLeft/READY_WINDOW*100,0,100)+"%";
+}
+function renderLine(i){
+  var l=state.lines[i],p=PRODUCTS[i];
+  document.getElementById("lc"+i).textContent=l.made;
+  var status=document.getElementById("status"+i),lamp=document.getElementById("lamp"+i),prod=document.getElementById("product"+i);
+  var buttons=document.querySelectorAll('[data-line="'+i+'"]');
+  buttons.forEach(function(b){b.classList.remove("current","ready")});
+  lamp.className="machineLamp";
+  prod.className="product stage"+(Math.min(2,l.stage)+1);
+  if(l.mode==="working"){
+    status.textContent=p.stages[l.stage][0]+" 중...";lamp.classList.add("on");prod.classList.add("working");
+  }else if(l.mode==="ready"){
+    status.textContent="다음 공정!";lamp.classList.add("warn");
+    buttons[l.stage].classList.add("ready");
+  }else if(l.mode==="bad"){
+    status.textContent="불량 처리 중";lamp.classList.add("bad");prod.classList.add("bad");
+  }else if(l.made>=p.target){
+    status.textContent="주문 완료";lamp.classList.add("on");
+  }else{
+    status.textContent="대기 중";buttons[l.stage].classList.add("current");
+  }
+  if(l.mode!=="working"&&l.mode!=="ready")document.getElementById("progress"+i).style.width="0%";
+}
+function renderOrders(){
+  state.lines.forEach(function(l,i){
+    document.getElementById("made"+i).textContent=l.made;
+    document.getElementById("target"+i).textContent=PRODUCTS[i].target;
+    document.getElementById("order"+i).classList.toggle("done",l.made>=PRODUCTS[i].target);
+  });
+}
+function renderHud(){
+  timeEl.textContent=Math.ceil(state?state.time:GAME_TIME);
+  failEl.textContent=state?state.fails:0;
+}
+function renderAll(){
+  renderHud();renderOrders();for(var i=0;i<PRODUCTS.length;i++)renderLine(i);
+}
+function showToast(msg){
+  var d=document.createElement("div");d.className="toast";d.textContent=msg;
+  document.querySelector(".factory").appendChild(d);setTimeout(function(){d.remove()},720);
+}
+function finish(success){
+  if(!state||!state.running)return;
+  state.running=false;stopBgm();
+  var made=totalMade(),total=PRODUCTS.reduce(function(n,p){return n+p.target},0);
+  document.getElementById("endTitle").textContent=success?"주문 완료!":"영업 종료!";
+  document.getElementById("endText").textContent=success?"오늘 주문을 전부 만들었습니다.":"시간 안에 주문을 다 못 채웠습니다.";
+  document.getElementById("rMade").textContent=made+" / "+total;
+  document.getElementById("rFail").textContent=state.fails;
+  document.getElementById("rTime").textContent=Math.ceil(state.time)+"초";
+  document.getElementById("rScore").textContent=state.score;
+  document.getElementById("rCoin").textContent=coinCalc(success)+"코인";
+  endOverlay.classList.remove("hidden");
+}
+function frame(t){
+  if(!last)last=t;var dt=Math.min(.05,(t-last)/1000);last=t;
+  update(dt);raf=requestAnimationFrame(frame);
+}
+document.getElementById("startBtn").onclick=function(){
+  var n=cleanName(nickname.value);if(!n){nickname.focus();return}
+  buildAudio();if(audioCtx&&audioCtx.state==="suspended")audioCtx.resume();
+  startOverlay.classList.add("hidden");endOverlay.classList.add("hidden");resetGame();
+};
+document.getElementById("retryBtn").onclick=function(){
+  endOverlay.classList.add("hidden");resetGame();
+};
+document.getElementById("homeBtn").onclick=function(){
+  endOverlay.classList.add("hidden");startOverlay.classList.remove("hidden");stopBgm();
+  if(state)state.running=false;
+};
+updateSound();
+for(var j=0;j<PRODUCTS.length;j++){document.getElementById("target"+j).textContent=PRODUCTS[j].target}
+raf=requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
