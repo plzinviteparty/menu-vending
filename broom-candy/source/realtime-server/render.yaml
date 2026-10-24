@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: broom-candy-realtime
+    branch: broom-candy-websocket
+    runtime: node
+    plan: free
+    region: singapore
+    rootDir: broom-candy/source/realtime-server
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /health
+    numInstances: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: ALLOWED_ORIGINS
+        value: https://plzinviteparty.github.io

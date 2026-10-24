@@ -1,0 +1,1 @@
+{"name":"broom-candy-realtime","private":true,"type":"module","engines":{"node":">=22.13.0"},"scripts":{"start":"node --experimental-strip-types server.mjs","test":"node --experimental-strip-types test.mjs"},"dependencies":{"ws":"8.18.3"}}
