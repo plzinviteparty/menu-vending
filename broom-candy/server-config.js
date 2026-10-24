@@ -1,2 +1,1 @@
-// Set only after the dedicated WebSocket server has passed deployment checks.
-window.BROOM_SERVER = "";
+window.BROOM_SERVER = "wss://broom-candy-realtime.onrender.com";
