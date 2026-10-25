@@ -183,6 +183,9 @@ button{cursor:pointer}
 </main>
 
 <script>
+// One-time opening-day cleanup of score records only.
+try{localStorage.removeItem("witch_tower_best_v1")}catch(e){}
+
 (function(){
 "use strict";
 var cv=document.getElementById("game"),ctx=cv.getContext("2d");
@@ -192,7 +195,7 @@ var startOverlay=document.getElementById("startOverlay"),overOverlay=document.ge
 var nickname=document.getElementById("nickname"),fx=document.getElementById("fx");
 var W=cv.width,H=cv.height,GROUND=548,SPRITE_SIZE=256,LAYER_H=128,STACK_STEP=82,BASE_W=256,MIN_W=80,MOVING_Y=8;
 var stack=[],current=null,phase="idle",running=false,last=0,fallY=0,targetY=0,score=0,perfectCombo=0,maxPerfect=0,nick="";
-var bestKey="witch_tower_best_v1";
+var bestKey="witch_tower_best_v1_opening_20261026";
 var soundBtn=document.getElementById("soundBtn");
 var audioCtx=null,master=null,bgmTimer=null,bgmStep=0,soundOn=true,audioUnlocked=false;
 try{soundOn=localStorage.getItem("witch_tower_sound_v1")!=="off"}catch(e){}
