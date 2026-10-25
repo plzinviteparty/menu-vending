@@ -196,6 +196,9 @@ html,body{background:#27212d}.wrap{max-width:1050px;padding:30px 22px 45px}.pixe
 </main>
 
 <script>
+// One-time opening-day cleanup of score records only.
+try{localStorage.removeItem("cursed_doll_sorting_scores_v1")}catch(e){}
+
 (function(){
   var root=document;
   var belt=root.getElementById("belt");
@@ -242,7 +245,7 @@ html,body{background:#27212d}.wrap{max-width:1050px;padding:30px 22px 45px}.pixe
   var raf=0,lastFrame=0,spawnTimer=0,transitionTimer=0;
   var active=[];
   var idSeq=0;
-  var STORAGE="cursed_doll_sorting_scores_v1";
+  var STORAGE="cursed_doll_sorting_scores_v1_opening_20261026";
   var AUDIO_PREF="cursed_doll_sorting_sound_v1";
   var audioCtx=null,masterGain=null,musicGain=null,sfxGain=null,bgmTimer=0,bgmStep=0;
   var soundOn=localStorage.getItem(AUDIO_PREF)!=="off";
