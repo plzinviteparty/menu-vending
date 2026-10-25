@@ -202,6 +202,9 @@ button{cursor:pointer}
 </main>
 
 <script>
+// One-time opening-day cleanup of score records only.
+try{localStorage.removeItem("candy_keep_away_scores_v1")}catch(e){}
+
 (function(){
 "use strict";
 var cv=document.getElementById("game"),ctx=cv.getContext("2d");
@@ -212,7 +215,7 @@ var startOverlay=document.getElementById("startOverlay"),overOverlay=document.ge
 var nickname=document.getElementById("nickname"),ranklist=document.getElementById("ranklist"),soundBtn=document.getElementById("soundBtn");
 var rankToggle=document.getElementById("rankToggle"),ranks=document.getElementById("ranks");
 var tipbar=document.getElementById("tipbar");
-var STORAGE="candy_keep_away_scores_v1";
+var STORAGE="candy_keep_away_scores_v1_opening_20261026";
 var state=null,last=0,raf=0;
 var audioCtx=null,master=null,soundOn=true,bgmTimer=null,bgmStep=0;
 try{soundOn=localStorage.getItem("candy_keep_away_sound_v1")!=="off"}catch(e){}
