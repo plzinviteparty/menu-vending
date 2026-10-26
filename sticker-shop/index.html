@@ -184,6 +184,7 @@ button,input,select{font-family:inherit}button{cursor:pointer}button:focus-visib
 @media(max-width:830px){.layout{grid-template-columns:1fr}.cart{position:static}.hero,.gacha-hero{grid-template-columns:1fr 140px}.hero h1{font-size:41px}.machine-row{gap:10px}.g-machine{min-height:0}.wrap,.gacha-wrap,.adminwrap{padding:24px 16px 45px}.topin{padding:14px 16px;gap:12px}.brand{font-size:16px}}
 @media(max-width:560px){.topin{flex-wrap:wrap;gap:13px}.brandbox{flex:1}.brand{font-size:16px;letter-spacing:0}.brand-sub{font-size:6px}.site-tabs{order:3;width:100%;margin:0}.site-tab{flex:1;font-size:9px;padding:10px}.nav{font-size:9px;padding:8px}.hero,.gacha-hero{grid-template-columns:1fr 80px;gap:13px;padding-bottom:20px;margin-bottom:20px}.hero-copy{grid-template-columns:1fr;gap:0}.shop-crest{width:42px;height:52px;margin-bottom:12px}.hero h1{font-size:34px}.hero p{font-size:9px}.eyebrow{font-size:6px;letter-spacing:1px}.coinbox{padding:12px 4px;align-self:center}.coinbox strong,.gacha-coinbox strong{font-size:24px}.coinbox span,.gacha-coinbox span,.gacha-coinbox small{font-size:7px}.formrow,.gacha-userbar{grid-template-columns:1fr 1fr;gap:12px;padding-bottom:20px;margin-bottom:23px}.field label{font-size:9px}.field input,.field select{font-size:11px;padding:11px 7px}.sectitle h2{font-size:15px}.sectitle span{font-size:8px}.shelf{border-width:4px;padding:0}.shelf:before{font-size:6px;letter-spacing:1px;padding:11px 3px}.grid{gap:0}.card{border-right-width:3px;border-bottom-width:5px;aspect-ratio:.79}.visual{padding:6px}.meta{padding:6px 3px}.name{font-size:8px}.price{font-size:7px}.slot{font-size:6px;padding:2px 3px;top:3px;left:3px}.cart{padding:20px}.gacha-sign h1{font-size:29px}.gacha-sign p{font-size:9px}.gacha-kicker{font-size:6px;letter-spacing:1px}.gacha-coinbox{padding:12px 3px}.arcade-floor{padding:12px}.arcade-head h2{font-size:14px}.machine-row{grid-template-columns:1fr;gap:16px}.g-machine{max-width:290px;width:100%;margin:auto}.g-machine-window{width:78%;max-width:200px}.g-machine-top{height:36px}.machine-content{grid-template-columns:1fr}.machine-panel{padding:12px}.machine-name{font-size:15px}.machine-letter{width:42px;height:42px;font-size:24px}.machine-price{font-size:9px}.g-mini{font-size:8px;padding:7px}.pool-preview{gap:5px}.pool-item{padding:4px}.pool-item .pool-art{height:52px}.pool-item strong{font-size:8px}.pool-item small{font-size:7px}.modal{padding:16px}.adminform{grid-template-columns:1fr}}
 
+dialog [hidden]{display:none!important}
 </style>
 </head>
 <body><div id="sharedStatus" role="status" style="padding:8px 14px;background:#24163d;font-size:12px">공유 저장 연결 중…</div>
@@ -466,6 +467,44 @@ syncStatus(sharedInitialized?"공유 저장 연결됨":"품목 준비 중 · 관
 route();
 }
 function el(id){return document.getElementById(id)}
+
+function stickerSaveButton(img,name,className){
+ var b=document.createElement("button");b.type="button";b.className=className||"download";b.textContent=name+" PNG 저장";
+ b.onclick=function(){openStickerSave(img,name)};return b;
+}
+var saveDialog=document.createElement("dialog");
+saveDialog.style.cssText="width:min(540px,94vw);max-height:90dvh;overflow:auto;background:#eadcc3;color:#49354a;border:2px solid #a17d90;padding:18px";
+saveDialog.innerHTML='<h2 style="font-size:18px" id="saveStickerTitle"></h2><p style="font-size:12px;line-height:1.8">아래 이미지를 길게 눌러 사진에 저장할 수 있어요.<br>앱 안에서 저장이 안 되면 Safari·Chrome에서 열어 주세요.</p><img id="saveStickerImage" alt="" style="display:block;width:100%;max-height:50vh;object-fit:contain;background:#fff"><p id="saveStickerStatus" role="status" style="font-size:12px"></p><div style="display:flex;gap:10px;flex-wrap:wrap"><a id="saveStickerDownload" class="download" hidden>PNG 파일 다운로드</a><button id="saveStickerShare" class="download" type="button" hidden>공유 / 사진에 저장</button><button id="saveStickerClose" class="mini" type="button">닫기</button></div>';
+document.body.appendChild(saveDialog);
+var saveObjectUrl=null,saveFile=null,saveGeneration=0;
+el("saveStickerClose").onclick=function(){saveDialog.close()};
+saveDialog.addEventListener("close",function(){saveGeneration++;if(saveObjectUrl)URL.revokeObjectURL(saveObjectUrl);saveObjectUrl=null;saveFile=null;el("saveStickerImage").removeAttribute("src")});
+el("saveStickerShare").onclick=async function(){
+ if(!saveFile)return;
+ try{await navigator.share({files:[saveFile]})}catch(e){if(e.name!=="AbortError")el("saveStickerStatus").textContent="공유를 열지 못했어요. 이미지를 길게 눌러 저장하거나 PNG 다운로드를 이용해 주세요."}
+};
+async function openStickerSave(src,name){
+ var generation=++saveGeneration;
+ if(saveObjectUrl)URL.revokeObjectURL(saveObjectUrl);saveObjectUrl=null;saveFile=null;
+ el("saveStickerTitle").textContent=name;el("saveStickerImage").src=src;el("saveStickerImage").alt=name;
+ el("saveStickerStatus").textContent="PNG 파일 준비 중…";
+ el("saveStickerDownload").hidden=true;el("saveStickerShare").hidden=true;
+ if(!saveDialog.open)saveDialog.showModal();
+ try{
+  var response=await fetch(src);if(!response.ok)throw Error("이미지를 불러오지 못했습니다.");
+  var blob=await response.blob();if(!blob.size||!blob.type.startsWith("image/"))throw Error("이미지 파일을 확인하지 못했습니다.");
+  if(generation!==saveGeneration)return;
+  var fileName=String(name||"sticker").replace(/[\\\\/:*?"<>|]/g,"_")+".png";
+  saveObjectUrl=URL.createObjectURL(blob);
+  var a=el("saveStickerDownload");a.href=saveObjectUrl;a.download=fileName;a.hidden=false;
+  if(typeof File!=="undefined"){
+   saveFile=new File([blob],fileName,{type:blob.type||"image/png"});
+   el("saveStickerShare").hidden=!(navigator.canShare&&navigator.canShare({files:[saveFile]}));
+  }
+  el("saveStickerStatus").textContent="파일이 준비됐어요. 다운로드하거나 이미지를 길게 눌러 저장해 주세요.";
+ }catch(e){if(generation===saveGeneration)el("saveStickerStatus").textContent="다운로드 준비에 실패했어요. 위 이미지가 보이면 길게 눌러 저장해 주세요. 보이지 않으면 연결을 확인한 뒤 다시 시도해 주세요."}
+}
+
 function esc(s){return String(s||"").replace(/[&<>'"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]})}
 function products(){return read(K_PRODUCTS,[])}
 function orders(){return read(K_ORDERS,[])}
@@ -532,7 +571,7 @@ var p=products(),buyer=el("nickname").value.trim(),before=coin(),cost=total(),af
 var items=Object.keys(cart).map(function(id){var x=p.find(function(v){return v.id===id}),q=cart[id];return{id:id,name:x.name,price:x.price,qty:q,subtotal:x.price*q,img:x.img||""}});
 var o={id:"ORD-"+Date.now().toString(36).toUpperCase(),at:new Date().toISOString(),nickname:buyer,before:before,cost:cost,after:after,items:items};var os=orders();os.unshift(o);if(!await write(K_ORDERS,os))return;
 el("receipt").innerHTML="<strong>"+esc(buyer)+"</strong>님의 구매가 기록되었습니다.<br><br>주문번호: "+o.id+"<br>"+items.map(function(i){return esc(i.name)+" × "+i.qty+" — "+i.subtotal+"코인"}).join("<br>")+"<br><br><strong>"+before+" → "+after+"코인</strong>";
-el("downloads").innerHTML="";items.forEach(function(i){if(i.img){var a=document.createElement("a");a.className="download";a.href=i.img;a.download=i.name.replace(/[\\\\/:*?\"<>|]/g,"_")+".png";a.textContent=i.name+" PNG 저장";el("downloads").appendChild(a)}else{var n=document.createElement("div");n.className="notice";n.textContent=i.name+": 테스트 샘플이라 실제 PNG가 없습니다.";el("downloads").appendChild(n)}});
+el("downloads").innerHTML="";items.forEach(function(i){if(i.img){el("downloads").appendChild(stickerSaveButton(i.img,i.name,"download"))}else{var n=document.createElement("div");n.className="notice";n.textContent=i.name+": 테스트 샘플이라 실제 PNG가 없습니다.";el("downloads").appendChild(n)}});
 el("modal").classList.remove("hidden");cart={};el("agree").checked=false;renderShelf();renderCart();renderOrders()
 };
 el("closeModal").onclick=function(){el("modal").classList.add("hidden")};
@@ -660,7 +699,7 @@ function showGachaResults(o){
   el("resultSummary").innerHTML='<strong>'+esc(o.nickname)+'</strong> · '+esc(o.machine)+' MACHINE · '+o.count+'회 뽑기<br>'+Object.keys(counts).map(function(k){return esc(k)+' × '+counts[k]}).join(" / ")+'<br><strong>'+o.before+' → '+o.after+' 코인</strong>';
   el("resultGrid").innerHTML=o.results.map(function(x,i){return'<div class="result-card" style="animation-delay:'+(i*.035)+'s"><div class="result-art">'+(x.img?'<img src="'+x.img+'">':esc(x.emoji))+'</div><strong>'+esc(x.name)+'</strong></div>'}).join("");
   var unique={};o.results.forEach(function(x){if(x.img)unique[x.id]=x});
-  el("resultDownloads").innerHTML=Object.keys(unique).map(function(k){var x=unique[k];return'<a href="'+x.img+'" download="'+x.name.replace(/[\\\\/:*?"<>|]/g,"_")+'.png">'+esc(x.name)+' PNG 저장</a>'}).join("");
+  el("resultDownloads").replaceChildren();Object.keys(unique).forEach(function(k){var x=unique[k];el("resultDownloads").appendChild(stickerSaveButton(x.img,x.name,"download"))});
   el("gachaResult").classList.remove("hidden");el("gachaResult").scrollIntoView({behavior:"smooth",block:"start"});
 }
 
