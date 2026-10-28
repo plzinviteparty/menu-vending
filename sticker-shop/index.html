@@ -441,9 +441,20 @@ if(!legacyData[K_GMACHINES].length)legacyData[K_GMACHINES]=gStarterMachines;
 function copy(v){return JSON.parse(JSON.stringify(v))}
 function read(k,d){if(sharedKeys.indexOf(k)>=0)return copy(sharedState[k]||d);return localRead(k,d)}
 function syncStatus(message,error){el("sharedStatus").textContent=message;el("sharedStatus").style.color=error?"#ff9ebc":"#fff2d8"}
+
+async function connectedFetch(url,options){
+ const attempts=options.method==="GET"?2:1;
+ for(let i=0;i<attempts;i++){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),25000);
+  try{const res=await fetch(url,{...options,signal:controller.signal});if(i+1<attempts&&res.status>=500){await res.text();continue}return res}
+  catch(e){if(i+1===attempts)throw Error(e.name==="AbortError"?"서버 응답이 늦어지고 있어요. 잠시 후 다시 눌러 주세요.":"서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.")}
+  finally{clearTimeout(timer)}
+ }
+}
+
 async function shopRequest(path,body){
 var s=localRead("ss_server_session",null),headers={"Content-Type":"application/json"};if(s&&s.token)headers.Authorization="Bearer "+s.token;
-var res=await fetch(SHOP_API+path,{method:body?"POST":"GET",headers:headers,body:body?JSON.stringify(body):undefined,cache:"no-store"});
+var res=await connectedFetch(SHOP_API+path,{method:body?"POST":"GET",headers:headers,body:body?JSON.stringify(body):undefined,cache:"no-store"});
 var data=await res.json();if(!res.ok)throw Error(data.error||"공유 저장 서버에 연결하지 못했습니다.");return data;
 }
 function write(k,v){
@@ -577,7 +588,7 @@ el("modal").classList.remove("hidden");cart={};el("agree").checked=false;renderS
 el("closeModal").onclick=function(){el("modal").classList.add("hidden")};
 
 function renderLogin(){session=localRead("ss_server_session",null);el("loginPanel").classList.toggle("hidden",!!session);el("adminPanel").classList.toggle("hidden",!session);if(session){el("who").textContent=session.id+" · "+(session.role==="owner"?"총관리자":"관리자");renderAdminAll()}}
-el("loginBtn").onclick=async function(){try{if(!sharedInitialized)throw Error("먼저 기존 자료를 공용 저장소로 이전해 주세요.");var a=await shopRequest("/api/login",{id:el("adminId").value.trim(),pw:el("adminPw").value});localStorage.setItem("ss_server_session",JSON.stringify(a));session=a;await refreshShared(true);el("loginError").classList.add("hidden");renderLogin()}catch(e){el("loginError").textContent=e.message;el("loginError").classList.remove("hidden")}};
+el("loginBtn").onclick=async function(){var button=el("loginBtn");if(button.disabled)return;button.disabled=true;var label=button.textContent;button.textContent="로그인 연결 중…";try{if(!sharedInitialized)throw Error("먼저 기존 자료를 공용 저장소로 이전해 주세요.");var a=await shopRequest("/api/login",{id:el("adminId").value.trim(),pw:el("adminPw").value});localStorage.setItem("ss_server_session",JSON.stringify(a));session=a;await refreshShared(true);el("loginError").classList.add("hidden");renderLogin()}catch(e){el("loginError").textContent=e.message;el("loginError").classList.remove("hidden")}finally{button.disabled=false;button.textContent=label}};
 el("logoutBtn").onclick=function(){localStorage.removeItem("ss_server_session");session=null;sharedState[K_ADMINS]=[];sharedState[K_ORDERS]=[];sharedState[K_GORDERS]=[];sharedState[K_AUDIT]=[];renderLogin()};
 Array.from(document.querySelectorAll(".tabs button")).forEach(function(b){b.onclick=function(){document.querySelectorAll(".tabs button").forEach(function(x){x.classList.toggle("active",x===b)});document.querySelectorAll(".tab").forEach(function(x){x.classList.add("hidden")});el("tab-"+b.getAttribute("data-tab")).classList.remove("hidden");renderAdminAll()}});
 function audit(action,detail){var a=read(K_AUDIT,[]);a.unshift({at:new Date().toISOString(),admin:session?session.id:"?",action:action,detail:detail||""});write(K_AUDIT,a.slice(0,500))}
