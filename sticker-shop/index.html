@@ -457,6 +457,7 @@ var s=localRead("ss_server_session",null),headers={"Content-Type":"application/j
 var res=await connectedFetch(SHOP_API+path,{method:body?"POST":"GET",headers:headers,body:body?JSON.stringify(body):undefined,cache:"no-store"});
 var data=await res.json();if(!res.ok)throw Error(data.error||"공유 저장 서버에 연결하지 못했습니다.");return data;
 }
+var stateGeneration=0,refreshSequence=0;
 function write(k,v){
 if(sharedKeys.indexOf(k)<0){localStorage.setItem(k,JSON.stringify(v));return Promise.resolve(true)}
 if(!sharedReady||!sharedInitialized){syncStatus("공유 저장 준비가 끝나지 않았습니다.",true);return Promise.resolve(false)}
@@ -466,12 +467,13 @@ var added=after.filter(function(x){return !before.some(function(y){return JSON.s
 if(!added.length)return Promise.resolve(true);
 path=k===K_AUDIT?"/api/audit":"/api/record";body={key:k,record:added[0]};if(!body.record.id)body.record.id=crypto.randomUUID();
 }else{path="/api/patch";body={key:k,before:before,after:after}}
-sharedState[k]=after;pendingSaves++;renderCart();updateDrawButtons();syncStatus("공유 저장 중…");
-var task=saveQueue.then(async function(){try{await shopRequest(path,body);return true}catch(e){sharedState[k]=before;syncStatus("저장 실패: "+e.message,true);alert("저장하지 못했습니다. "+e.message);return false}finally{pendingSaves--;if(!pendingSaves){renderCart();updateDrawButtons()}}});
+stateGeneration++;sharedState[k]=after;pendingSaves++;renderCart();updateDrawButtons();syncStatus("공유 저장 중…");
+var task=saveQueue.then(async function(){try{await shopRequest(path,body);return true}catch(e){sharedState[k]=before;syncStatus("저장 실패: "+e.message,true);alert("저장하지 못했습니다. "+e.message);return false}finally{pendingSaves--;if(!pendingSaves){renderShelf();renderCart();updateDrawButtons();if(location.hash==="#admin")renderAdminAll()}}});
 saveQueue=task;task.then(function(ok){if(ok&&!pendingSaves)syncStatus("공유 저장 완료 · 모든 기기에 적용됩니다.")});return task;
 }
 async function refreshShared(admin){
-if(pendingSaves)return;var data=await shopRequest(admin?"/api/admin":"/api/state");
+if(pendingSaves)return;var generation=stateGeneration,sequence=++refreshSequence;var data=await shopRequest(admin?"/api/admin":"/api/state");
+if(pendingSaves||generation!==stateGeneration||sequence!==refreshSequence)return;
 Object.keys(data.state).forEach(function(k){sharedState[k]=data.state[k]});sharedInitialized=data.initialized;sharedReady=true;
 el("legacyMigration").classList.toggle("hidden",sharedInitialized);
 syncStatus(sharedInitialized?"공유 저장 연결됨":"품목 준비 중 · 관리자 PC에서 기존 자료를 이전해 주세요.");
@@ -569,6 +571,7 @@ Array.from(el("shelf").querySelectorAll(".shelf-preview")).forEach(function(b){b
 Array.from(el("shelf").querySelectorAll(".shelf-add")).forEach(function(b){b.onclick=function(){var id=b.getAttribute("data-id");cart[id]=(cart[id]||0)+1;renderShelf();renderCart()}})
 }
 function renderCart(){
+var activeProducts=products();Object.keys(cart).forEach(function(id){if(!activeProducts.some(function(x){return x.id===id&&x.active}))delete cart[id]});
 var p=products(),ids=Object.keys(cart).filter(function(id){return cart[id]>0&&p.some(function(x){return x.id===id})});el("cartList").innerHTML="";
 if(!ids.length)el("cartList").innerHTML='<div class="emptymsg">사진을 눌러 크게 보고, 담기 버튼으로 골라 주세요.</div>';
 ids.forEach(function(id){var x=p.find(function(v){return v.id===id}),q=cart[id],d=document.createElement("div");d.className="cartitem";d.innerHTML='<div class="carttop"><div><div class="cartname">'+esc(x.name)+'</div><div class="small">'+x.price+"코인 × "+q+" = "+x.price*q+'코인</div></div><button class="remove">삭제</button></div><div class="qty"><button class="minus">−</button><input type="number" min="1" max="99" value="'+q+'"><button class="plus">+</button></div>';
@@ -578,6 +581,7 @@ var c=coin(),t=total(),a=c-t;el("heroCoin").textContent=c;el("beforeCoin").textC
 function setQty(id,q){q=Math.max(0,Math.min(99,Math.floor(Number(q)||0)));if(q)cart[id]=q;else delete cart[id];renderShelf();renderCart()}
 ["nickname","coins","agree"].forEach(function(id){el(id).addEventListener("input",renderCart)});
 el("buyBtn").onclick=async function(){if(pendingSaves||!sharedReady||!sharedInitialized)return;
+var currentProducts=products();if(Object.keys(cart).some(function(id){return !currentProducts.some(function(x){return x.id===id&&x.active})})){renderCart();renderShelf();alert("판매종료된 상품이 있어 장바구니에서 제외했습니다. 내용을 확인해 주세요.");return}
 var p=products(),buyer=el("nickname").value.trim(),before=coin(),cost=total(),after=before-cost;if(!buyer||after<0)return;
 var items=Object.keys(cart).map(function(id){var x=p.find(function(v){return v.id===id}),q=cart[id];return{id:id,name:x.name,price:x.price,qty:q,subtotal:x.price*q,img:x.img||""}});
 var o={id:"ORD-"+Date.now().toString(36).toUpperCase(),at:new Date().toISOString(),nickname:buyer,before:before,cost:cost,after:after,items:items};var os=orders();os.unshift(o);if(!await write(K_ORDERS,os))return;
@@ -611,7 +615,7 @@ if(cart[id])delete cart[id];
 audit("스티커 영구 삭제",x.name);
 renderAdminAll();renderShelf();renderCart();
 }
-function toggle(id){var p=products(),x=p.find(function(v){return v.id===id});if(x.active){x.active=false;x.slot=null;audit("판매 종료",x.name)}else{var s=free(id)[0];if(!s){alert("매대가 가득 찼습니다.");return}x.active=true;x.slot=s;audit("재입고",x.name+" → "+s+"번")}write(K_PRODUCTS,p);renderAdminAll();renderShelf()}
+async function toggle(id){if(pendingSaves)return;var p=products(),x=p.find(function(v){return v.id===id});if(!x)return;var ending=x.active;if(ending){x.active=false;x.slot=null}else{var s=free(id)[0];if(!s){alert("매대가 가득 찼습니다.");return}x.active=true;x.slot=s}if(!await write(K_PRODUCTS,p))return;if(ending)delete cart[id];audit(ending?"판매 종료":"재입고",x.name+(ending?"":" → "+x.slot+"번"));renderAdminAll();renderShelf();renderCart()}
 function move(id){var p=products(),x=p.find(function(v){return v.id===id}),ans=prompt("이동할 매대 번호 1~16",x.slot);if(ans===null)return;var n=Number(ans);if(!Number.isInteger(n)||n<1||n>16){alert("1~16만 입력해 주세요.");return}if(p.some(function(v){return v.id!==id&&v.active&&Number(v.slot)===n})){alert("이미 사용 중인 칸입니다.");return}var old=x.slot;x.slot=n;write(K_PRODUCTS,p);audit("매대 위치 변경",x.name+": "+old+" → "+n);renderAdminAll();renderShelf()}
 function renderOrders(){var q=(el("orderSearch").value||"").trim().toLowerCase(),o=orders().filter(function(x){return !q||x.nickname.toLowerCase().indexOf(q)>=0});el("orders").innerHTML=o.map(function(x){return"<tr><td>"+new Date(x.at).toLocaleString("ko-KR")+"</td><td><strong>"+esc(x.nickname)+"</strong></td><td>"+x.items.map(function(i){return esc(i.name)+" × "+i.qty}).join("<br>")+"</td><td>"+x.before+"</td><td>"+x.cost+"</td><td>"+x.after+"</td><td>"+x.id+"</td></tr>"}).join("")||'<tr><td colspan="7">기록이 없습니다.</td></tr>'}
 el("orderSearch").oninput=renderOrders;
