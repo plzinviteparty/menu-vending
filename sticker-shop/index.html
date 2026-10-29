@@ -120,7 +120,7 @@ th,td{border-bottom:2px solid #cfbda8}
 .arcade-head h2{margin:2px 0 0;color:#fff;text-shadow:3px 3px 0 #130c31}
 .arcade-mini{font-size:9px;background:#ffef66;color:#25163d;padding:4px 7px;border:2px solid #130c31;font-weight:1000}
 .arcade-lights{display:flex;gap:5px}.arcade-lights i{width:11px;height:11px;border:2px solid #130c31;background:#ff4fa3;box-shadow:2px 2px 0 #130c31}.arcade-lights i:nth-child(2n){background:#5ce1e6}.arcade-lights i:nth-child(3n){background:#ffef66}
-.machine-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.machine-row{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 .g-machine{position:relative;border:4px solid #130c31;background:#f7f2ff;box-shadow:5px 5px 0 #130c31;min-height:315px;padding:12px 12px 16px;cursor:pointer;color:#26193d;transition:transform .1s}
 .g-machine:hover{transform:translateY(-3px)}.g-machine:active{transform:translate(3px,3px);box-shadow:2px 2px 0 #130c31}
 .g-machine-top{height:44px;border:3px solid #130c31;display:flex;align-items:center;justify-content:center;font-weight:1000;font-size:17px;box-shadow:2px 2px 0 #130c31}
@@ -150,7 +150,7 @@ th,td{border-bottom:2px solid #cfbda8}
 .gacha-warning{margin-top:12px;font-size:11px;color:#7b5f8d;line-height:1.5}
 .gacha-result{background:#ff4fa3;padding:16px}.result-sign{display:inline-block;background:#ffef66;color:#24143d;border:3px solid #130c31;padding:6px 9px;font-size:11px;font-weight:1000;box-shadow:2px 2px 0 #130c31}.result-summary{margin:12px 0;background:#fff5e8;color:#281840;border:3px solid #130c31;padding:10px;font-size:12px;box-shadow:3px 3px 0 #130c31}.result-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.result-card{border:3px solid #130c31;background:#fff5e8;color:#26183c;padding:7px;box-shadow:3px 3px 0 #130c31;animation:popcapsule .22s ease both}.result-card:nth-child(2n){transform:rotate(1deg)}.result-card:nth-child(3n){transform:rotate(-1deg)}.result-art{height:74px;display:grid;place-items:center;background:#e6f9ff;font-size:38px;overflow:hidden}.result-art img{width:100%;height:100%;object-fit:contain}.result-card strong{display:block;margin-top:5px;font-size:9px;text-align:center}.result-downloads{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:10px}.result-downloads a{border:3px solid #130c31;background:#5ce1e6;color:#22143a;padding:8px;text-align:center;text-decoration:none;font-size:10px;font-weight:1000;box-shadow:2px 2px 0 #130c31}
 @keyframes popcapsule{from{opacity:0;transform:translateY(12px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
-.g-admin-stack{display:grid;gap:14px}.g-admin-panel h2{color:var(--yellow);text-shadow:3px 3px 0 #000}.g-machine-admin{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.g-admin-machine{border:3px solid var(--line);background:#fff2d8;color:#211432;padding:10px;box-shadow:3px 3px 0 var(--line)}.g-admin-machine h3{margin:0 0 8px}.g-admin-machine .field label{color:#4b305f}.g-admin-machine .admin-actions{display:flex;gap:6px;margin-top:8px}
+.g-admin-stack{display:grid;gap:14px}.g-admin-panel h2{color:var(--yellow);text-shadow:3px 3px 0 #000}.g-machine-admin{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.g-admin-machine{border:3px solid var(--line);background:#fff2d8;color:#211432;padding:10px;box-shadow:3px 3px 0 var(--line)}.g-admin-machine h3{margin:0 0 8px}.g-admin-machine .field label{color:#4b305f}.g-admin-machine .admin-actions{display:flex;gap:6px;margin-top:8px}
 @media(max-width:830px){.site-tabs{order:3;width:100%;margin:8px 0 0}.topin{flex-wrap:wrap}.site-tab{flex:1}.gacha-hero,.machine-content{grid-template-columns:1fr}.machine-row{grid-template-columns:1fr 1fr}.g-machine-admin{grid-template-columns:1fr}.result-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:560px){.gacha-wrap{padding-left:9px;padding-right:9px}.gacha-userbar{grid-template-columns:1fr}.machine-row{grid-template-columns:1fr}.g-machine{min-height:250px}.pool-preview{grid-template-columns:repeat(3,1fr)}.draw-buttons{grid-template-columns:1fr}.result-grid{grid-template-columns:repeat(2,1fr)}.result-downloads{grid-template-columns:1fr}}
 
@@ -185,7 +185,7 @@ button,input,select{font-family:inherit}button{cursor:pointer}button:focus-visib
 @media(max-width:560px){.topin{flex-wrap:wrap;gap:13px}.brandbox{flex:1}.brand{font-size:16px;letter-spacing:0}.brand-sub{font-size:6px}.site-tabs{order:3;width:100%;margin:0}.site-tab{flex:1;font-size:9px;padding:10px}.nav{font-size:9px;padding:8px}.hero,.gacha-hero{grid-template-columns:1fr 80px;gap:13px;padding-bottom:20px;margin-bottom:20px}.hero-copy{grid-template-columns:1fr;gap:0}.shop-crest{width:42px;height:52px;margin-bottom:12px}.hero h1{font-size:34px}.hero p{font-size:9px}.eyebrow{font-size:6px;letter-spacing:1px}.coinbox{padding:12px 4px;align-self:center}.coinbox strong,.gacha-coinbox strong{font-size:24px}.coinbox span,.gacha-coinbox span,.gacha-coinbox small{font-size:7px}.formrow,.gacha-userbar{grid-template-columns:1fr 1fr;gap:12px;padding-bottom:20px;margin-bottom:23px}.field label{font-size:9px}.field input,.field select{font-size:11px;padding:11px 7px}.sectitle h2{font-size:15px}.sectitle span{font-size:8px}.shelf{border-width:4px;padding:0}.shelf:before{font-size:6px;letter-spacing:1px;padding:11px 3px}.grid{gap:0}.card{border-right-width:3px;border-bottom-width:5px;aspect-ratio:.79}.visual{padding:6px}.meta{padding:6px 3px}.name{font-size:8px}.price{font-size:7px}.slot{font-size:6px;padding:2px 3px;top:3px;left:3px}.cart{padding:20px}.gacha-sign h1{font-size:29px}.gacha-sign p{font-size:9px}.gacha-kicker{font-size:6px;letter-spacing:1px}.gacha-coinbox{padding:12px 3px}.arcade-floor{padding:12px}.arcade-head h2{font-size:14px}.machine-row{grid-template-columns:1fr;gap:16px}.g-machine{max-width:290px;width:100%;margin:auto}.g-machine-window{width:78%;max-width:200px}.g-machine-top{height:36px}.machine-content{grid-template-columns:1fr}.machine-panel{padding:12px}.machine-name{font-size:15px}.machine-letter{width:42px;height:42px;font-size:24px}.machine-price{font-size:9px}.g-mini{font-size:8px;padding:7px}.pool-preview{gap:5px}.pool-item{padding:4px}.pool-item .pool-art{height:52px}.pool-item strong{font-size:8px}.pool-item small{font-size:7px}.modal{padding:16px}.adminform{grid-template-columns:1fr}}
 
 dialog [hidden]{display:none!important}
-</style>
+.g-machine:nth-child(4) .g-machine-top{background:#e8c9a0;color:#413044}</style>
 </head>
 <body><div id="sharedStatus" role="status" style="padding:8px 14px;background:#24163d;font-size:12px">공유 저장 연결 중…</div>
 <div class="pixel-deco deco-star s1"></div>
@@ -416,7 +416,8 @@ var starter=[
 var gStarterMachines=[
 {id:"A",name:"Candy Pop",price:10,active:true},
 {id:"B",name:"Soda Star",price:15,active:true},
-{id:"C",name:"Neon Lucky",price:20,active:true}
+{id:"C",name:"Neon Lucky",price:20,active:true},
+{id:"D",name:"D MACHINE",price:10,active:true}
 ];
 var gStarterItems=[
 {id:"ga1",machine:"A",name:"체리 캔디",weight:1,active:true,emoji:"🍒",img:""},
