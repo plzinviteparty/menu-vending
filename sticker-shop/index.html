@@ -456,7 +456,7 @@ async function connectedFetch(url,options){
 async function shopRequest(path,body){
 var s=localRead("ss_server_session",null),headers={"Content-Type":"application/json"};if(s&&s.token)headers.Authorization="Bearer "+s.token;
 var res=await connectedFetch(SHOP_API+path,{method:body?"POST":"GET",headers:headers,body:body?JSON.stringify(body):undefined,cache:"no-store"});
-var data=await res.json();if(!res.ok)throw Error(data.error||"공유 저장 서버에 연결하지 못했습니다.");return data;
+var data=await res.json();if(!res.ok){var error=Error(data.error||"공유 저장 서버에 연결하지 못했습니다.");error.status=res.status;throw error}return data;
 }
 var stateGeneration=0,refreshSequence=0;
 function write(k,v){
@@ -771,7 +771,7 @@ el("adminId").value=owner.id;el("adminPw").value=owner.pw;await refreshShared(fa
 }catch(e){alert(e.message);syncStatus(e.message,true)}finally{b.disabled=false}
 };
 async function startShared(){
-try{await refreshShared(false);if(localRead("ss_server_session",null))try{await refreshShared(true)}catch(e){localStorage.removeItem("ss_server_session");session=null;renderLogin()}
+try{await refreshShared(false);var activeSession=localRead("ss_server_session",null);if(activeSession)try{await refreshShared(true)}catch(e){if(e.status===401&&localRead("ss_server_session",null)?.token===activeSession.token){localStorage.removeItem("ss_server_session");session=null;renderLogin()}else{syncStatus("로그인은 유지됩니다. 기록 연결을 다시 시도해 주세요. "+e.message,true)}}
 }catch(e){sharedReady=false;sharedInitialized=false;syncStatus("공유 저장 연결 실패 · 새로고침해 주세요.",true);route()}
 }
 route();startShared();
