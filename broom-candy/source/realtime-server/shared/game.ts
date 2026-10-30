@@ -1,14 +1,23 @@
 export const W=800,H=600;
 export const furniture=[{x:270,y:175,w:100,h:60},{x:430,y:365,w:100,h:60},{x:90,y:285,w:70,h:45},{x:640,y:270,w:70,h:45}];
+export const maps={
+ garden:{name:'달빛 정원',hint:'탁 트인 정원에서 자유롭게 추격해요.',color:'#b8a4d5',obstacles:furniture},
+ maze:{name:'호박 미로',hint:'갈림길을 돌아 기습 돌진! 우회로를 찾아요.',color:'#e6b184',obstacles:[{x:220,y:100,w:40,h:150},{x:540,y:350,w:40,h:150},{x:540,y:100,w:40,h:150},{x:220,y:350,w:40,h:150},{x:350,y:170,w:100,h:40},{x:350,y:390,w:100,h:40}]},
+ glass:{name:'유령 온실',hint:'사탕이 모이는 중앙에서 치열한 쟁탈전!',color:'#a3d3c8',obstacles:[{x:230,y:160,w:120,h:50},{x:450,y:160,w:120,h:50},{x:230,y:390,w:120,h:50},{x:450,y:390,w:120,h:50}]}
+} as const;
+export type MapId=keyof typeof maps;
+export function mapId(id?:string):MapId{return Object.hasOwn(maps,id||'')?id as MapId:'garden';}
+export function obstacles(id?:string){return maps[mapId(id)].obstacles;}
 export type Player={id:string,name:string,x:number,y:number,dx:number,dy:number,fx:number,fy:number,score:number,seen:number,cool:number,dash:number,immune:number,seq:number,bot?:boolean};
-export type Room={code:string,host:string,phase:'lobby'|'countdown'|'play'|'end',players:Player[],candies:{x:number,y:number}[],tick:number,end:number,spawn:number,startsAt?:number};
+export type Room={map?:MapId,code:string,host:string,phase:'lobby'|'countdown'|'play'|'end',players:Player[],candies:{x:number,y:number}[],tick:number,end:number,spawn:number,startsAt?:number};
 export function player(id:string,name:string,i:number,now:number):Player{return {id,name:name.trim().slice(0,12)||'손님',x:120+(i%2)*560,y:100+Math.floor(i/2)*400,dx:0,dy:0,fx:0,fy:1,score:0,seen:now,cool:0,dash:0,immune:now+1000,seq:0};}
-export function spot(x:number,y:number){return x>24&&x<W-24&&y>30&&y<H-30&&!furniture.some(b=>x>b.x-16&&x<b.x+b.w+16&&y>b.y-16&&y<b.y+b.h+16);}
-export function candy(r:Room,x?:number,y?:number){for(let i=0;i<50;i++){let a=x===undefined?35+Math.random()*(W-70):Math.max(28,Math.min(W-28,x+(Math.random()-.5)*65));let b=y===undefined?40+Math.random()*(H-80):Math.max(35,Math.min(H-35,y+(Math.random()-.5)*65));if(spot(a,b)){r.candies.push({x:a,y:b});return;}}}
+export function spot(x:number,y:number,map?:string){return x>24&&x<W-24&&y>30&&y<H-30&&!obstacles(map).some(b=>x>b.x-16&&x<b.x+b.w+16&&y>b.y-16&&y<b.y+b.h+16);}
+export function candy(r:Room,x?:number,y?:number){for(let i=0;i<50;i++){let a=x===undefined?35+Math.random()*(W-70):Math.max(28,Math.min(W-28,x+(Math.random()-.5)*65));let b=y===undefined?40+Math.random()*(H-80):Math.max(35,Math.min(H-35,y+(Math.random()-.5)*65));if(x===undefined&&y===undefined&&r.map==='glass'&&i<30&&Math.random()<.65){a=300+Math.random()*200;b=235+Math.random()*130;}if(spot(a,b,r.map)){r.candies.push({x:a,y:b});return;}}}
 export function start(r:Room,now:number){r.phase='countdown';r.startsAt=now+10000;r.tick=r.startsAt;r.end=r.startsAt+90000;r.spawn=r.startsAt;r.candies=[];r.players=r.players.map((p,i)=>({...player(p.id,p.name,i,r.startsAt!),bot:p.bot,seq:p.seq}));for(let i=0;i<45;i++)candy(r);}
 export function advance(r:Room,now:number){if(r.phase==='countdown'){if(now<(r.startsAt||0))return;r.phase='play';r.tick=r.startsAt||now;r.players.forEach(p=>{p.dx=0;p.dy=0;p.dash=0;});}if(r.phase!=='play')return;let target=Math.min(now,r.end);let remaining=Math.min(500,Math.max(0,target-r.tick));while(remaining>0){let ms=Math.min(25,remaining),t=target-remaining,dt=ms/1000;for(const p of r.players){if(p.bot){let c=r.candies.reduce((best,c)=>!best||Math.hypot(c.x-p.x,c.y-p.y)<Math.hypot(best.x-p.x,best.y-p.y)?c:best,null as {x:number,y:number}|null);if(c){let d=Math.hypot(c.x-p.x,c.y-p.y)||1;p.dx=(c.x-p.x)/d;p.dy=(c.y-p.y)/d;}if(t>p.cool&&r.players.some(q=>q!==p&&Math.hypot(q.x-p.x,q.y-p.y)<120)){p.dash=t+230;p.cool=t+2300;}}
-let moving=t-p.seen<1200||p.bot;let dash=t<p.dash;let dx=dash?p.fx:moving?p.dx:0,dy=dash?p.fy:moving?p.dy:0;let len=Math.hypot(dx,dy);if(len>1){dx/=len;dy/=len;}if(!dash&&len>.1){p.fx=dx;p.fy=dy;}let speed=dash?520:155;let nx=p.x+dx*speed*dt,ny=p.y+dy*speed*dt;if(spot(nx,p.y))p.x=nx;if(spot(p.x,ny))p.y=ny;
+let moving=t-p.seen<1200||p.bot;let dash=t<p.dash;let dx=dash?p.fx:moving?p.dx:0,dy=dash?p.fy:moving?p.dy:0;let len=Math.hypot(dx,dy);if(len>1){dx/=len;dy/=len;}if(!dash&&len>.1){p.fx=dx;p.fy=dy;}let speed=dash?520:155;let nx=p.x+dx*speed*dt,ny=p.y+dy*speed*dt;if(spot(nx,p.y,r.map))p.x=nx;if(spot(p.x,ny,r.map))p.y=ny;
 for(let i=r.candies.length-1;i>=0;i--)if(Math.hypot(p.x-r.candies[i].x,p.y-r.candies[i].y)<25){r.candies.splice(i,1);p.score++;}
-if(dash)for(const q of r.players)if(q!==p&&t>q.immune&&Math.hypot(p.x-q.x,p.y-q.y)<38){let loss=Math.min(q.score,5);q.score-=loss;for(let i=0;i<loss;i++)candy(r,q.x,q.y);let x=q.x+p.fx*65,y=q.y+p.fy*65;if(spot(x,y)){q.x=x;q.y=y;}q.immune=t+1400;}
+if(dash)for(const q of r.players)if(q!==p&&t>q.immune&&Math.hypot(p.x-q.x,p.y-q.y)<38){let loss=Math.min(q.score,5);q.score-=loss;for(let i=0;i<loss;i++)candy(r,q.x,q.y);let x=q.x+p.fx*65,y=q.y+p.fy*65;if(spot(x,y,r.map)){q.x=x;q.y=y;}q.immune=t+1400;}
 }remaining-=ms;}r.tick=target;if(target-r.spawn>1100&&r.candies.length<60){candy(r);r.spawn=target;}if(now>=r.end){r.phase='end';r.players.forEach(p=>{p.dx=0;p.dy=0;});}}
 export function input(p:Player,b:{dx?:number,dy?:number,dash?:boolean,seq?:number},now:number){if(typeof b.seq!=='number'||b.seq<=p.seq)return;p.seq=b.seq;let x=Number(b.dx)||0,y=Number(b.dy)||0,l=Math.max(1,Math.hypot(x,y));p.dx=x/l;p.dy=y/l;p.seen=now;if(b.dash&&now>=p.cool){if(Math.hypot(p.dx,p.dy)>.1){p.fx=p.dx;p.fy=p.dy;}p.dash=now+230;p.cool=now+2300;}}
+
