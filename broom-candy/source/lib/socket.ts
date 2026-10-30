@@ -1,4 +1,4 @@
-import {spot,type Room,type Player} from './game';
+import {spot,moveSpeed,type Room,type Player} from './game';
 export class ArenaSocket {
  private ws:WebSocket|null=null;private connecting:Promise<void>|null=null;private pending=new Map<number,{resolve:(v:any)=>void,reject:(e:Error)=>void,timer:ReturnType<typeof setTimeout>}>();private seq=0;private pingTimer:ReturnType<typeof setInterval>|null=null;
  constructor(private url:string,private snapshot:(r:Room)=>void,private clock:(offset:number)=>void,private error:(e:string)=>void){}
@@ -12,6 +12,6 @@ export class MotionPrediction {
  private predicted:Player|null=null;private previousTime=0;private lastRoom='';private lastRound=0;
  reset(){this.predicted=null;this.previousTime=0;}
  render(p:Player,r:Room,dx:number,dy:number,dash:boolean,now:number,dt:number){if(r.phase!=='play'){this.reset();return p;}if(!this.predicted||r.code!==this.lastRoom||r.end!==this.lastRound||p.immune>this.predicted.immune){this.predicted={...p};this.lastRoom=r.code;this.lastRound=r.end;}
- const v=this.predicted;let len=Math.max(1,Math.hypot(dx,dy));dx/=len;dy/=len;dt=Math.min(.04,Math.max(0,dt));if(dash&&now>=v.cool){v.dash=now+230;v.cool=now+2300;if(dx||dy){v.fx=dx;v.fy=dy;}}const inDash=now<v.dash;if(!inDash&&(dx||dy)){v.fx=dx;v.fy=dy;}const s=inDash?520:155,x=v.x+(inDash?v.fx:dx)*s*dt,y=v.y+(inDash?v.fy:dy)*s*dt;if(spot(x,v.y,r.map))v.x=x;if(spot(v.x,y,r.map))v.y=y;const age=Math.min(.12,Math.max(0,(now-r.tick)/1000)),tx=p.x+p.dx*155*age,ty=p.y+p.dy*155*age,dist=Math.hypot(tx-v.x,ty-v.y);if(dist>150){v.x=p.x;v.y=p.y;}else if(dist>10){const nx=v.x+(tx-v.x)*.12,ny=v.y+(ty-v.y)*.12;if(spot(nx,ny,r.map)){v.x=nx;v.y=ny;}}return{...p,x:v.x,y:v.y,fx:v.fx,fy:v.fy,dash:Math.max(p.dash,v.dash)};}
+ const v=this.predicted;let len=Math.max(1,Math.hypot(dx,dy));dx/=len;dy/=len;dt=Math.min(.04,Math.max(0,dt));if(dash&&now>=v.cool){v.dash=now+230;v.cool=now+2300;if(dx||dy){v.fx=dx;v.fy=dy;}}const inDash=now<v.dash;if(!inDash&&(dx||dy)){v.fx=dx;v.fy=dy;}const s=inDash?520:(p.boost||0)>now?210:155,x=v.x+(inDash?v.fx:dx)*s*dt,y=v.y+(inDash?v.fy:dy)*s*dt;if(spot(x,v.y,r.map))v.x=x;if(spot(v.x,y,r.map))v.y=y;const age=Math.min(.12,Math.max(0,(now-r.tick)/1000)),tx=p.x+p.dx*moveSpeed(p,now)*age,ty=p.y+p.dy*moveSpeed(p,now)*age,dist=Math.hypot(tx-v.x,ty-v.y);if(dist>150){v.x=p.x;v.y=p.y;}else if(dist>10){const nx=v.x+(tx-v.x)*.12,ny=v.y+(ty-v.y)*.12;if(spot(nx,ny,r.map)){v.x=nx;v.y=ny;}}return{...p,x:v.x,y:v.y,fx:v.fx,fy:v.fy,dash:Math.max(p.dash,v.dash)};}
 }
 
