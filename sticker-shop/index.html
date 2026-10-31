@@ -474,12 +474,12 @@ var task=saveQueue.then(async function(){try{await shopRequest(path,body);return
 saveQueue=task;task.then(function(ok){if(ok&&!pendingSaves)syncStatus("공유 저장 완료 · 모든 기기에 적용됩니다.")});return task;
 }
 async function refreshShared(admin){
-if(pendingSaves)return;var generation=stateGeneration,sequence=++refreshSequence;var data=await shopRequest(admin?"/api/admin":"/api/state");
+if(pendingSaves)return;var generation=stateGeneration,sequence=++refreshSequence;var data=await shopRequest(admin?"/api/admin?paged=1":"/api/state");
 if(pendingSaves||generation!==stateGeneration||sequence!==refreshSequence)return;
 Object.keys(data.state).forEach(function(k){sharedState[k]=data.state[k]});sharedInitialized=data.initialized;sharedReady=true;
 el("legacyMigration").classList.toggle("hidden",sharedInitialized);
 syncStatus(sharedInitialized?"공유 저장 연결됨":"품목 준비 중 · 관리자 PC에서 기존 자료를 이전해 주세요.");
-route();
+route();if(admin)loadHistories();
 }
 function el(id){return document.getElementById(id)}
 
@@ -599,8 +599,40 @@ el("logoutBtn").onclick=function(){localStorage.removeItem("ss_server_session");
 Array.from(document.querySelectorAll(".tabs button")).forEach(function(b){b.onclick=function(){document.querySelectorAll(".tabs button").forEach(function(x){x.classList.toggle("active",x===b)});document.querySelectorAll(".tab").forEach(function(x){x.classList.add("hidden")});el("tab-"+b.getAttribute("data-tab")).classList.remove("hidden");renderAdminAll()}});
 function audit(action,detail){var a=read(K_AUDIT,[]);a.unshift({at:new Date().toISOString(),admin:session?session.id:"?",action:action,detail:detail||""});write(K_AUDIT,a.slice(0,500))}
 function free(except){var used={};products().filter(function(x){return x.active&&x.slot&&x.id!==except}).forEach(function(x){used[x.slot]=1});var a=[];for(var i=1;i<=16;i++)if(!used[i])a.push(i);return a}
-function renderAdminAll(){var active=document.querySelector(".tabs button.active"),tab=active?active.getAttribute("data-tab"):"dashboard";if(tab==="dashboard"){renderStats();renderAdminShelf()}else if(tab==="new")renderSlots();else if(tab==="inventory")renderInventory();else if(tab==="orders")renderOrders();else if(tab==="gacha")renderGachaAdmin();else if(tab==="gachaorders")renderGachaOrders();else if(tab==="admins")renderAdmins();else if(tab==="audit")renderAudit()}
-function renderStats(){var p=products(),o=orders(),units=0,coins=0;o.forEach(function(x){coins+=x.cost;x.items.forEach(function(i){units+=i.qty})});var s=[["판매 중",p.filter(function(x){return x.active}).length],["전체 보관",p.length],["누적 판매수량",units],["누적 차감코인",coins]];el("stats").innerHTML=s.map(function(x){return'<div class="stat"><span>'+x[0]+'</span><strong>'+x[1]+"</strong></div>"}).join("")}
+
+var historyRun=null,historyStates={};
+function showHistoryStatus(){
+ [K_GORDERS,K_ORDERS,K_AUDIT].forEach(function(key){
+  var target=key===K_GORDERS?"gachaOrders":key===K_ORDERS?"orders":"audit",host=el(target);if(!host)return;
+  var id="history-status-"+key,node=el(id);if(!node){node=document.createElement("div");node.id=id;node.setAttribute("role","status");node.style.cssText="padding:10px;font-size:13px";var anchor=host.closest("table")||host;anchor.parentNode.insertBefore(node,anchor)}
+  var state=historyStates[key];if(!state){node.textContent="";return}
+  node.textContent=state.error?"기록 불러오기 실패 · "+state.count+"건 표시 중. ":state.done?"전체 "+state.count+"건 · 최신순":"기록 불러오는 중 · "+state.count+"건 표시 중 (전체 로딩 후 최신순 정렬)";
+  if(state.error){var b=document.createElement("button");b.textContent="다시 불러오기";b.type="button";b.onclick=function(){loadHistories()};node.appendChild(b)}
+ });
+}
+function loadHistories(){
+ var current=localRead("ss_server_session",null);if(!current||!current.token)return;
+ if(historyRun&&historyRun.token===current.token)return historyRun.promise;
+ var run={token:current.token},generation=stateGeneration;historyRun=run;
+ run.promise=Promise.all([K_GORDERS,K_ORDERS,K_AUDIT].map(async function(key){
+  var cursor=null,all=new Map();historyStates[key]={count:0};
+  try{do{
+   var page=await shopRequest("/api/admin/history?key="+encodeURIComponent(key)+(cursor?"&cursor="+encodeURIComponent(cursor):""));
+   var live=localRead("ss_server_session",null);if(historyRun!==run||!live||live.token!==run.token)return;
+   page.records.forEach(function(x){all.set(x.id,x)});
+   if(stateGeneration!==generation)(sharedState[key]||[]).forEach(function(x){if(!all.has(x.id))all.set(x.id,x)});
+   sharedState[key]=Array.from(all.values()).sort(function(a,b){return String(b.at).localeCompare(String(a.at))});
+   cursor=page.cursor;historyStates[key]={count:all.size,done:!cursor};
+   if(location.hash==="#admin")renderAdminAll();showHistoryStatus();
+  }while(cursor)}catch(e){
+   if(historyRun!==run)return;historyStates[key]={count:all.size,error:true};showHistoryStatus();syncStatus("일부 기록을 불러오지 못했습니다. 기록 화면에서 다시 불러올 수 있어요.",true);
+  }
+ })).finally(function(){if(historyRun===run)historyRun=null});
+ showHistoryStatus();return run.promise;
+}
+
+function renderAdminAll(){showHistoryStatus();var active=document.querySelector(".tabs button.active"),tab=active?active.getAttribute("data-tab"):"dashboard";if(tab==="dashboard"){renderStats();renderAdminShelf()}else if(tab==="new")renderSlots();else if(tab==="inventory")renderInventory();else if(tab==="orders")renderOrders();else if(tab==="gacha")renderGachaAdmin();else if(tab==="gachaorders")renderGachaOrders();else if(tab==="admins")renderAdmins();else if(tab==="audit")renderAudit()}
+function renderStats(){var p=products(),o=orders(),units=0,coins=0;o.forEach(function(x){coins+=x.cost;x.items.forEach(function(i){units+=i.qty})});var s=[["판매 중",p.filter(function(x){return x.active}).length],["전체 보관",p.length],[historyStates[K_ORDERS]&&historyStates[K_ORDERS].done?"누적 판매수량":"불러온 판매수량",units],[historyStates[K_ORDERS]&&historyStates[K_ORDERS].done?"누적 차감코인":"불러온 차감코인",coins]];el("stats").innerHTML=s.map(function(x){return'<div class="stat"><span>'+x[0]+'</span><strong>'+x[1]+"</strong></div>"}).join("")}
 function renderAdminShelf(){var p=products(),m={};p.filter(function(x){return x.active&&x.slot}).forEach(function(x){m[x.slot]=x});el("adminShelf").innerHTML="";for(var i=1;i<=16;i++){var x=m[i],d=document.createElement("div");d.className="card "+(x?"":"empty");d.innerHTML='<span class="slot">'+i+"</span>"+(x?'<div class="visual">'+(x.img?'<img src="'+x.img+'">':'<div class="emoji">'+(x.emoji||"✦")+"</div>")+'</div><div class="meta"><div class="name">'+esc(x.name)+'</div><div class="price">'+x.price+' 코인</div></div>':'<div class="visual">준비중</div><div class="meta"><div class="name">빈 매대</div><div class="price">'+i+"번</div></div>");el("adminShelf").appendChild(d)}}
 function renderSlots(){var f=free();el("stSlot").innerHTML='<option value="">자동 배치</option>'+f.map(function(n){return'<option value="'+n+'">'+n+"번 칸</option>"}).join("")}
 el("file").onchange=function(){var f=el("file").files[0];upload="";if(!f){el("preview").textContent="PNG를 선택해 주세요.";return}if(f.type!=="image/png"){alert("PNG만 등록할 수 있습니다.");el("file").value="";return}var r=new FileReader();r.onload=function(){upload=r.result;el("preview").innerHTML='<img src="'+upload+'">';if(!el("stName").value)el("stName").value=f.name.replace(/\.png$/i,"")};r.readAsDataURL(f)};
@@ -754,7 +786,7 @@ el("gItemFile").onchange=function(){var f=el("gItemFile").files[0];gUpload="";if
 el("gItemForm").onsubmit=function(e){e.preventDefault();var all=gItems(),name=el("gItemName").value.trim();all.push({id:"gi"+Date.now().toString(36),machine:el("gItemMachine").value,name:name,weight:Math.max(1,Math.floor(Number(el("gItemWeight").value)||1)),active:true,img:gUpload,emoji:"✦"});write(K_GITEMS,all);audit("가챠 품목 등록",el("gItemMachine").value+" / "+name);gUpload="";e.target.reset();el("gItemWeight").value=1;el("gItemPreview").textContent="PNG가 없으면 샘플 아이콘으로 표시됩니다.";renderGachaAdmin();if(selectedMachine)selectMachine(selectedMachine)};
 function renderGachaOrders(){
   if(!el("gachaOrders"))return;
-  var o=gOrders();el("gachaOrders").innerHTML=o.map(function(x){var counts={};x.results.forEach(function(r){counts[r.name]=(counts[r.name]||0)+1});return'<tr><td>'+new Date(x.at).toLocaleString("ko-KR")+'</td><td><strong>'+esc(x.nickname)+'</strong></td><td>'+esc(x.machine)+' · '+esc(x.machineName)+'</td><td>'+x.count+'</td><td>'+Object.keys(counts).map(function(k){return esc(k)+' × '+counts[k]}).join("<br>")+'</td><td>'+x.before+'</td><td>'+x.cost+'</td><td>'+x.after+'</td></tr>'}).join("")||'<tr><td colspan="8">가챠 기록이 없습니다.</td></tr>';
+  var o=gOrders();el("gachaOrders").innerHTML=o.map(function(x){var counts={};(x.results||[]).forEach(function(r){counts[r.name]=(counts[r.name]||0)+1});return'<tr><td>'+new Date(x.at).toLocaleString("ko-KR")+'</td><td><strong>'+esc(x.nickname)+'</strong></td><td>'+esc(x.machine)+' · '+esc(x.machineName)+'</td><td>'+x.count+'</td><td>'+Object.keys(counts).map(function(k){return esc(k)+' × '+counts[k]}).join("<br>")+'</td><td>'+x.before+'</td><td>'+x.cost+'</td><td>'+x.after+'</td></tr>'}).join("")||'<tr><td colspan="8">가챠 기록이 없습니다.</td></tr>';
 }
 
 
