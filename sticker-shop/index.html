@@ -146,7 +146,7 @@ th,td{border-bottom:2px solid #cfbda8}
 .pool-item .pool-art{height:62px;display:grid;place-items:center;font-size:34px;background:#eef9ff;margin-bottom:5px;overflow:hidden}.pool-art img{width:100%;height:100%;object-fit:contain}
 .pool-item strong{display:block;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pool-item small{font-size:8px;color:#745e8a}
 .gacha-balance{display:flex;justify-content:space-between;align-items:center;border-bottom:3px dashed #6f4bff;padding-bottom:10px;margin-bottom:10px}.gacha-balance strong{font-size:28px;color:#2e38ff}
-.draw-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.draw-btn{border:3px solid #130c31;background:#ffef66;color:#23153b;padding:10px 5px;box-shadow:3px 3px 0 #130c31;cursor:pointer}.draw-btn:nth-child(2){background:#5ce1e6}.draw-btn:nth-child(3){background:#ff4fa3;color:#fff}.draw-btn:nth-child(4){background:#bca4ff}.draw-btn b{display:block;font-size:24px}.draw-btn span{display:block;font-weight:1000;font-size:10px}.draw-btn small{display:block;font-size:8px;margin-top:3px}.draw-btn:disabled{opacity:.45;box-shadow:none}
+.draw-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.draw-btn{border:3px solid #130c31;background:#ffef66;color:#23153b;padding:10px 5px;box-shadow:3px 3px 0 #130c31;cursor:pointer}.draw-btn:nth-child(2){background:#5ce1e6}.draw-btn:nth-child(3){background:#ff4fa3;color:#fff}.draw-btn:nth-child(4){background:#bca4ff}.draw-btn[data-count="50"]{grid-column:1/-1;background:#ffbd69}.draw-btn b{display:block;font-size:24px}.draw-btn span{display:block;font-weight:1000;font-size:10px}.draw-btn small{display:block;font-size:8px;margin-top:3px}.draw-btn:disabled{opacity:.45;box-shadow:none}
 .gacha-warning{margin-top:12px;font-size:11px;color:#7b5f8d;line-height:1.5}
 .gacha-result{background:#ff4fa3;padding:16px}.result-sign{display:inline-block;background:#ffef66;color:#24143d;border:3px solid #130c31;padding:6px 9px;font-size:11px;font-weight:1000;box-shadow:2px 2px 0 #130c31}.result-summary{margin:12px 0;background:#fff5e8;color:#281840;border:3px solid #130c31;padding:10px;font-size:12px;box-shadow:3px 3px 0 #130c31}.result-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.result-card{border:3px solid #130c31;background:#fff5e8;color:#26183c;padding:7px;box-shadow:3px 3px 0 #130c31;animation:popcapsule .22s ease both}.result-card:nth-child(2n){transform:rotate(1deg)}.result-card:nth-child(3n){transform:rotate(-1deg)}.result-art{height:74px;display:grid;place-items:center;background:#e6f9ff;font-size:38px;overflow:hidden}.result-art img{width:100%;height:100%;object-fit:contain}.result-card strong{display:block;margin-top:5px;font-size:9px;text-align:center}.result-downloads{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:10px}.result-downloads a{border:3px solid #130c31;background:#5ce1e6;color:#22143a;padding:8px;text-align:center;text-decoration:none;font-size:10px;font-weight:1000;box-shadow:2px 2px 0 #130c31}
 @keyframes popcapsule{from{opacity:0;transform:translateY(12px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
@@ -300,6 +300,7 @@ dialog [hidden]{display:none!important}
           <button class="draw-btn" data-count="5"><b>5</b><span>회 뽑기</span><small id="price5">0 COIN</small></button>
           <button class="draw-btn" data-count="10"><b>10</b><span>회 뽑기</span><small id="price10">0 COIN</small></button>
           <button class="draw-btn" data-count="20"><b>20</b><span>회 뽑기</span><small id="price20">0 COIN</small></button>
+          <button class="draw-btn" data-count="50"><b>50</b><span>회 뽑기</span><small id="price50">0 COIN</small></button>
         </div>
         <div id="gachaWarning" class="gacha-warning">닉네임과 보유 코인을 입력해 주세요.</div>
       </div>
@@ -719,7 +720,7 @@ function selectMachine(id){
   selectedMachine=id;
   var m=gMachines().find(function(x){return x.id===id});if(!m)return;
   el("machineLetter").textContent=m.id;el("machineName").textContent=m.name.toUpperCase();el("machinePrice").textContent="1회 "+m.price+" 코인";
-  el("price1").textContent=m.price+" COIN";el("price5").textContent=m.price*5+" COIN";el("price10").textContent=m.price*10+" COIN";el("price20").textContent=m.price*20+" COIN";
+  el("price1").textContent=m.price+" COIN";el("price5").textContent=m.price*5+" COIN";el("price10").textContent=m.price*10+" COIN";el("price20").textContent=m.price*20+" COIN";el("price50").textContent=m.price*50+" COIN";
   var pool=gItems().filter(function(x){return x.machine===id&&x.active});
   el("poolPreview").innerHTML=pool.map(function(x){return'<div class="pool-item"><div class="pool-art">'+(x.img?'<img src="'+x.img+'">':esc(x.emoji||"✦"))+'</div><strong>'+esc(x.name)+'</strong></div>'}).join("")||'<div class="gacha-warning">등록된 품목이 없습니다.</div>';
   el("machinePanel").classList.remove("hidden");el("gachaResult").classList.add("hidden");renderGachaBalance();el("machinePanel").scrollIntoView({behavior:"smooth",block:"start"});
@@ -744,14 +745,14 @@ document.querySelectorAll(".draw-btn").forEach(function(b){b.onclick=async funct
   if(!m||!pool.length||before<m.price*count||!el("gNickname").value.trim())return;
   var results=[];for(var i=0;i<count;i++)results.push(weightedPick(pool));
   var cost=m.price*count,after=before-cost,o={at:new Date().toISOString(),nickname:el("gNickname").value.trim(),machine:m.id,machineName:m.name,count:count,before:before,cost:cost,after:after,results:results.map(function(x){return{id:x.id,name:x.name,img:x.img||"",emoji:x.emoji||"✦"}})};
-  o.id=crypto.randomUUID();var os=gOrders();os.unshift(o);if(!await write(K_GORDERS,os))return;el("gCoins").value=after;el("coins").value=after;showGachaResults(o);renderGachaBalance();renderGachaOrders();
+  o.id=crypto.randomUUID();var os=gOrders();os.unshift(Object.assign({},o,{results:o.results.map(function(x){return{id:x.id,name:x.name,emoji:x.emoji}})}));if(!await write(K_GORDERS,os))return;el("gCoins").value=after;el("coins").value=after;showGachaResults(o);renderGachaBalance();renderGachaOrders();
 }});
 function showGachaResults(o){
-  var counts={};o.results.forEach(function(x){counts[x.name]=(counts[x.name]||0)+1});
-  el("resultSummary").innerHTML='<strong>'+esc(o.nickname)+'</strong> · '+esc(o.machine)+' MACHINE · '+o.count+'회 뽑기<br>'+Object.keys(counts).map(function(k){return esc(k)+' × '+counts[k]}).join(" / ")+'<br><strong>'+o.before+' → '+o.after+' 코인</strong>';
-  el("resultGrid").innerHTML=o.results.map(function(x,i){return'<div class="result-card" style="animation-delay:'+(i*.035)+'s"><div class="result-art">'+(x.img?'<img src="'+x.img+'">':esc(x.emoji))+'</div><strong>'+esc(x.name)+'</strong></div>'}).join("");
-  var unique={};o.results.forEach(function(x){if(x.img)unique[x.id]=x});
-  el("resultDownloads").replaceChildren();Object.keys(unique).forEach(function(k){var x=unique[k];el("resultDownloads").appendChild(stickerSaveButton(x.img,x.name,"download"))});
+  var grouped=new Map();o.results.forEach(function(x){var key=x.id||x.name,entry=grouped.get(key);if(entry)entry.quantity++;else grouped.set(key,{item:x,quantity:1})});
+  var entries=Array.from(grouped.values());
+  el("resultSummary").innerHTML='<strong>'+esc(o.nickname)+'</strong> · '+esc(o.machine)+' MACHINE · '+o.count+'회 뽑기<br>'+entries.map(function(entry){return esc(entry.item.name)+' × '+entry.quantity}).join(" / ")+'<br><strong>'+o.before+' → '+o.after+' 코인</strong>';
+  el("resultGrid").innerHTML=entries.map(function(entry,i){var x=entry.item;return'<div class="result-card" style="animation-delay:'+(i*.035)+'s"><div class="result-art">'+(x.img?'<img src="'+x.img+'" alt="'+esc(x.name)+'">':esc(x.emoji))+'</div><strong>'+esc(x.name)+' × '+entry.quantity+'</strong></div>'}).join("");
+  el("resultDownloads").replaceChildren();entries.forEach(function(entry){var x=entry.item;if(x.img)el("resultDownloads").appendChild(stickerSaveButton(x.img,x.name,"download"))});
   el("gachaResult").classList.remove("hidden");el("gachaResult").scrollIntoView({behavior:"smooth",block:"start"});
 }
 
