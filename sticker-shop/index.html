@@ -626,7 +626,7 @@ function loadHistories(){
    if(stateGeneration!==generation)(sharedState[key]||[]).forEach(function(x){if(!all.has(x.id))all.set(x.id,x)});
    sharedState[key]=Array.from(all.values()).sort(function(a,b){return String(b.at).localeCompare(String(a.at))});
    cursor=page.cursor;historyStates[key]={count:all.size,done:!cursor};
-   if(location.hash==="#admin")renderAdminAll();showHistoryStatus();
+   if(location.hash==="#admin")renderHistoryTab(key);showHistoryStatus();
   }while(cursor)}catch(e){
    if(historyRun!==run)return;historyStates[key]={count:all.size,error:true};showHistoryStatus();syncStatus("일부 기록을 불러오지 못했습니다. 기록 화면에서 다시 불러올 수 있어요.",true);
   }
@@ -634,6 +634,13 @@ function loadHistories(){
  showHistoryStatus();return run.promise;
 }
 
+function renderHistoryTab(key){
+ var active=document.querySelector(".tabs button.active"),tab=active?active.getAttribute("data-tab"):"dashboard";
+ if(key===K_GORDERS&&tab==="gachaorders")renderGachaOrders();
+ else if(key===K_ORDERS&&tab==="orders")renderOrders();
+ else if(key===K_ORDERS&&tab==="dashboard")renderStats();
+ else if(key===K_AUDIT&&tab==="audit")renderAudit();
+}
 function renderAdminAll(){showHistoryStatus();var active=document.querySelector(".tabs button.active"),tab=active?active.getAttribute("data-tab"):"dashboard";if(tab==="dashboard"){renderStats();renderAdminShelf()}else if(tab==="new")renderSlots();else if(tab==="inventory")renderInventory();else if(tab==="orders")renderOrders();else if(tab==="gacha")renderGachaAdmin();else if(tab==="gachaorders")renderGachaOrders();else if(tab==="admins")renderAdmins();else if(tab==="audit")renderAudit()}
 function renderStats(){var p=products(),o=orders(),units=0,coins=0;o.forEach(function(x){coins+=x.cost;x.items.forEach(function(i){units+=i.qty})});var s=[["판매 중",p.filter(function(x){return x.active}).length],["전체 보관",p.length],[historyStates[K_ORDERS]&&historyStates[K_ORDERS].done?"누적 판매수량":"불러온 판매수량",units],[historyStates[K_ORDERS]&&historyStates[K_ORDERS].done?"누적 차감코인":"불러온 차감코인",coins]];el("stats").innerHTML=s.map(function(x){return'<div class="stat"><span>'+x[0]+'</span><strong>'+x[1]+"</strong></div>"}).join("")}
 function renderAdminShelf(){var p=products(),m={};p.filter(function(x){return x.active&&x.slot}).forEach(function(x){m[x.slot]=x});el("adminShelf").innerHTML="";for(var i=1;i<=16;i++){var x=m[i],d=document.createElement("div");d.className="card "+(x?"":"empty");d.innerHTML='<span class="slot">'+i+"</span>"+(x?'<div class="visual">'+(x.img?'<img src="'+x.img+'">':'<div class="emoji">'+(x.emoji||"✦")+"</div>")+'</div><div class="meta"><div class="name">'+esc(x.name)+'</div><div class="price">'+x.price+' 코인</div></div>':'<div class="visual">준비중</div><div class="meta"><div class="name">빈 매대</div><div class="price">'+i+"번</div></div>");el("adminShelf").appendChild(d)}}
@@ -763,7 +770,19 @@ function renderGachaAdmin(){
   el("gMachineAdmin").innerHTML="";
   ms.forEach(function(m){
     var d=document.createElement("div");d.className="g-admin-machine";d.innerHTML='<h3>'+esc(m.id)+' MACHINE</h3><div class="field"><label>기계 이름</label><input class="gm-name" value="'+esc(m.name)+'"></div><div class="field"><label>1회 가격</label><input class="gm-price" type="number" min="0" value="'+m.price+'"></div><div class="admin-actions"><button class="mini gm-save">저장</button><button class="mini gm-toggle">'+(m.active?"운영 종료":"운영 재개")+'</button></div>';
-    d.querySelector(".gm-save").onclick=function(){var all=gMachines(),x=all.find(function(v){return v.id===m.id}),old=x.name+" / "+x.price;x.name=d.querySelector(".gm-name").value.trim()||x.name;x.price=Math.max(0,Math.floor(Number(d.querySelector(".gm-price").value)||0));write(K_GMACHINES,all);audit("가챠 기계 수정",m.id+": "+old+" → "+x.name+" / "+x.price);renderGachaAdmin();renderMachines()};
+    d.querySelector(".gm-save").onclick=async function(){
+      if(pendingSaves)return;
+      var all=gMachines(),x=all.find(function(v){return v.id===m.id});if(!x)return;
+      var old=x.name+" / "+x.price,name=d.querySelector(".gm-name").value.trim(),price=Number(d.querySelector(".gm-price").value);
+      if(!name){alert("기계 이름을 입력해 주세요.");return}
+      if(!Number.isSafeInteger(price)||price<0){alert("가격은 0 이상의 정수로 입력해 주세요.");return}
+      x.name=name;x.price=price;
+      this.disabled=true;this.textContent="저장 중…";
+      if(!await write(K_GMACHINES,all)){this.disabled=false;this.textContent="저장";return}
+      audit("가챠 기계 수정",m.id+": "+old+" → "+x.name+" / "+x.price);
+      renderMachines();if(selectedMachine===m.id)selectMachine(m.id);
+      syncStatus("기계 이름·가격 저장 완료");
+    };
     d.querySelector(".gm-toggle").onclick=function(){var all=gMachines(),x=all.find(function(v){return v.id===m.id});x.active=!x.active;write(K_GMACHINES,all);audit("가챠 기계 상태 변경",m.id+": "+(x.active?"운영 중":"운영 종료"));renderGachaAdmin();renderMachines()};
     el("gMachineAdmin").appendChild(d);
   });
