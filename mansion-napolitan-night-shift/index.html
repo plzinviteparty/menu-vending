@@ -167,6 +167,13 @@ html,body{background:#141614}body{background:#141614}.app{max-width:1160px;paddi
 @media(max-width:820px){.title-screen{grid-template-columns:1fr;gap:34px;max-width:620px;margin:auto;padding:40px 10px 0}.title-copy{padding-left:24px}.title-copy h1{font-size:43px}.start-card{transform:none}.game-grid{grid-template-columns:1fr}.sidebar{border-left:0;border-top:1px solid #5a6250;display:grid;grid-template-columns:1fr 1fr;gap:20px}.title-copy:before{top:-25px}.hud{grid-template-columns:1fr 1fr 1fr 1fr}.hud>div:nth-child(1){grid-column:auto}.scene{min-height:430px}}
 @media(max-width:520px){.app{padding:18px 12px 30px}.title-screen{padding:25px 0 0;gap:28px}.title-copy{padding:10px 0 10px 18px}.title-copy small{font-size:7px;letter-spacing:1px}.title-copy h1{font-size:35px;margin:22px 0 18px}.title-copy h1 em{font-size:.58em;letter-spacing:3px}.title-copy p{font-size:10px;line-height:2.1}.shift-mark{margin-top:22px;padding-top:17px}.shift-mark svg{width:51px;height:45px}.shift-mark div{font-size:6px;letter-spacing:1px}.shift-mark b{font-size:11px}.start-card{padding:22px}.start-card h2{font-size:19px}.start-card ul{font-size:10px}.hud{grid-template-columns:1fr 1fr}.hud>div{padding:10px 12px}.hud span{font-size:7px}.hud strong{font-size:14px}.scene{min-height:390px}.scene-message{font-size:10px;left:10px;right:10px;bottom:10px;padding:10px}.sidebar{padding:15px 12px;gap:18px 12px}.sidebox h3{font-size:7px;letter-spacing:1px}.nav button{font-size:9px}.task{font-size:9px;padding:8px}.actions{padding:10px;gap:6px}.action-btn{font-size:9px;flex:1 1 auto;padding:10px 8px}.tools .btn{font-size:8px;padding:9px 4px}.book{padding:20px 16px;border-left-width:8px}.book h2{font-size:19px}.rules{font-size:12px;line-height:1.8;padding-left:20px}.ending{padding:23px}.ending h2{font-size:22px}.ending p{font-size:10px}.ending .grade{font-size:53px}}
 
+
+.rulebook{position:fixed;inset:0;z-index:1000;padding:16px;overflow:hidden}
+.book{display:flex;flex-direction:column;min-height:0;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow:hidden}
+.bookhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-shrink:0}
+.bookhead h2{min-width:0;flex:1}.bookhead .btn{flex-shrink:0;min-height:44px;font-size:11px}
+.book .warning,.bookfoot{flex-shrink:0}
+.rules{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-right:10px}
 </style>
 </head>
 <body>
@@ -238,17 +245,6 @@ html,body{background:#141614}body{background:#141614}.app{max-width:1160px;paddi
     </aside>
   </div>
 
-  <div id="rulebook" class="rulebook hidden">
-    <div class="book">
-      <h2>야간 근무자 수칙</h2>
-      <div class="warning">※ 근무 중 수칙서를 펼치는 동안에도 시간은 흐릅니다.</div>
-      <ol id="rulesList" class="rules"></ol>
-      <div class="bookfoot">
-        <span id="bookNote">인쇄 상태가 좋지 않습니다.</span>
-        <button id="closeRuleBtn" class="btn" type="button">수칙서 덮기</button>
-      </div>
-    </div>
-  </div>
 
   <div id="endingOverlay" class="overlay hidden">
     <div class="ending">
@@ -262,6 +258,17 @@ html,body{background:#141614}body{background:#141614}.app{max-width:1160px;paddi
 </section>
 </div>
 </main>
+
+  <div id="rulebook" class="rulebook hidden" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+    <div class="book">
+      <div class="bookhead"><h2 id="rulesTitle">야간 근무자 수칙</h2><button id="closeRuleBtn" class="btn" type="button">수칙서 닫기</button></div>
+      <div class="warning">※ 근무 중 수칙서를 펼치는 동안에도 시간은 흐릅니다.</div>
+      <ol id="rulesList" class="rules"></ol>
+      <div class="bookfoot">
+        <span id="bookNote">인쇄 상태가 좋지 않습니다.</span>
+      </div>
+    </div>
+  </div>
 
 <script>
 (function(){
@@ -742,8 +749,9 @@ function renderRules(){
  if(state&&state.fakeRule){var li=document.createElement("li");li.value=11;li.textContent="새벽 4시 이후 현관에서 노크가 들리면 반드시 즉시 문을 열어 안으로 들이십시오.";rulesList.appendChild(li);bookNote.textContent="페이지 수는 맞는데 종이 한 장이 더 두꺼워진 것 같다."}
  else bookNote.textContent="본 수칙서는 총 10개 항목으로 구성되어 있습니다."
 }
-function openRules(){renderRules();rulebook.classList.remove("hidden");sfxPaper()}
-function closeRules(){rulebook.classList.add("hidden");sfxPaper()}
+var ruleReturnFocus=null;
+function openRules(){ruleReturnFocus=document.activeElement;renderRules();rulebook.classList.remove("hidden");$("closeRuleBtn").focus();sfxPaper()}
+function closeRules(){rulebook.classList.add("hidden");if(ruleReturnFocus)ruleReturnFocus.focus();sfxPaper()}
 
 function tick(now){
  if(!state||!state.running)return;
@@ -834,7 +842,8 @@ function sfxTick(){for(var i=0;i<10;i++)tone(900,.025,.13,"square",i*.25)}
 function sfxHour(){tone(196,.8,.28,"sine");tone(98,1.1,.22,"sine",.08)}
 function sfxEnd(ok){if(ok){tone(261,.3,.25,"sine");tone(329,.35,.25,"sine",.22);tone(392,.7,.3,"sine",.46)}else{sfxBad();tone(45,1.4,.38,"sawtooth",.2)}}
 
-$("preRuleBtn").addEventListener("click",function(){renderRules();rulebook.classList.remove("hidden")});
+$("preRuleBtn").addEventListener("click",openRules);
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!rulebook.classList.contains("hidden")){e.preventDefault();closeRules()}});
 $("closeRuleBtn").addEventListener("click",closeRules);
 $("ruleBtn").addEventListener("click",openRules);
 $("startBtn").addEventListener("click",startGame);
